@@ -1,0 +1,2842 @@
+<!doctype html>
+<html lang="fa" dir="rtl" data-theme="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ArminOS • Personal Planner</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#090d16">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="icon" href="icons/icon-192.png">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+
+  <!-- Chart.js (CDN). Optional: you can bundle locally later. -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <style>
+    /* =========================
+       IRANSansX (local WOFF2)
+       Put files in: ./fonts/
+       ========================= */
+    @font-face{
+      font-family: "IRANSansX";
+      src: url("./fonts/IRANSansX-Light.woff2") format("woff2");
+      font-weight: 300;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face{
+      font-family: "IRANSansX";
+      src: url("./fonts/IRANSansX-Medium.woff2") format("woff2");
+      font-weight: 500;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face{
+      font-family: "IRANSansX";
+      src: url("./fonts/IRANSansX-DemiBold.woff2") format("woff2");
+      font-weight: 600;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face{
+      font-family: "IRANSansX";
+      src: url("./fonts/IRANSansX-Bold.woff2") format("woff2");
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face{
+      font-family: "IRANSansX";
+      src: url("./fonts/IRANSansX-ExtraBold.woff2") format("woff2");
+      font-weight: 800;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* =========================
+       Design System (Tokens)
+       ========================= */
+    :root{
+      --font-sans: "IRANSansX", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+      --fs-1: 12px;
+      --fs-2: 13px;
+      --fs-3: 14px;
+      --fs-4: 16px;
+      --fs-5: 18px;
+
+      --lh: 1.75;
+
+      --s-1: 6px;
+      --s-2: 10px;
+      --s-3: 14px;
+      --s-4: 18px;
+      --s-5: 24px;
+
+      --r-1: 14px;
+      --r-2: 18px;
+      --r-3: 24px;
+      --r-4: 30px;
+
+      --sidebar: 292px;
+      --gap: var(--s-3);
+
+      --shadow-1: 0 10px 30px rgba(0,0,0,.28);
+      --shadow-2: 0 18px 60px rgba(0,0,0,.38);
+
+      --ring: 0 0 0 4px rgba(154,230,255,.20);
+
+      /* colors (dark) */
+      --bg: #090d16;
+      --bg2:#0b1122;
+      --surface: rgba(255,255,255,.06);
+      --surface2: rgba(255,255,255,.09);
+      --border: rgba(255,255,255,.10);
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.66);
+      --muted2: rgba(255,255,255,.46);
+
+      --accent: #9ae6ff;
+      --accent2:#b7ffcf;
+      --danger:#ff7b7b;
+      --warn:#ffd97b;
+      --ok:#7bffb5;
+
+      --grad:
+        radial-gradient(950px 520px at 8% 10%, rgba(154,230,255,.18), transparent 60%),
+        radial-gradient(980px 520px at 96% 26%, rgba(183,255,207,.14), transparent 55%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+    }
+
+    html[data-theme="light"]{
+      --bg:#f5f7fc;
+      --bg2:#eef2fb;
+      --surface: rgba(0,0,0,.04);
+      --surface2: rgba(0,0,0,.06);
+      --border: rgba(0,0,0,.10);
+      --text: rgba(0,0,0,.86);
+      --muted: rgba(0,0,0,.58);
+      --muted2: rgba(0,0,0,.42);
+      --accent:#0ea5e9;
+      --accent2:#22c55e;
+      --ring: 0 0 0 4px rgba(14,165,233,.16);
+      --shadow-1: 0 10px 26px rgba(0,0,0,.12);
+      --shadow-2: 0 18px 54px rgba(0,0,0,.14);
+
+      --grad:
+        radial-gradient(950px 520px at 8% 10%, rgba(14,165,233,.12), transparent 60%),
+        radial-gradient(980px 520px at 96% 26%, rgba(34,197,94,.12), transparent 55%),
+        linear-gradient(180deg, var(--bg), var(--bg2));
+    }
+
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family: var(--font-sans);
+      color: var(--text);
+      background: var(--grad);
+      line-height: var(--lh);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *{ animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+    }
+
+    @keyframes viewIn{
+      from{ opacity:0; transform: translateY(6px); }
+      to{ opacity:1; transform: translateY(0); }
+    }
+
+    :where(button, input, select, textarea, a):focus-visible{
+      outline: none;
+      box-shadow: var(--ring);
+      border-color: rgba(154,230,255,.30);
+    }
+
+    .app{
+      display:grid;
+      grid-template-columns: var(--sidebar) 1fr;
+      gap: var(--gap);
+      max-width: 1360px;
+      margin: 0 auto;
+      padding: var(--s-4);
+    }
+    @media (max-width: 1120px){
+      .app{ grid-template-columns: 1fr; }
+    }
+
+    .glass{
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--surface) 86%, transparent);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: var(--shadow-2);
+    }
+
+    /* Sidebar */
+    .sidebar{
+      position: sticky;
+      top: var(--s-4);
+      height: calc(100vh - (var(--s-4) * 2));
+      border-radius: var(--r-4);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+    }
+    @media (max-width: 1120px){
+      .sidebar{ position: relative; height:auto; }
+    }
+
+    .side-top{
+      padding: var(--s-4);
+      border-bottom: 1px solid var(--border);
+      background: linear-gradient(180deg, var(--surface2), transparent);
+    }
+    .brand{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: var(--s-2);
+    }
+    .brand h1{
+      margin:0;
+      font-size: var(--fs-5);
+      letter-spacing: .2px;
+      display:flex;
+      align-items:center;
+      gap: 10px;
+    }
+    .badge{
+      font-size: var(--fs-1);
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--muted);
+      user-select:none;
+      white-space:nowrap;
+    }
+
+    .profile{
+      margin-top: var(--s-3);
+      display:flex;
+      gap: var(--s-2);
+      align-items:flex-start;
+    }
+    .avatar{
+      width:46px;height:46px;border-radius: 16px;
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, rgba(154,230,255,.22), rgba(183,255,207,.10));
+      display:flex;align-items:center;justify-content:center;
+      font-weight:800;
+      box-shadow: var(--shadow-1);
+      flex: 0 0 auto;
+    }
+    .pname{ font-weight:800; font-size: var(--fs-4); }
+    .ptitle{ font-size: var(--fs-1); color: var(--muted); margin-top: 2px; }
+
+    .nav{
+      padding: var(--s-3);
+      display:grid;
+      gap: 10px;
+    }
+    .nav button{
+      width:100%;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      color: var(--text);
+      border-radius: var(--r-3);
+      padding: 12px 12px;
+      cursor:pointer;
+      transition: transform .14s ease, background .14s ease, border-color .14s ease;
+      text-align:right;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: var(--s-2);
+    }
+    .nav button:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.06);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--accent) 40%);
+    }
+    .nav button.active{
+      background: linear-gradient(135deg, rgba(154,230,255,.14), rgba(183,255,207,.10));
+      border-color: rgba(154,230,255,.32);
+    }
+    .nav-left{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      min-width: 0;
+    }
+    .nav-ic{
+      width: 38px;
+      height: 38px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow: var(--shadow-1);
+      flex: 0 0 auto;
+      color: var(--text);
+    }
+    .nav-ic svg{ width: 18px; height: 18px; }
+    .nav-text{ min-width: 0; }
+    .nav-title{ font-size: var(--fs-3); font-weight: 800; line-height: 1.25; }
+    .nav-hint{ font-size: var(--fs-1); color: var(--muted2); margin-top: 2px; }
+    .nav-arrow{
+      color: var(--muted2);
+      font-size: var(--fs-2);
+      user-select:none;
+    }
+
+    .side-bottom{
+      margin-top:auto;
+      padding: var(--s-3) var(--s-3) var(--s-4);
+      border-top: 1px solid var(--border);
+      display:grid;
+      gap: 10px;
+      background: linear-gradient(0deg, var(--surface2), transparent);
+    }
+
+    .btn-row{ display:flex; gap: 10px; flex-wrap:wrap; }
+    .btn{
+      border: 1px solid var(--border);
+      background: var(--surface2);
+      color: var(--text);
+      border-radius: var(--r-3);
+      padding: 10px 12px;
+      cursor:pointer;
+      transition: transform .14s ease, background .14s ease, border-color .14s ease;
+      font-size: var(--fs-2);
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      user-select:none;
+    }
+    .btn:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.10);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--accent) 40%);
+    }
+    .btn:active{ transform: translateY(0); }
+    .btn.primary{
+      background: linear-gradient(135deg, rgba(154,230,255,.20), rgba(183,255,207,.12));
+      border-color: rgba(154,230,255,.35);
+    }
+    .btn.danger{
+      border-color: rgba(255,123,123,.30);
+      color: var(--danger);
+      background: color-mix(in srgb, var(--surface2) 85%, rgba(255,123,123,.12) 15%);
+    }
+    .btn.ghost{ background: transparent; }
+
+    /* Content */
+    .content{
+      border-radius: var(--r-4);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height: calc(100vh - (var(--s-4) * 2));
+    }
+    @media (max-width: 1120px){
+      .content{ min-height:auto; }
+    }
+
+    .topbar{
+      padding: var(--s-4);
+      border-bottom: 1px solid var(--border);
+      display:flex;
+      gap: var(--s-2);
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      background: linear-gradient(180deg, var(--surface2), transparent);
+    }
+    .topbar-title{
+      font-size: var(--fs-5);
+      font-weight: 900;
+      margin:0;
+      letter-spacing: .2px;
+    }
+    .topbar-sub{
+      font-size: var(--fs-1);
+      color: var(--muted);
+    }
+    .topbar-actions{ display:flex; gap: 10px; flex-wrap:wrap; align-items:center; }
+
+    .views{ padding: var(--s-4); }
+    .view{ display:none; }
+    .view.active{ display:block; animation: viewIn .22s ease both; }
+
+    /* Cards & grid */
+    .grid{ display:grid; gap: var(--gap); }
+    .grid.cols-12{ grid-template-columns: repeat(12, 1fr); }
+    .col-12{ grid-column: span 12; }
+    .col-8{ grid-column: span 8; }
+    .col-6{ grid-column: span 6; }
+    .col-4{ grid-column: span 4; }
+    @media (max-width: 1120px){
+      .col-8,.col-6,.col-4{ grid-column: span 12; }
+    }
+
+    .card{
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      border-radius: var(--r-3);
+      padding: var(--s-4);
+      box-shadow: var(--shadow-1);
+      transition: transform .14s ease, background .14s ease, border-color .14s ease;
+    }
+    .card:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.06);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--accent) 40%);
+    }
+    .card h3{
+      margin: 0 0 8px 0;
+      font-size: var(--fs-3);
+      font-weight: 900;
+    }
+    .muted{ color: var(--muted); }
+    .muted2{ color: var(--muted2); }
+    .small{ font-size: var(--fs-1); }
+    .kpi{
+      font-size: 26px;
+      font-weight: 900;
+      margin-top: 6px;
+      letter-spacing: .2px;
+    }
+    .row{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+
+    .input, select, textarea{
+      width:100%;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      border-radius: 16px;
+      padding: 10px 12px;
+      outline:none;
+      font-family: inherit;
+      font-size: var(--fs-2);
+      transition: border-color .14s ease, background .14s ease, box-shadow .14s ease;
+    }
+    textarea{ min-height: 110px; resize: vertical; }
+    label{ font-size: var(--fs-1); color: var(--muted); display:block; margin: 8px 0 6px; }
+
+    .form-grid{
+      display:grid;
+      gap: 10px;
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .form-grid .full{ grid-column: span 2; }
+    @media (max-width: 720px){
+      .form-grid{ grid-template-columns: 1fr; }
+      .form-grid .full{ grid-column: span 1; }
+    }
+
+    .chips{ display:flex; flex-wrap:wrap; gap: 8px; }
+    .chip{
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: var(--fs-1);
+      color: var(--muted);
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      user-select:none;
+    }
+    .chip.ok{ border-color: rgba(123,255,181,.30); color: var(--ok); }
+    .chip.warn{ border-color: rgba(255,217,123,.30); color: var(--warn); }
+    .chip.danger{ border-color: rgba(255,123,123,.30); color: var(--danger); }
+    .chip.acc{ border-color: rgba(154,230,255,.30); color: var(--accent); }
+
+    /* Lists */
+    .list{ display:grid; gap: 10px; }
+    .item{
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      border-radius: var(--r-3);
+      padding: 12px;
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+      justify-content:space-between;
+      transition: transform .14s ease, background .14s ease, border-color .14s ease;
+    }
+    .item:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.06);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--accent) 40%);
+    }
+    .item-main{ flex:1; min-width: 230px; }
+    .item-title{ font-weight: 900; margin:0 0 3px 0; font-size: var(--fs-3); }
+    .item-meta{
+      display:flex; flex-wrap:wrap; gap: 8px;
+      font-size: var(--fs-1);
+      color: var(--muted);
+    }
+
+    .icon-btn{
+      width: 40px;
+      height: 40px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition: transform .14s ease, background .14s ease, border-color .14s ease;
+      user-select:none;
+    }
+    .icon-btn:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.08);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--accent) 40%);
+    }
+    .icon-btn.danger{ border-color: rgba(255,123,123,.30); color: var(--danger); }
+
+    /* Progress bar */
+    .bar{
+      width:100%;
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      overflow:hidden;
+      border: 1px solid var(--border);
+    }
+    .bar > i{
+      display:block;
+      height:100%;
+      width:0%;
+      background: linear-gradient(90deg, rgba(154,230,255,.85), rgba(183,255,207,.75));
+      transition: width .22s ease;
+    }
+
+    /* Calendar */
+    .cal-head{
+      display:flex;
+      gap: 10px;
+      align-items:center;
+      justify-content:space-between;
+      flex-wrap:wrap;
+      margin-bottom: 10px;
+    }
+    .cal-grid{
+      display:grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 10px;
+    }
+    .cal-dow{
+      font-size: var(--fs-1);
+      color: var(--muted);
+      padding: 8px 10px;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      text-align:center;
+    }
+    .cal-day{
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      border-radius: var(--r-3);
+      padding: 10px;
+      min-height: 94px;
+      cursor:pointer;
+      transition: transform .14s ease, background .14s ease, border-color .14s ease;
+      display:flex;
+      flex-direction:column;
+      gap: 8px;
+    }
+    .cal-day:hover{
+      transform: translateY(-1px);
+      background: rgba(255,255,255,.06);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--accent) 40%);
+    }
+    .cal-day.blank{ opacity:.35; cursor:default; }
+    .cal-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+    .cal-num{ font-weight: 900; }
+    .cal-badges{ display:flex; gap:6px; flex-wrap:wrap; }
+
+    .mini{
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      background: rgba(255,255,255,.04);
+      white-space:nowrap;
+    }
+    .mini.ok{ border-color: rgba(123,255,181,.28); color: var(--ok); }
+    .mini.acc{ border-color: rgba(154,230,255,.28); color: var(--accent); }
+
+    /* Tables */
+    table{ width:100%; border-collapse:separate; border-spacing:0 10px; }
+    th{
+      text-align:right;
+      font-size: var(--fs-1);
+      color: var(--muted);
+      font-weight: 800;
+      padding: 0 10px;
+    }
+    td{
+      padding: 12px 10px;
+      background: rgba(255,255,255,.03);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    td:first-child{ border-right: 1px solid var(--border); border-top-right-radius: 16px; border-bottom-right-radius: 16px; }
+    td:last-child{ border-left: 1px solid var(--border); border-top-left-radius: 16px; border-bottom-left-radius: 16px; }
+    .nowrap{ white-space:nowrap; }
+
+    /* Dialog */
+    dialog{
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      background: color-mix(in srgb, var(--surface2) 85%, transparent);
+      color: var(--text);
+      box-shadow: var(--shadow-2);
+      width: min(760px, 92vw);
+      padding: 0;
+      overflow:hidden;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    dialog::backdrop{
+      background: rgba(0,0,0,.55);
+      backdrop-filter: blur(10px);
+    }
+    .dlg-head{
+      padding: 14px 14px 12px;
+      border-bottom: 1px solid var(--border);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap: 10px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), transparent);
+    }
+    .dlg-title{ font-weight: 1000; margin:0; font-size: var(--fs-4); }
+    .dlg-sub{ font-size: var(--fs-1); color: var(--muted); margin-top:4px; }
+    .dlg-body{ padding: 14px; }
+    .dlg-foot{
+      padding: 12px 14px 14px;
+      border-top: 1px solid var(--border);
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+      background: linear-gradient(0deg, rgba(255,255,255,.06), transparent);
+    }
+
+    /* Toast */
+    .toast{
+      position: fixed;
+      left: 18px;
+      bottom: 18px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.10);
+      backdrop-filter: blur(12px);
+      color: var(--text);
+      border-radius: 18px;
+      padding: 10px 12px;
+      display:none;
+      max-width: min(420px, 92vw);
+      box-shadow: var(--shadow-2);
+      font-size: var(--fs-2);
+      animation: viewIn .18s ease both;
+      z-index: 9998;
+    }
+
+    .sep{ height:1px; background: var(--border); margin: 10px 0; opacity:.9; }
+
+    /* =========================
+       Lock Screen (PIN)
+       ========================= */
+    .lock-screen{
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      display: none; /* shown via JS */
+      align-items: center;
+      justify-content: center;
+      padding: var(--s-4);
+      background:
+        radial-gradient(800px 420px at 10% 10%, rgba(154,230,255,.22), transparent 60%),
+        radial-gradient(900px 420px at 90% 70%, rgba(183,255,207,.18), transparent 55%),
+        rgba(0,0,0,.60);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+    }
+    .lock-card{
+      width: min(520px, 94vw);
+      border-radius: var(--r-4);
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--surface2) 90%, transparent);
+      box-shadow: var(--shadow-2);
+      padding: var(--s-5);
+      text-align: center;
+    }
+    .lock-title{
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: .2px;
+    }
+    .lock-sub{
+      margin-top: 6px;
+      font-size: var(--fs-2);
+      color: var(--muted);
+    }
+    .pin-row{
+      display:flex;
+      gap: 10px;
+      justify-content:center;
+      margin-top: var(--s-4);
+      direction: ltr;
+    }
+    .pin{
+      width: 52px;
+      height: 56px;
+      text-align:center;
+      font-size: 22px;
+      font-weight: 900;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.05);
+      color: var(--text);
+      outline: none;
+    }
+    .lock-actions{
+      margin-top: var(--s-4);
+      display:flex;
+      gap: 10px;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+    .lock-error{
+      margin-top: 10px;
+      font-size: var(--fs-2);
+      color: var(--danger);
+      min-height: 1.6em;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Lock Screen -->
+  <div class="lock-screen" id="lockScreen" aria-hidden="true">
+    <div class="lock-card">
+      <div class="lock-title">ArminOS</div>
+      <div class="lock-sub">برای ورود، پین ۴ رقمی را وارد کن</div>
+
+      <div class="pin-row" id="pinRow">
+        <input class="pin" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-idx="0" />
+        <input class="pin" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-idx="1" />
+        <input class="pin" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-idx="2" />
+        <input class="pin" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-idx="3" />
+      </div>
+
+      <div class="lock-actions">
+        <button class="btn primary" id="btnUnlock">ورود</button>
+        <button class="btn" id="btnClearPin">پاک کردن</button>
+      </div>
+
+      <div class="lock-error" id="lockError"></div>
+      <div class="small muted2" style="margin-top:10px">
+        نکته: این قفل «کلاینتی» است (برای استفاده شخصی عالیه، اما امنیت سازمانی نیست).
+      </div>
+    </div>
+  </div>
+
+  <div class="app" id="appRoot">
+    <!-- SIDEBAR -->
+    <aside class="sidebar glass">
+      <div class="side-top">
+        <div class="brand">
+          <h1>
+            <span class="nav-ic" style="width:40px;height:40px">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 7.5c0-1.93 1.57-3.5 3.5-3.5h9C18.43 4 20 5.57 20 7.5v9c0 1.93-1.57 3.5-3.5 3.5h-9C5.57 20 4 18.43 4 16.5v-9Z"/>
+                <path d="M8 9h8M8 12h8M8 15h5"/>
+              </svg>
+            </span>
+            ArminOS
+          </h1>
+          <span class="badge">PWA • Jalali • PIN</span>
+        </div>
+        <div class="profile">
+          <div class="avatar" id="avatar">A</div>
+          <div>
+            <div class="pname" id="pname">آرمین</div>
+            <div class="ptitle" id="ptitle">فریلنسر • دانشجوی مهندسی کامپیوتر</div>
+          </div>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav">
+        <button data-view="dashboard" class="active">
+          <div class="nav-left">
+            <span class="nav-ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="8" height="8" rx="2"></rect>
+                <rect x="13" y="3" width="8" height="8" rx="2"></rect>
+                <rect x="3" y="13" width="8" height="8" rx="2"></rect>
+                <rect x="13" y="13" width="8" height="8" rx="2"></rect>
+              </svg>
+            </span>
+            <div class="nav-text">
+              <div class="nav-title">داشبورد</div>
+              <div class="nav-hint">نمای کلی + نمودارها</div>
+            </div>
+          </div>
+          <span class="nav-arrow">⌁</span>
+        </button>
+
+        <button data-view="planner">
+          <div class="nav-left">
+            <span class="nav-ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <path d="M22 4 12 14.01l-3-3"></path>
+              </svg>
+            </span>
+            <div class="nav-text">
+              <div class="nav-title">برنامه روزانه</div>
+              <div class="nav-hint">تسک‌ها + تایم‌بلاک</div>
+            </div>
+          </div>
+          <span class="nav-arrow">✓</span>
+        </button>
+
+        <button data-view="calendar">
+          <div class="nav-left">
+            <span class="nav-ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2"></rect>
+                <path d="M16 2v4M8 2v4M3 10h18"></path>
+              </svg>
+            </span>
+            <div class="nav-text">
+              <div class="nav-title">تقویم (شمسی)</div>
+              <div class="nav-hint">ماهانه + کلیک روی روز</div>
+            </div>
+          </div>
+          <span class="nav-arrow">🗓</span>
+        </button>
+
+        <button data-view="projects">
+          <div class="nav-left">
+            <span class="nav-ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M16 20V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v16"></path>
+                <rect x="8" y="2" width="8" height="4" rx="1"></rect>
+                <path d="M4 20h16a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2h-4"></path>
+              </svg>
+            </span>
+            <div class="nav-text">
+              <div class="nav-title">پروژه‌ها</div>
+              <div class="nav-hint">درآمد + وضعیت پروژه</div>
+            </div>
+          </div>
+          <span class="nav-arrow">💼</span>
+        </button>
+
+        <button data-view="goals">
+          <div class="nav-left">
+            <span class="nav-ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="8"></circle>
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M12 2v2M12 20v2M2 12h2M20 12h2"></path>
+              </svg>
+            </span>
+            <div class="nav-text">
+              <div class="nav-title">اهداف بزرگ</div>
+              <div class="nav-hint">مایلستون + پیشرفت</div>
+            </div>
+          </div>
+          <span class="nav-arrow">🎯</span>
+        </button>
+
+        <button data-view="finance">
+          <div class="nav-left">
+            <span class="nav-ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <ellipse cx="12" cy="5" rx="8" ry="3"></ellipse>
+                <path d="M4 5v6c0 1.66 3.58 3 8 3s8-1.34 8-3V5"></path>
+                <path d="M4 11v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"></path>
+              </svg>
+            </span>
+            <div class="nav-text">
+              <div class="nav-title">سرمایه</div>
+              <div class="nav-hint">دارایی‌ها + پلن تقسیم</div>
+            </div>
+          </div>
+          <span class="nav-arrow">🪙</span>
+        </button>
+
+        <button data-view="notes">
+          <div class="nav-left">
+            <span class="nav-ic">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5V4.5A2.5 2.5 0 0 1 6.5 2Z"></path>
+                <path d="M8 7h8M8 11h8M8 15h5"></path>
+              </svg>
+            </span>
+            <div class="nav-text">
+              <div class="nav-title">یادداشت‌ها</div>
+              <div class="nav-hint">ژورنال + انگیزشی</div>
+            </div>
+          </div>
+          <span class="nav-arrow">📝</span>
+        </button>
+      </nav>
+
+      <div class="side-bottom">
+        <div class="btn-row">
+          <button class="btn primary" id="btnAddTask">＋ تسک</button>
+          <button class="btn" id="btnAddProject">＋ پروژه</button>
+          <button class="btn" id="btnAddGoal">＋ هدف</button>
+          <button class="btn" id="btnAddHolding">＋ دارایی</button>
+        </div>
+        <div class="btn-row">
+          <button class="btn" id="btnLock">🔒 قفل</button>
+          <button class="btn" id="btnTheme">🌓 تم</button>
+          <button class="btn" id="btnExport">⬇️ خروجی</button>
+          <button class="btn" id="btnImport">⬆️ ورود</button>
+          <button class="btn danger" id="btnReset">ریست</button>
+        </div>
+        <div class="small muted2">
+          برای نصب روی موبایل/سیستم: برنامه باید روی <b>https</b> یا <b>localhost</b> اجرا شود (GitHub Pages عالیه).
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <section class="content glass">
+      <header class="topbar">
+        <div>
+          <div class="topbar-title" id="viewTitle">داشبورد</div>
+          <div class="topbar-sub" id="viewSub">نمای کلی پیشرفت، درآمد، سرمایه و اهداف</div>
+        </div>
+        <div class="topbar-actions">
+          <span class="badge" id="todayBadge">—</span>
+          <span class="badge" id="monthBadge">—</span>
+        </div>
+      </header>
+
+      <main class="views">
+        <!-- DASHBOARD -->
+        <section class="view active" id="view-dashboard">
+          <div class="grid cols-12">
+            <div class="card col-4">
+              <div class="row">
+                <h3>پیشرفت امروز</h3>
+                <span class="chip" id="dashTodayChip">—</span>
+              </div>
+              <div class="kpi" id="dashTodayKpi">—</div>
+              <div class="muted small" id="dashTodayMeta">—</div>
+              <div style="margin-top:10px" class="bar"><i id="dashTodayBar"></i></div>
+            </div>
+
+            <div class="card col-4">
+              <div class="row">
+                <h3>تسک‌های این ماه (شمسی)</h3>
+                <span class="chip" id="dashMonthChip">—</span>
+              </div>
+              <div class="kpi" id="dashMonthKpi">—</div>
+              <div class="muted small" id="dashMonthMeta">—</div>
+              <div style="margin-top:10px" class="bar"><i id="dashMonthBar"></i></div>
+            </div>
+
+            <div class="card col-4">
+              <div class="row">
+                <h3>درآمد این ماه (شمسی)</h3>
+                <span class="chip acc">💼</span>
+              </div>
+              <div class="kpi" id="dashIncomeKpi">—</div>
+              <div class="muted small" id="dashIncomeMeta">—</div>
+              <div class="sep"></div>
+              <div class="small muted">هدف پس‌انداز ماهانه:</div>
+              <div class="row" style="margin-top:6px">
+                <span class="chip ok" id="dashSaveTarget">—</span>
+                <span class="muted2 small">نرخ: <span id="dashSaveRate">—</span></span>
+              </div>
+            </div>
+
+            <div class="card col-8">
+              <div class="row">
+                <h3>نمودار ۷ روز اخیر (نرخ انجام تسک)</h3>
+                <span class="badge">Tasks %</span>
+              </div>
+              <div class="muted2 small">اگر Chart.js لود نشه، نمودار نمایش داده نمی‌شه ولی برنامه کامل کار می‌کنه.</div>
+              <div style="height: 280px; margin-top: 10px">
+                <canvas id="chartWeek"></canvas>
+                <div class="muted small" id="chartWeekFallback" style="display:none;margin-top:8px">Chart.js لود نشد.</div>
+              </div>
+            </div>
+
+            <div class="card col-4">
+              <h3>جمله امروز</h3>
+              <div class="muted2 small">از بخش «یادداشت‌ها» قابل تغییر است.</div>
+              <div class="sep"></div>
+              <div id="dashMotivation" style="line-height:1.9"></div>
+              <div class="sep"></div>
+              <button class="btn" id="btnGoNotes">رفتن به یادداشت‌ها</button>
+            </div>
+
+            <div class="card col-6">
+              <div class="row">
+                <h3>درآمد ۶ ماه اخیر (شمسی)</h3>
+                <span class="badge">Income</span>
+              </div>
+              <div style="height: 280px; margin-top: 10px">
+                <canvas id="chartIncome"></canvas>
+                <div class="muted small" id="chartIncomeFallback" style="display:none;margin-top:8px">Chart.js لود نشد.</div>
+              </div>
+            </div>
+
+            <div class="card col-6">
+              <div class="row">
+                <h3>پرتفوی دارایی‌ها</h3>
+                <span class="badge">Holdings</span>
+              </div>
+              <div class="muted2 small">براساس «واحد ثبت‌شده» (تومان/USDT/USD...).</div>
+              <div style="height: 280px; margin-top: 10px">
+                <canvas id="chartPortfolio"></canvas>
+                <div class="muted small" id="chartPortfolioFallback" style="display:none;margin-top:8px">Chart.js لود نشد.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PLANNER -->
+        <section class="view" id="view-planner">
+          <div class="grid cols-12">
+            <div class="card col-12">
+              <div class="row">
+                <div>
+                  <h3 style="margin-bottom:2px">برنامه روزانه</h3>
+                  <div class="muted small">تسک اضافه کن، تیک بزن، و گزارش بگیر.</div>
+                </div>
+                <div class="btn-row" style="align-items:center">
+                  <input class="input" type="date" id="plannerDate" style="width: 180px" />
+                  <span class="badge" id="plannerJalaliBadge">—</span>
+                  <button class="btn primary" id="btnAddTask2">＋ افزودن تسک</button>
+                </div>
+              </div>
+
+              <div class="sep"></div>
+
+              <div class="form-grid">
+                <div class="full">
+                  <label>افزودن سریع</label>
+                  <div class="row" style="gap:10px; align-items:stretch">
+                    <input class="input" id="quickTaskTitle" placeholder="مثلاً: ۴۵ دقیقه تمرین طراحی / پیام به مشتری / مطالعه..." />
+                    <button class="btn primary nowrap" id="btnQuickAdd">افزودن</button>
+                  </div>
+                  <div class="row" style="margin-top:10px">
+                    <div class="chips">
+                      <span class="chip">تعداد: <b id="plannerCount">0</b></span>
+                      <span class="chip ok">انجام‌شده: <b id="plannerDone">0</b></span>
+                      <span class="chip acc">پیشرفت: <b id="plannerRate">0%</b></span>
+                    </div>
+                    <div style="width: min(420px, 100%); margin-top:8px">
+                      <div class="bar"><i id="plannerBar"></i></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card col-12">
+              <div class="row">
+                <h3>لیست تسک‌های این روز</h3>
+                <div class="chips">
+                  <span class="chip">فیلتر:</span>
+                  <button class="btn ghost" id="toggleShowDone">نمایش انجام‌شده‌ها: <b id="showDoneState">روشن</b></button>
+                </div>
+              </div>
+              <div class="sep"></div>
+              <div class="list" id="plannerList"></div>
+              <div class="muted small" id="plannerEmpty" style="display:none">
+                هنوز تسکی برای این روز نداری. از بالا «افزودن» کن.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- CALENDAR -->
+        <section class="view" id="view-calendar">
+          <div class="card">
+            <div class="cal-head">
+              <div>
+                <h3 style="margin-bottom:2px">تقویم ماهانه (شمسی)</h3>
+                <div class="muted small">روی هر روز کلیک کن تا برنامه همون روز باز شه.</div>
+              </div>
+              <div class="btn-row">
+                <button class="btn" id="btnPrevMonth">◀ ماه قبل</button>
+                <span class="badge" id="calMonthLabel">—</span>
+                <button class="btn" id="btnNextMonth">ماه بعد ▶</button>
+              </div>
+            </div>
+
+            <div class="cal-grid" id="calDow"></div>
+            <div style="height:10px"></div>
+            <div class="cal-grid" id="calGrid"></div>
+          </div>
+        </section>
+
+        <!-- PROJECTS -->
+        <section class="view" id="view-projects">
+          <div class="grid cols-12">
+            <div class="card col-12">
+              <div class="row">
+                <div>
+                  <h3 style="margin-bottom:2px">پروژه‌ها</h3>
+                  <div class="muted small">ثبت پروژه، مبلغ، وضعیت و یادداشت‌ها.</div>
+                </div>
+                <div class="btn-row">
+                  <button class="btn primary" id="btnAddProject2">＋ افزودن پروژه</button>
+                  <select id="projectFilter" style="width: 180px">
+                    <option value="all">همه وضعیت‌ها</option>
+                    <option value="todo">در انتظار</option>
+                    <option value="doing">در حال انجام</option>
+                    <option value="done">انجام‌شده</option>
+                  </select>
+                </div>
+              </div>
+              <div class="sep"></div>
+              <div class="chips">
+                <span class="chip">این ماه (شمسی): <b id="projMonthCount">0</b> پروژه</span>
+                <span class="chip acc">درآمد این ماه: <b id="projMonthIncome">0</b></span>
+              </div>
+            </div>
+
+            <div class="card col-12">
+              <table>
+                <thead>
+                  <tr>
+                    <th>عنوان</th>
+                    <th>مشتری</th>
+                    <th>مبلغ</th>
+                    <th>تاریخ (شمسی)</th>
+                    <th>وضعیت</th>
+                    <th>عملیات</th>
+                  </tr>
+                </thead>
+                <tbody id="projectTbody"></tbody>
+              </table>
+              <div class="muted small" id="projectsEmpty" style="display:none">هنوز پروژه‌ای ثبت نشده.</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- GOALS -->
+        <section class="view" id="view-goals">
+          <div class="grid cols-12">
+            <div class="card col-12">
+              <div class="row">
+                <div>
+                  <h3 style="margin-bottom:2px">اهداف بزرگ</h3>
+                  <div class="muted small">هدف + مایلستون + درصد پیشرفت.</div>
+                </div>
+                <button class="btn primary" id="btnAddGoal2">＋ افزودن هدف</button>
+              </div>
+            </div>
+
+            <div class="col-12 list" id="goalsList"></div>
+            <div class="muted small" id="goalsEmpty" style="display:none">هنوز هدفی ثبت نشده.</div>
+          </div>
+        </section>
+
+        <!-- FINANCE -->
+        <section class="view" id="view-finance">
+          <div class="grid cols-12">
+            <div class="card col-6">
+              <div class="row">
+                <div>
+                  <h3 style="margin-bottom:2px">دارایی‌ها</h3>
+                  <div class="muted small">طلا/نقره/کریپتو/نقد… هر چیزی رو ثبت کن.</div>
+                </div>
+                <button class="btn primary" id="btnAddHolding2">＋ دارایی</button>
+              </div>
+              <div class="sep"></div>
+              <div class="muted2 small">پیشنهاد: هر هفته/ماه آپدیت کن تا نمودارها معنی‌دار بشن.</div>
+              <div style="height:10px"></div>
+              <table>
+                <thead>
+                  <tr>
+                    <th>نوع</th>
+                    <th>مقدار</th>
+                    <th>واحد</th>
+                    <th>عملیات</th>
+                  </tr>
+                </thead>
+                <tbody id="holdingsTbody"></tbody>
+              </table>
+              <div class="muted small" id="holdingsEmpty" style="display:none">هنوز دارایی ثبت نشده.</div>
+            </div>
+
+            <div class="card col-6">
+              <h3 style="margin-bottom:2px">پلن سرمایه‌گذاری</h3>
+              <div class="muted small">درصدها رو استاندارد نگه دار.</div>
+              <div class="sep"></div>
+
+              <label>حداقل درآمد ماهانه</label>
+              <input class="input" type="number" id="monthlyMinIncome" />
+
+              <label>نرخ پس‌انداز هدف (مثلاً 0.3 یعنی 30%)</label>
+              <input class="input" type="number" step="0.01" id="savingsRateTarget" />
+
+              <div class="sep"></div>
+              <div class="row">
+                <h3 style="margin:0">تقسیم سرمایه‌گذاری</h3>
+                <button class="btn" id="btnNormalizeSplit">نرمال‌سازی به 100%</button>
+              </div>
+
+              <div class="form-grid" style="margin-top:10px">
+                <div>
+                  <label>طلا (%)</label>
+                  <input class="input" type="number" id="splitGold" />
+                </div>
+                <div>
+                  <label>کریپتو (%)</label>
+                  <input class="input" type="number" id="splitCrypto" />
+                </div>
+                <div>
+                  <label>نقره (%)</label>
+                  <input class="input" type="number" id="splitSilver" />
+                </div>
+                <div>
+                  <label>نقد/تتر آزاد (%)</label>
+                  <input class="input" type="number" id="splitCash" />
+                </div>
+                <div class="full">
+                  <div class="chips">
+                    <span class="chip">جمع: <b id="splitSum">100%</b></span>
+                    <span class="chip warn" id="splitWarn" style="display:none">جمع درصدها باید 100% باشد.</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="sep"></div>
+              <h3 style="margin-bottom:4px">پیشنهاد خروجی ماهانه</h3>
+              <div class="muted small">براساس حداقل درآمد و نرخ پس‌انداز.</div>
+              <div class="sep"></div>
+              <div class="chips" id="financeSuggestions"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- NOTES -->
+        <section class="view" id="view-notes">
+          <div class="grid cols-12">
+            <div class="card col-12">
+              <div class="row">
+                <div>
+                  <h3 style="margin-bottom:2px">یادداشت‌ها و ژورنال</h3>
+                  <div class="muted small">هر چی مهمه ثبت کن (Auto Save).</div>
+                </div>
+                <span class="badge">Auto Save</span>
+              </div>
+            </div>
+
+            <div class="card col-6">
+              <h3>برنامه/نیت روزانه</h3>
+              <label>چی امروز مهمه؟</label>
+              <textarea id="noteDaily" placeholder="امروز ۲ کار اصلی..."></textarea>
+            </div>
+
+            <div class="card col-6">
+              <h3>جمله انگیزشی</h3>
+              <label>جمله کوتاه روز</label>
+              <textarea id="noteMotivation" placeholder="تمرکز روی سیستم، نه هیجان."></textarea>
+            </div>
+
+            <div class="card col-12">
+              <h3>ژورنال</h3>
+              <label>ثبت اتفاقات، درس‌ها، احساسات</label>
+              <textarea id="noteJournal" placeholder="امروز چی یاد گرفتم؟"></textarea>
+            </div>
+
+            <div class="card col-12">
+              <h3>ایده‌ها</h3>
+              <label>ایده‌های پروژه/محصول/یادگیری</label>
+              <textarea id="noteIdeas" placeholder="ایده: ..."></textarea>
+            </div>
+          </div>
+        </section>
+      </main>
+    </section>
+  </div>
+
+  <!-- DIALOGS -->
+  <dialog id="dlgTask">
+    <div class="dlg-head">
+      <div>
+        <div class="dlg-title" id="dlgTaskTitle">افزودن تسک</div>
+        <div class="dlg-sub">تسک، تاریخ، اولویت و تایم‌بلاک را مشخص کن.</div>
+      </div>
+      <button class="icon-btn" data-close="dlgTask" title="بستن">✕</button>
+    </div>
+    <div class="dlg-body">
+      <div class="form-grid">
+        <div class="full">
+          <label>عنوان</label>
+          <input class="input" id="taskTitle" placeholder="مثلاً: ۴۵ دقیقه تمرین UI" />
+        </div>
+
+        <div>
+          <label>تاریخ (میلادی - برای ذخیره)</label>
+          <input class="input" type="date" id="taskDate" />
+          <div class="muted2 small" id="taskDateJ" style="margin-top:6px">—</div>
+        </div>
+
+        <div>
+          <label>اولویت</label>
+          <select class="input" id="taskPriority">
+            <option value="low">کم</option>
+            <option value="medium" selected>متوسط</option>
+            <option value="high">زیاد</option>
+          </select>
+        </div>
+
+        <div>
+          <label>دسته‌بندی</label>
+          <input class="input" id="taskCategory" placeholder="کار / درس / مهارت / سلامتی ..." />
+        </div>
+
+        <div>
+          <label>تایم‌بلاک</label>
+          <select class="input" id="taskTimeBlock">
+            <option value="صبح">صبح</option>
+            <option value="ظهر">ظهر</option>
+            <option value="عصر">عصر</option>
+            <option value="شب">شب</option>
+          </select>
+        </div>
+
+        <div class="full">
+          <label>تخمین زمان (دقیقه)</label>
+          <input class="input" type="number" id="taskEstimate" min="0" step="5" value="30" />
+        </div>
+
+        <div class="full">
+          <label>
+            <input type="checkbox" id="taskDone" />
+            انجام شده
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn danger" id="btnTaskDelete" style="visibility:hidden">حذف</button>
+      <div class="btn-row">
+        <button class="btn" data-close="dlgTask">انصراف</button>
+        <button class="btn primary" id="btnTaskSave">ذخیره</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="dlgProject">
+    <div class="dlg-head">
+      <div>
+        <div class="dlg-title" id="dlgProjectTitle">افزودن پروژه</div>
+        <div class="dlg-sub">ثبت پروژه‌ها باعث میشه درآمد و رشد واقعی‌ت مشخص بشه.</div>
+      </div>
+      <button class="icon-btn" data-close="dlgProject" title="بستن">✕</button>
+    </div>
+    <div class="dlg-body">
+      <div class="form-grid">
+        <div class="full">
+          <label>عنوان پروژه</label>
+          <input class="input" id="projName" placeholder="مثلاً: طراحی لوگو / UI سایت ..." />
+        </div>
+        <div>
+          <label>مشتری</label>
+          <input class="input" id="projClient" placeholder="نام مشتری/برند" />
+        </div>
+        <div>
+          <label>مبلغ</label>
+          <input class="input" type="number" id="projAmount" placeholder="مثلاً 6500000" />
+        </div>
+        <div>
+          <label>تاریخ (میلادی - برای ذخیره)</label>
+          <input class="input" type="date" id="projDate" />
+          <div class="muted2 small" id="projDateJ" style="margin-top:6px">—</div>
+        </div>
+        <div>
+          <label>وضعیت</label>
+          <select class="input" id="projStatus">
+            <option value="todo">در انتظار</option>
+            <option value="doing">در حال انجام</option>
+            <option value="done">انجام‌شده</option>
+          </select>
+        </div>
+        <div>
+          <label>تگ‌ها (با کاما جدا کن)</label>
+          <input class="input" id="projTags" placeholder="مثلاً: برندینگ, UI, لوگو" />
+        </div>
+        <div class="full">
+          <label>یادداشت</label>
+          <textarea id="projNotes" placeholder="نکات تحویل، فیدبک مشتری، لینک‌ها..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn danger" id="btnProjectDelete" style="visibility:hidden">حذف</button>
+      <div class="btn-row">
+        <button class="btn" data-close="dlgProject">انصراف</button>
+        <button class="btn primary" id="btnProjectSave">ذخیره</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="dlgGoal">
+    <div class="dlg-head">
+      <div>
+        <div class="dlg-title" id="dlgGoalTitle">افزودن هدف</div>
+        <div class="dlg-sub">هدف بزرگ = مسیر روشن. مایلستون‌ها = حرکت واقعی.</div>
+      </div>
+      <button class="icon-btn" data-close="dlgGoal" title="بستن">✕</button>
+    </div>
+    <div class="dlg-body">
+      <div class="form-grid">
+        <div class="full">
+          <label>عنوان هدف</label>
+          <input class="input" id="goalTitle" placeholder="مثلاً: رسیدن به ۴۰ میلیون درآمد ماهانه" />
+        </div>
+        <div>
+          <label>افق زمانی</label>
+          <input class="input" id="goalHorizon" placeholder="مثلاً: ۳ ماه / ۶ ماه" />
+        </div>
+        <div>
+          <label>متریک</label>
+          <input class="input" id="goalMetric" placeholder="مثلاً: درآمد / وزن / ساعت مطالعه ..." />
+        </div>
+        <div>
+          <label>هدف (Target)</label>
+          <input class="input" type="number" id="goalTarget" />
+        </div>
+        <div>
+          <label>مقدار فعلی (Current)</label>
+          <input class="input" type="number" id="goalCurrent" />
+        </div>
+        <div class="full">
+          <label>مایلستون‌ها (هر خط یک مورد)</label>
+          <textarea id="goalMilestones" placeholder="مثلاً:
+پورتفولیو جدید
+۳ کیس‌استادی کامل
+افزایش قیمت‌گذاری"></textarea>
+        </div>
+        <div class="full">
+          <label>یادداشت</label>
+          <textarea id="goalNotes" placeholder="توضیح مسیر، برنامه، دلیل، منابع..."></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn danger" id="btnGoalDelete" style="visibility:hidden">حذف</button>
+      <div class="btn-row">
+        <button class="btn" data-close="dlgGoal">انصراف</button>
+        <button class="btn primary" id="btnGoalSave">ذخیره</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="dlgHolding">
+    <div class="dlg-head">
+      <div>
+        <div class="dlg-title" id="dlgHoldingTitle">افزودن دارایی</div>
+        <div class="dlg-sub">دارایی‌ها رو دقیق ثبت کن تا پرتفوی معنی‌دار بشه.</div>
+      </div>
+      <button class="icon-btn" data-close="dlgHolding" title="بستن">✕</button>
+    </div>
+    <div class="dlg-body">
+      <div class="form-grid">
+        <div>
+          <label>نوع</label>
+          <input class="input" id="holdType" placeholder="طلا / نقره / XRP / ETH ..." />
+        </div>
+        <div>
+          <label>واحد</label>
+          <input class="input" id="holdUnit" placeholder="تومان / گرم / USDT / USD ..." />
+        </div>
+        <div class="full">
+          <label>مقدار</label>
+          <input class="input" type="number" id="holdAmount" />
+        </div>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn danger" id="btnHoldingDelete" style="visibility:hidden">حذف</button>
+      <div class="btn-row">
+        <button class="btn" data-close="dlgHolding">انصراف</button>
+        <button class="btn primary" id="btnHoldingSave">ذخیره</button>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="dlgImport">
+    <div class="dlg-head">
+      <div>
+        <div class="dlg-title">ورود داده (Import)</div>
+        <div class="dlg-sub">فایل JSON خروجی رو وارد کن.</div>
+      </div>
+      <button class="icon-btn" data-close="dlgImport" title="بستن">✕</button>
+    </div>
+    <div class="dlg-body">
+      <label>فایل خروجی (JSON)</label>
+      <input class="input" type="file" id="importFile" accept=".json,application/json" />
+      <div class="sep"></div>
+      <div class="muted small">
+        هشدار: Import داده‌های فعلی را جایگزین می‌کند. قبلش Export بگیر.
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn" data-close="dlgImport">انصراف</button>
+      <button class="btn primary" id="btnImportDo">وارد کردن</button>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  // =========================
+  // PWA Service Worker
+  // =========================
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+    });
+  }
+
+  // =========================
+  // Jalali (Shamsi) Conversion
+  // Based on jalaali-js algorithm (MIT).
+  // =========================
+  function div(a, b) { return ~~(a / b); }
+  function mod(a, b) { return a - ~~(a / b) * b; }
+
+  const breaks = [-61, 9, 38, 199, 426, 686, 756, 818, 1111, 1181, 1210, 1635, 2060, 2097, 2192, 2262, 2324, 2394, 2456, 3178];
+
+  function jalCal(jy) {
+    let bl = breaks.length,
+        gy = jy + 621,
+        leapJ = -14,
+        jp = breaks[0],
+        jm,
+        jump,
+        leap,
+        leapG,
+        march,
+        n,
+        i;
+
+    if (jy < jp || jy >= breaks[bl - 1])
+      throw new Error('Invalid Jalali year ' + jy);
+
+    for (i = 1; i < bl; i += 1) {
+      jm = breaks[i];
+      jump = jm - jp;
+      if (jy < jm)
+        break;
+      leapJ = leapJ + div(jump, 33) * 8 + div(mod(jump, 33), 4);
+      jp = jm;
+    }
+    n = jy - jp;
+
+    leapJ = leapJ + div(n, 33) * 8 + div(mod(n, 33) + 3, 4);
+    if (mod(jump, 33) === 4 && jump - n === 4)
+      leapJ += 1;
+
+    leapG = div(gy, 4) - div((div(gy, 100) + 1) * 3, 4) - 150;
+    march = 20 + leapJ - leapG;
+
+    if (jump - n < 6)
+      n = n - jump + div(jump + 4, 33) * 33;
+    leap = mod(mod(n + 1, 33) - 1, 4);
+    if (leap === -1) {
+      leap = 4;
+    }
+
+    return { leap: leap, gy: gy, march: march };
+  }
+
+  function isLeapJalaaliYear(jy) { return jalCal(jy).leap === 0; }
+
+  function jalaaliMonthLength(jy, jm) {
+    if (jm <= 6) return 31;
+    if (jm <= 11) return 30;
+    return isLeapJalaaliYear(jy) ? 30 : 29;
+  }
+
+  function g2d(gy, gm, gd) {
+    let d = div((gy + div(gm - 8, 6) + 100100) * 1461, 4)
+      + div(153 * mod(gm + 9, 12) + 2, 5)
+      + gd - 34840408;
+    d = d - div(div(gy + 100100 + div(gm - 8, 6), 100) * 3, 4) + 752;
+    return d;
+  }
+
+  function d2g(jdn) {
+    let j = 4 * jdn + 139361631;
+    j = j + div(div(4 * jdn + 183187720, 146097) * 3, 4) * 4 - 3908;
+    let i = div(mod(j, 1461), 4) * 5 + 308;
+    let gd = div(mod(i, 153), 5) + 1;
+    let gm = mod(div(i, 153), 12) + 1;
+    let gy = div(j, 1461) - 100100 + div(8 - gm, 6);
+    return { gy: gy, gm: gm, gd: gd };
+  }
+
+  function j2d(jy, jm, jd) {
+    let r = jalCal(jy);
+    return g2d(r.gy, 3, r.march) + (jm - 1) * 31 - div(jm, 7) * (jm - 7) + jd - 1;
+  }
+
+  function d2j(jdn) {
+    let g = d2g(jdn),
+        gy = g.gy,
+        gm = g.gm,
+        gd = g.gd,
+        jy = gy - 621,
+        r = jalCal(jy),
+        jdn1f = g2d(gy, 3, r.march),
+        jd,
+        jm,
+        k;
+
+    k = jdn - jdn1f;
+    if (k >= 0) {
+      if (k <= 185) {
+        jm = 1 + div(k, 31);
+        jd = mod(k, 31) + 1;
+        return { jy: jy, jm: jm, jd: jd };
+      } else {
+        k -= 186;
+      }
+    } else {
+      jy -= 1;
+      k += 179;
+      if (r.leap === 1)
+        k += 1;
+    }
+    jm = 7 + div(k, 30);
+    jd = mod(k, 30) + 1;
+    return { jy: jy, jm: jm, jd: jd };
+  }
+
+  function toJalaali(gy, gm, gd) { return d2j(g2d(gy, gm, gd)); }
+  function toGregorian(jy, jm, jd) { return d2g(j2d(jy, jm, jd)); }
+
+  const J_MONTHS = ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
+  const FA_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
+  const toFaDigits = (s) => String(s).replace(/\d/g, d => FA_DIGITS[d]);
+  const pad2 = (n) => (n < 10 ? "0" + n : "" + n);
+  const isoToParts = (iso) => {
+    const [y,m,d] = String(iso).split("-").map(Number);
+    return { y, m, d };
+  };
+  const isoToJalali = (iso) => {
+    const p = isoToParts(iso);
+    return toJalaali(p.y, p.m, p.d);
+  };
+  const jalaliToISO = (jy, jm, jd) => {
+    const g = toGregorian(jy, jm, jd);
+    return `${g.gy}-${pad2(g.gm)}-${pad2(g.gd)}`;
+  };
+  const jalaliDateStr = (jy, jm, jd) => toFaDigits(`${jy}/${pad2(jm)}/${pad2(jd)}`);
+  const isoToJalaliStr = (iso) => {
+    const j = isoToJalali(iso);
+    return jalaliDateStr(j.jy, j.jm, j.jd);
+  };
+  const jalaliMonthLabel = (jy, jm) => `${J_MONTHS[jm-1]} ${toFaDigits(jy)}`;
+
+  const shiftJalaliMonth = (jy, jm, delta) => {
+    let y = jy, m = jm + delta;
+    while (m > 12) { m -= 12; y += 1; }
+    while (m < 1) { m += 12; y -= 1; }
+    return { jy: y, jm: m };
+  };
+
+  const jalaliMonthRangeISO = (jy, jm) => {
+    const start = toGregorian(jy, jm, 1);
+    const endDay = jalaaliMonthLength(jy, jm);
+    const end = toGregorian(jy, jm, endDay);
+    const s = `${start.gy}-${pad2(start.gm)}-${pad2(start.gd)}`;
+    const e = `${end.gy}-${pad2(end.gm)}-${pad2(end.gd)}`;
+    return { s, e };
+  };
+
+  // =========================
+  // Storage & Helpers
+  // =========================
+  const STORAGE_KEY = "armin_os_v1"; // keep stable
+  const LOCK_SESSION_KEY = "arminos_unlocked";
+  const PIN_CODE = "5823"; // requested PIN
+
+  const $ = (sel, root=document) => root.querySelector(sel);
+  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const uid = () => (Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36));
+  const todayISO = () => {
+    const d = new Date();
+    return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate());
+  };
+  const moneyFA = (n) => Number(n||0).toLocaleString("fa-IR");
+  const safeParse = (raw) => { try { return JSON.parse(raw); } catch { return null; } };
+
+  const defaultState = () => {
+    const t = todayISO();
+    return {
+      meta: { version: 3, createdAt: new Date().toISOString() },
+      profile: {
+        name: "آرمین",
+        title: "فریلنسر • دانشجوی مهندسی کامپیوتر",
+        monthlyMinIncome: 20000000,
+        savingsRateTarget: 0.30,
+        currency: "تومان"
+      },
+      settings: { theme: "dark", rtl: true },
+      notes: {
+        daily: "امروز فقط یک قدم کوچک — ولی واقعی.",
+        motivation: "تمرکز روی سیستم، نه هیجان.",
+        journal: "",
+        ideas: ""
+      },
+      tasks: [
+        { id: uid(), title: "۳۰ دقیقه تمرین UI", date: t, done: false, priority: "medium", category: "مهارت", timeBlock: "صبح", estimateMin: 30 },
+        { id: uid(), title: "پیگیری پروژه مشتری", date: t, done: true, priority: "high", category: "کار", timeBlock: "عصر", estimateMin: 20 },
+      ],
+      projects: [
+        { id: uid(), name: "طراحی هویت بصری", client: "نمونه", amount: 6500000, date: t, status: "done", tags: ["برندینگ"], notes: "تحویل شد — فیدبک عالی" }
+      ],
+      goals: [
+        {
+          id: uid(),
+          title: "رسیدن به ۴۰ میلیون درآمد ماهانه",
+          horizon: "۶ ماه",
+          metric: "درآمد",
+          target: 40000000,
+          current: 20000000,
+          notes: "افزایش قیمت‌گذاری + جذب مشتری بین‌المللی",
+          milestones: [
+            { id: uid(), text: "پورتفولیو جدید", done: true },
+            { id: uid(), text: "۳ کیس‌استادی کامل", done: false }
+          ]
+        }
+      ],
+      assets: {
+        holdings: [
+          { id: uid(), type: "طلا", amount: 18000000, unit: "تومان" },
+          { id: uid(), type: "نقره", amount: 3000000, unit: "تومان" },
+          { id: uid(), type: "XRP", amount: 80, unit: "USDT" },
+          { id: uid(), type: "ETH", amount: 15, unit: "USD" },
+          { id: uid(), type: "TON", amount: 10, unit: "USD" },
+          { id: uid(), type: "NOT", amount: 5, unit: "USD" }
+        ],
+        plan: { split: { gold: 40, crypto: 45, silver: 10, cash: 5 } }
+      }
+    };
+  };
+
+  const loadState = () => {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    const parsed = raw ? safeParse(raw) : null;
+    return parsed && parsed.meta ? parsed : null;
+  };
+  let state = loadState() || defaultState();
+  const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+  const toast = (msg) => {
+    const el = $("#toast");
+    el.textContent = msg;
+    el.style.display = "block";
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.style.display = "none", 2200);
+  };
+
+  // =========================
+  // PIN Lock
+  // =========================
+  const showLock = () => {
+    const lock = $("#lockScreen");
+    lock.style.display = "flex";
+    lock.setAttribute("aria-hidden", "false");
+    $("#lockError").textContent = "";
+    clearPinInputs();
+    setTimeout(() => pinInputs()[0]?.focus(), 50);
+  };
+  const hideLock = () => {
+    const lock = $("#lockScreen");
+    lock.style.display = "none";
+    lock.setAttribute("aria-hidden", "true");
+  };
+
+  const pinInputs = () => $$(".pin", $("#pinRow"));
+  const clearPinInputs = () => pinInputs().forEach(i => i.value = "");
+  const getPinValue = () => pinInputs().map(i => i.value).join("");
+
+  const tryUnlock = () => {
+    const val = getPinValue();
+    if (val.length < 4) {
+      $("#lockError").textContent = "پین باید ۴ رقم باشد.";
+      return;
+    }
+    if (val === PIN_CODE) {
+      sessionStorage.setItem(LOCK_SESSION_KEY, "1");
+      hideLock();
+      toast("خوش اومدی ✅");
+    } else {
+      $("#lockError").textContent = "پین اشتباه است.";
+      clearPinInputs();
+      pinInputs()[0]?.focus();
+    }
+  };
+
+  const initLock = () => {
+    // init inputs behavior
+    const inputs = pinInputs();
+
+    inputs.forEach((inp, idx) => {
+      inp.addEventListener("input", (e) => {
+        const v = (inp.value || "").replace(/\D/g, "");
+        inp.value = v.slice(0,1);
+        if (inp.value && idx < inputs.length - 1) inputs[idx+1].focus();
+        if (getPinValue().length === 4) tryUnlock();
+      });
+
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Backspace" && !inp.value && idx > 0) {
+          inputs[idx-1].focus();
+        }
+        if (e.key === "Enter") {
+          e.preventDefault();
+          tryUnlock();
+        }
+      });
+
+      inp.addEventListener("paste", (e) => {
+        const text = (e.clipboardData || window.clipboardData).getData("text");
+        if (!text) return;
+        const digits = text.replace(/\D/g, "").slice(0,4).split("");
+        if (digits.length) {
+          e.preventDefault();
+          clearPinInputs();
+          digits.forEach((d, i) => { if (inputs[i]) inputs[i].value = d; });
+          if (digits.length === 4) tryUnlock();
+          else inputs[Math.min(digits.length, 3)].focus();
+        }
+      });
+    });
+
+    $("#btnUnlock").addEventListener("click", tryUnlock);
+    $("#btnClearPin").addEventListener("click", () => { clearPinInputs(); $("#lockError").textContent = ""; pinInputs()[0]?.focus(); });
+    $("#btnLock").addEventListener("click", () => { sessionStorage.removeItem(LOCK_SESSION_KEY); showLock(); });
+
+    const unlocked = sessionStorage.getItem(LOCK_SESSION_KEY) === "1";
+    if (unlocked) hideLock(); else showLock();
+  };
+
+  // =========================
+  // Date & Week helpers
+  // =========================
+  const getFaWeekdayIndex = (date) => {
+    // JS: 0 Sun..6 Sat -> Persian week index: Sat=0..Fri=6
+    const js = new Date(date).getDay();
+    return (js + 1) % 7;
+  };
+  const faDow = ["شنبه","یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه"];
+
+  // =========================
+  // Navigation
+  // =========================
+  const viewMeta = {
+    dashboard: { title: "داشبورد", sub: "نمای کلی پیشرفت، درآمد، سرمایه و اهداف" },
+    planner:   { title: "برنامه روزانه", sub: "مدیریت تسک‌ها با تاریخ و اولویت و تایم‌بلاک" },
+    calendar:  { title: "تقویم (شمسی)", sub: "نمای ماهانه شمسی + کلیک روی روز برای رفتن به برنامه" },
+    projects:  { title: "پروژه‌ها", sub: "ثبت پروژه‌ها و درآمد و وضعیت پیشرفت" },
+    goals:     { title: "اهداف بزرگ", sub: "اهداف + مایلستون‌ها + درصد پیشرفت" },
+    finance:   { title: "سرمایه", sub: "دارایی‌ها + پلن تقسیم سرمایه‌گذاری" },
+    notes:     { title: "یادداشت‌ها", sub: "ژورنال + جمله انگیزشی + ایده‌ها" }
+  };
+
+  const showView = (name) => {
+    $$(".view").forEach(v => v.classList.remove("active"));
+    $("#view-" + name).classList.add("active");
+    $$("#nav button").forEach(b => b.classList.toggle("active", b.dataset.view === name));
+    $("#viewTitle").textContent = viewMeta[name].title;
+    $("#viewSub").textContent = viewMeta[name].sub;
+    if (name === "dashboard") renderDashboardCharts();
+  };
+
+  $("#nav").addEventListener("click", (e) => {
+    const btn = e.target.closest("button[data-view]");
+    if(!btn) return;
+    showView(btn.dataset.view);
+  });
+
+  // Dialog helpers
+  const openDlg = (id) => { const d = $("#"+id); if (d) d.showModal(); };
+  const closeDlg = (id) => { const d = $("#"+id); if (d) d.close(); };
+  document.addEventListener("click", (e) => {
+    const c = e.target.closest("[data-close]");
+    if(!c) return;
+    closeDlg(c.dataset.close);
+  });
+
+  // =========================
+  // Header Render
+  // =========================
+  const renderHeader = () => {
+    $("#pname").textContent = state.profile.name || "—";
+    $("#ptitle").textContent = state.profile.title || "";
+    $("#avatar").textContent = (state.profile.name || "A").trim().slice(0,1).toUpperCase();
+
+    const tISO = todayISO();
+    const tJ = isoToJalaliStr(tISO);
+    const j = isoToJalali(tISO);
+
+    $("#todayBadge").textContent = "امروز: " + tJ + " • " + tISO;
+    $("#monthBadge").textContent = "ماه: " + jalaliMonthLabel(j.jy, j.jm);
+    document.documentElement.setAttribute("dir", state.settings.rtl ? "rtl" : "ltr");
+    document.documentElement.setAttribute("data-theme", state.settings.theme || "dark");
+  };
+
+  // =========================
+  // Metrics
+  // =========================
+  const tasksByDate = (iso) => state.tasks.filter(t => t.date === iso);
+  const projectsInRange = (s,e) => state.projects.filter(p => p.date >= s && p.date <= e);
+  const calcTaskRate = (tasks) => {
+    if(!tasks.length) return { total:0, done:0, rate:0 };
+    const done = tasks.filter(x=>x.done).length;
+    return { total:tasks.length, done, rate: Math.round(done/tasks.length*100) };
+  };
+  const calcIncome = (projects) => projects.reduce((sum,p)=>sum + Number(p.amount||0), 0);
+
+  const currentJalaliYM = () => {
+    const t = isoToJalali(todayISO());
+    return { jy: t.jy, jm: t.jm };
+  };
+
+  // =========================
+  // Dashboard
+  // =========================
+  let chartWeek = null, chartIncome = null, chartPortfolio = null;
+
+  const renderDashboard = () => {
+    const t = todayISO();
+    const todayTasks = tasksByDate(t);
+    const todayStats = calcTaskRate(todayTasks);
+
+    const { jy, jm } = currentJalaliYM();
+    const m = jalaliMonthRangeISO(jy, jm);
+
+    const monthTasks = state.tasks.filter(x => x.date >= m.s && x.date <= m.e);
+    const monthStats = calcTaskRate(monthTasks);
+
+    const monthProjects = projectsInRange(m.s, m.e);
+    const income = calcIncome(monthProjects);
+
+    $("#dashTodayChip").textContent = todayStats.rate + "%";
+    $("#dashTodayKpi").textContent = todayStats.done + " / " + todayStats.total;
+    $("#dashTodayMeta").textContent = "انجام‌شده / کل تسک‌ها";
+    $("#dashTodayBar").style.width = todayStats.rate + "%";
+
+    $("#dashMonthChip").textContent = monthStats.rate + "%";
+    $("#dashMonthKpi").textContent = monthStats.done + " / " + monthStats.total;
+    $("#dashMonthMeta").textContent = "پیشرفت ماه (" + jalaliMonthLabel(jy, jm) + ")";
+    $("#dashMonthBar").style.width = monthStats.rate + "%";
+
+    $("#dashIncomeKpi").textContent = moneyFA(income) + " " + state.profile.currency;
+    $("#dashIncomeMeta").textContent = monthProjects.length + " پروژه در این ماه";
+
+    const saveTarget = Math.round(Number(state.profile.monthlyMinIncome||0) * Number(state.profile.savingsRateTarget||0));
+    $("#dashSaveTarget").textContent = moneyFA(saveTarget) + " " + state.profile.currency;
+    $("#dashSaveRate").textContent = Math.round((Number(state.profile.savingsRateTarget||0))*100) + "%";
+
+    $("#dashMotivation").textContent = state.notes.motivation || "—";
+  };
+
+  const renderDashboardCharts = () => {
+    const hasChart = typeof window.Chart !== "undefined";
+    const showFallback = (id, show) => { const el = $(id); if(el) el.style.display = show ? "block" : "none"; };
+
+    if(!hasChart){
+      showFallback("#chartWeekFallback", true);
+      showFallback("#chartIncomeFallback", true);
+      showFallback("#chartPortfolioFallback", true);
+      return;
+    }
+    showFallback("#chartWeekFallback", false);
+    showFallback("#chartIncomeFallback", false);
+    showFallback("#chartPortfolioFallback", false);
+
+    [chartWeek, chartIncome, chartPortfolio].forEach(ch => { if(ch) ch.destroy(); });
+
+    // Weekly completion
+    const labels = [];
+    const values = [];
+    const now = new Date();
+    for(let i=6;i>=0;i--){
+      const d = new Date(now);
+      d.setDate(d.getDate()-i);
+      const iso = d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());
+      const s = calcTaskRate(tasksByDate(iso));
+      labels.push(isoToJalaliStr(iso).slice(5)); // MM/DD in jalali digits
+      values.push(s.rate);
+    }
+
+    chartWeek = new Chart($("#chartWeek"), {
+      type: "line",
+      data: { labels, datasets: [{ label: "درصد انجام تسک", data: values, tension: .35, fill: true }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
+        scales:{ y:{ min:0, max:100, ticks:{ callback:(v)=> v+"%" } } }
+      }
+    });
+
+    // Income last 6 Jalali months
+    const { jy, jm } = currentJalaliYM();
+    const incLabels = [];
+    const incValues = [];
+    for(let i=5;i>=0;i--){
+      const m = shiftJalaliMonth(jy, jm, -i);
+      const r = jalaliMonthRangeISO(m.jy, m.jm);
+      const inc = calcIncome(projectsInRange(r.s, r.e));
+      incLabels.push(jalaliMonthLabel(m.jy, m.jm));
+      incValues.push(inc);
+    }
+
+    chartIncome = new Chart($("#chartIncome"), {
+      type: "bar",
+      data: { labels: incLabels, datasets: [{ label: "درآمد", data: incValues }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
+        scales:{ y:{ ticks:{ callback:(v)=> moneyFA(v) } } }
+      }
+    });
+
+    // Portfolio (grouped by type+unit)
+    const groups = new Map();
+    for(const h of state.assets.holdings){
+      const key = `${h.type} (${h.unit})`;
+      groups.set(key, (groups.get(key)||0) + Number(h.amount||0));
+    }
+    chartPortfolio = new Chart($("#chartPortfolio"), {
+      type: "doughnut",
+      data: { labels: Array.from(groups.keys()), datasets: [{ data: Array.from(groups.values()) }] },
+      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:"bottom" } } }
+    });
+  };
+
+  // =========================
+  // Planner (Tasks)
+  // =========================
+  let plannerDate = todayISO();
+  let showDone = true;
+  let editingTaskId = null;
+
+  const priorityLabel = (p) => (p==="high" ? "اولویت زیاد" : (p==="low" ? "اولویت کم" : "اولویت متوسط"));
+
+  const renderPlanner = () => {
+    $("#plannerDate").value = plannerDate;
+    $("#plannerJalaliBadge").textContent = isoToJalaliStr(plannerDate);
+
+    const tasks = tasksByDate(plannerDate).slice().sort((a,b) => (a.done===b.done ? 0 : (a.done?1:-1)));
+    const filtered = showDone ? tasks : tasks.filter(t => !t.done);
+    const stats = calcTaskRate(tasks);
+
+    $("#plannerCount").textContent = stats.total;
+    $("#plannerDone").textContent = stats.done;
+    $("#plannerRate").textContent = stats.rate + "%";
+    $("#plannerBar").style.width = stats.rate + "%";
+    $("#showDoneState").textContent = showDone ? "روشن" : "خاموش";
+
+    const list = $("#plannerList");
+    list.innerHTML = "";
+    $("#plannerEmpty").style.display = tasks.length ? "none" : "block";
+
+    filtered.forEach(t => {
+      const priChip = t.priority === "high" ? "chip danger" : (t.priority === "low" ? "chip" : "chip acc");
+      const doneChip = t.done ? "mini ok" : "mini";
+      const item = document.createElement("div");
+      item.className = "item";
+      item.innerHTML = `
+        <div class="item-main">
+          <div class="item-title">${escapeHtml(t.title)}</div>
+          <div class="item-meta">
+            <span class="mini">${escapeHtml(t.category || "—")}</span>
+            <span class="mini acc">${escapeHtml(t.timeBlock || "—")}</span>
+            <span class="${priChip}">${priorityLabel(t.priority)}</span>
+            <span class="${doneChip}">${t.done ? "انجام شد" : "در انتظار"}</span>
+            <span class="mini">⏱ ${Number(t.estimateMin||0)} دقیقه</span>
+          </div>
+        </div>
+        <div class="item-actions">
+          <button class="icon-btn" title="تیک" data-act="toggle" data-id="${t.id}">✓</button>
+          <button class="icon-btn" title="ویرایش" data-act="edit" data-id="${t.id}">✎</button>
+          <button class="icon-btn danger" title="حذف" data-act="del" data-id="${t.id}">🗑</button>
+        </div>
+      `;
+      list.appendChild(item);
+    });
+  };
+
+  const openTaskDialog = (task=null) => {
+    editingTaskId = task ? task.id : null;
+    $("#dlgTaskTitle").textContent = task ? "ویرایش تسک" : "افزودن تسک";
+    $("#btnTaskDelete").style.visibility = task ? "visible" : "hidden";
+
+    $("#taskTitle").value = task ? task.title : "";
+    $("#taskDate").value = task ? task.date : plannerDate;
+    $("#taskDateJ").textContent = isoToJalaliStr($("#taskDate").value || plannerDate);
+
+    $("#taskPriority").value = task ? task.priority : "medium";
+    $("#taskCategory").value = task ? task.category : "کار";
+    $("#taskTimeBlock").value = task ? task.timeBlock : "صبح";
+    $("#taskEstimate").value = task ? Number(task.estimateMin||0) : 30;
+    $("#taskDone").checked = task ? !!task.done : false;
+
+    openDlg("dlgTask");
+  };
+
+  $("#taskDate").addEventListener("change", (e) => {
+    const iso = e.target.value || plannerDate;
+    $("#taskDateJ").textContent = isoToJalaliStr(iso);
+  });
+
+  $("#plannerDate").addEventListener("change", (e) => {
+    plannerDate = e.target.value || todayISO();
+    renderPlanner();
+  });
+
+  $("#btnAddTask").addEventListener("click", () => { showView("planner"); openTaskDialog(null); });
+  $("#btnAddTask2").addEventListener("click", () => openTaskDialog(null));
+
+  $("#btnQuickAdd").addEventListener("click", () => {
+    const title = $("#quickTaskTitle").value.trim();
+    if(!title){ toast("عنوان تسک رو بنویس."); return; }
+    state.tasks.unshift({ id: uid(), title, date: plannerDate, done:false, priority:"medium", category:"کار", timeBlock:"صبح", estimateMin:30 });
+    $("#quickTaskTitle").value = "";
+    saveState(); renderPlanner(); renderDashboard(); renderDashboardCharts();
+    toast("تسک اضافه شد ✅");
+  });
+
+  $("#toggleShowDone").addEventListener("click", () => { showDone = !showDone; renderPlanner(); });
+
+  $("#plannerList").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-act]");
+    if(!btn) return;
+    const id = btn.dataset.id;
+    const act = btn.dataset.act;
+    const task = state.tasks.find(t => t.id === id);
+    if(!task) return;
+
+    if(act==="toggle"){ task.done = !task.done; saveState(); renderPlanner(); renderDashboard(); renderDashboardCharts(); return; }
+    if(act==="edit"){ openTaskDialog(task); return; }
+    if(act==="del"){
+      state.tasks = state.tasks.filter(t => t.id !== id);
+      saveState(); renderPlanner(); renderDashboard(); renderDashboardCharts();
+      toast("حذف شد.");
+      return;
+    }
+  });
+
+  $("#btnTaskSave").addEventListener("click", () => {
+    const title = $("#taskTitle").value.trim();
+    const date = $("#taskDate").value || plannerDate;
+    if(!title){ toast("عنوان ضروریه."); return; }
+
+    const patch = {
+      title,
+      date,
+      priority: $("#taskPriority").value,
+      category: $("#taskCategory").value.trim() || "کار",
+      timeBlock: $("#taskTimeBlock").value,
+      estimateMin: Number($("#taskEstimate").value || 0),
+      done: $("#taskDone").checked
+    };
+
+    if(editingTaskId){
+      const idx = state.tasks.findIndex(t => t.id === editingTaskId);
+      if(idx >= 0) state.tasks[idx] = { ...state.tasks[idx], ...patch };
+      toast("تسک آپدیت شد ✅");
+    } else {
+      state.tasks.unshift({ id: uid(), ...patch });
+      toast("تسک ذخیره شد ✅");
+    }
+
+    plannerDate = date;
+    saveState();
+    closeDlg("dlgTask");
+    renderAll();
+    renderDashboardCharts();
+  });
+
+  $("#btnTaskDelete").addEventListener("click", () => {
+    if(!editingTaskId) return;
+    state.tasks = state.tasks.filter(t => t.id !== editingTaskId);
+    saveState();
+    closeDlg("dlgTask");
+    renderAll();
+    renderDashboardCharts();
+    toast("تسک حذف شد.");
+  });
+
+  // =========================
+  // Calendar (Jalali cursor)
+  // =========================
+  let monthCursor = currentJalaliYM(); // {jy,jm}
+
+  const renderCalendar = () => {
+    $("#calMonthLabel").textContent = jalaliMonthLabel(monthCursor.jy, monthCursor.jm);
+
+    // DOW header
+    const dow = $("#calDow");
+    dow.innerHTML = "";
+    faDow.forEach(name => { const d = document.createElement("div"); d.className = "cal-dow"; d.textContent = name; dow.appendChild(d); });
+
+    // first day of jalali month -> gregorian date
+    const gFirst = toGregorian(monthCursor.jy, monthCursor.jm, 1);
+    const firstDate = new Date(gFirst.gy, gFirst.gm - 1, gFirst.gd);
+    const lead = getFaWeekdayIndex(firstDate);
+
+    const totalDays = jalaaliMonthLength(monthCursor.jy, monthCursor.jm);
+
+    const grid = $("#calGrid");
+    grid.innerHTML = "";
+
+    for(let i=0;i<lead;i++){
+      const cell = document.createElement("div");
+      cell.className = "cal-day blank";
+      cell.innerHTML = `<div class="cal-top"><span class="cal-num">—</span></div>`;
+      grid.appendChild(cell);
+    }
+
+    for(let jd=1; jd<=totalDays; jd++){
+      const iso = jalaliToISO(monthCursor.jy, monthCursor.jm, jd);
+
+      const dayTasks = tasksByDate(iso);
+      const done = dayTasks.filter(t=>t.done).length;
+      const dayProjects = state.projects.filter(p=>p.date === iso);
+      const inc = calcIncome(dayProjects);
+
+      const cell = document.createElement("div");
+      cell.className = "cal-day";
+      cell.dataset.iso = iso;
+      cell.innerHTML = `
+        <div class="cal-top">
+          <span class="cal-num">${toFaDigits(jd)}</span>
+          <span class="mini">${isoToJalaliStr(iso)}</span>
+        </div>
+        <div class="cal-badges">
+          <span class="mini acc">تسک: ${toFaDigits(dayTasks.length)}</span>
+          <span class="mini ok">انجام: ${toFaDigits(done)}</span>
+          <span class="mini">پروژه: ${toFaDigits(dayProjects.length)}</span>
+          ${inc ? `<span class="mini acc">درآمد: ${moneyFA(inc)}</span>` : ""}
+        </div>
+      `;
+      grid.appendChild(cell);
+    }
+  };
+
+  $("#btnPrevMonth").addEventListener("click", () => {
+    monthCursor = shiftJalaliMonth(monthCursor.jy, monthCursor.jm, -1);
+    renderCalendar();
+  });
+  $("#btnNextMonth").addEventListener("click", () => {
+    monthCursor = shiftJalaliMonth(monthCursor.jy, monthCursor.jm, +1);
+    renderCalendar();
+  });
+
+  $("#calGrid").addEventListener("click", (e) => {
+    const cell = e.target.closest(".cal-day");
+    if(!cell || cell.classList.contains("blank")) return;
+    const iso = cell.dataset.iso;
+    if(!iso) return;
+    plannerDate = iso;
+    showView("planner");
+    renderPlanner();
+  });
+
+  // =========================
+  // Projects
+  // =========================
+  let editingProjectId = null;
+  const statusLabel = (s) => (s==="done" ? "انجام‌شده" : (s==="doing" ? "در حال انجام" : "در انتظار"));
+
+  const openProjectDialog = (proj=null) => {
+    editingProjectId = proj ? proj.id : null;
+    $("#dlgProjectTitle").textContent = proj ? "ویرایش پروژه" : "افزودن پروژه";
+    $("#btnProjectDelete").style.visibility = proj ? "visible" : "hidden";
+
+    $("#projName").value = proj ? proj.name : "";
+    $("#projClient").value = proj ? proj.client : "";
+    $("#projAmount").value = proj ? Number(proj.amount||0) : "";
+    $("#projDate").value = proj ? proj.date : todayISO();
+    $("#projDateJ").textContent = isoToJalaliStr($("#projDate").value || todayISO());
+    $("#projStatus").value = proj ? proj.status : "todo";
+    $("#projTags").value = proj ? (proj.tags||[]).join(", ") : "";
+    $("#projNotes").value = proj ? (proj.notes||"") : "";
+
+    openDlg("dlgProject");
+  };
+
+  $("#projDate").addEventListener("change", (e) => {
+    const iso = e.target.value || todayISO();
+    $("#projDateJ").textContent = isoToJalaliStr(iso);
+  });
+
+  const renderProjects = () => {
+    const filter = $("#projectFilter").value || "all";
+    const tbody = $("#projectTbody");
+    tbody.innerHTML = "";
+
+    const { jy, jm } = currentJalaliYM();
+    const nowRange = jalaliMonthRangeISO(jy, jm);
+    const monthProjects = projectsInRange(nowRange.s, nowRange.e);
+    $("#projMonthCount").textContent = toFaDigits(monthProjects.length);
+    $("#projMonthIncome").textContent = moneyFA(calcIncome(monthProjects)) + " " + state.profile.currency;
+
+    const list = (filter==="all") ? state.projects : state.projects.filter(p => p.status === filter);
+    $("#projectsEmpty").style.display = list.length ? "none" : "block";
+
+    list.forEach(p => {
+      const tr = document.createElement("tr");
+      const chipClass = p.status==="done" ? "chip ok" : (p.status==="doing" ? "chip acc" : "chip");
+      tr.innerHTML = `
+        <td><b>${escapeHtml(p.name)}</b><div class="muted2 small">${(p.tags||[]).map(t=>"#"+escapeHtml(t)).join(" ")}</div></td>
+        <td>${escapeHtml(p.client||"—")}</td>
+        <td class="nowrap">${moneyFA(p.amount)} ${state.profile.currency}</td>
+        <td class="nowrap"><b>${isoToJalaliStr(p.date)}</b><div class="muted2 small">${escapeHtml(p.date)}</div></td>
+        <td><span class="${chipClass}">${statusLabel(p.status)}</span></td>
+        <td class="nowrap">
+          <button class="icon-btn" data-act="edit" data-id="${p.id}" title="ویرایش">✎</button>
+          <button class="icon-btn danger" data-act="del" data-id="${p.id}" title="حذف">🗑</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  };
+
+  $("#projectFilter").addEventListener("change", renderProjects);
+  $("#btnAddProject").addEventListener("click", () => { showView("projects"); openProjectDialog(null); });
+  $("#btnAddProject2").addEventListener("click", () => openProjectDialog(null));
+
+  $("#projectTbody").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-act]");
+    if(!btn) return;
+    const id = btn.dataset.id;
+    const act = btn.dataset.act;
+    const proj = state.projects.find(p => p.id === id);
+    if(!proj) return;
+
+    if(act==="edit"){ openProjectDialog(proj); return; }
+    if(act==="del"){
+      state.projects = state.projects.filter(p => p.id !== id);
+      saveState(); renderProjects(); renderDashboard(); renderDashboardCharts();
+      toast("پروژه حذف شد.");
+    }
+  });
+
+  $("#btnProjectSave").addEventListener("click", () => {
+    const name = $("#projName").value.trim();
+    if(!name){ toast("عنوان پروژه ضروریه."); return; }
+
+    const tags = $("#projTags").value.split(",").map(x=>x.trim()).filter(Boolean);
+    const patch = {
+      name,
+      client: $("#projClient").value.trim(),
+      amount: Number($("#projAmount").value || 0),
+      date: $("#projDate").value || todayISO(),
+      status: $("#projStatus").value,
+      tags,
+      notes: $("#projNotes").value
+    };
+
+    if(editingProjectId){
+      const idx = state.projects.findIndex(p => p.id === editingProjectId);
+      if(idx >= 0) state.projects[idx] = { ...state.projects[idx], ...patch };
+      toast("پروژه آپدیت شد ✅");
+    } else {
+      state.projects.unshift({ id: uid(), ...patch });
+      toast("پروژه ذخیره شد ✅");
+    }
+
+    saveState();
+    closeDlg("dlgProject");
+    renderAll();
+    renderDashboardCharts();
+  });
+
+  $("#btnProjectDelete").addEventListener("click", () => {
+    if(!editingProjectId) return;
+    state.projects = state.projects.filter(p => p.id !== editingProjectId);
+    saveState();
+    closeDlg("dlgProject");
+    renderAll();
+    renderDashboardCharts();
+    toast("پروژه حذف شد.");
+  });
+
+  // =========================
+  // Goals
+  // =========================
+  let editingGoalId = null;
+
+  const goalRate = (g) => {
+    const t = Number(g.target||0);
+    const c = Number(g.current||0);
+    if(!t) return 0;
+    return Math.max(0, Math.min(100, Math.round((c/t)*100)));
+  };
+
+  const openGoalDialog = (goal=null) => {
+    editingGoalId = goal ? goal.id : null;
+    $("#dlgGoalTitle").textContent = goal ? "ویرایش هدف" : "افزودن هدف";
+    $("#btnGoalDelete").style.visibility = goal ? "visible" : "hidden";
+
+    $("#goalTitle").value = goal ? goal.title : "";
+    $("#goalHorizon").value = goal ? goal.horizon : "۳ ماه";
+    $("#goalMetric").value = goal ? goal.metric : "عادت";
+    $("#goalTarget").value = goal ? Number(goal.target||0) : 100;
+    $("#goalCurrent").value = goal ? Number(goal.current||0) : 0;
+    $("#goalNotes").value = goal ? (goal.notes||"") : "";
+    $("#goalMilestones").value = goal ? (goal.milestones||[]).map(m=>m.text).join("\n") : "";
+    openDlg("dlgGoal");
+  };
+
+  const renderGoals = () => {
+    const list = $("#goalsList");
+    list.innerHTML = "";
+    $("#goalsEmpty").style.display = state.goals.length ? "none" : "block";
+
+    state.goals.forEach(g => {
+      const rate = goalRate(g);
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `
+        <div class="row">
+          <div>
+            <h3 style="margin-bottom:2px">${escapeHtml(g.title)}</h3>
+            <div class="muted small">افق: ${escapeHtml(g.horizon||"—")} • متریک: ${escapeHtml(g.metric||"—")}</div>
+          </div>
+          <div class="btn-row">
+            <button class="btn" data-act="editGoal" data-id="${g.id}">ویرایش</button>
+            <button class="btn danger" data-act="delGoal" data-id="${g.id}">حذف</button>
+          </div>
+        </div>
+
+        <div style="margin-top:10px" class="chips">
+          <span class="chip acc">فعلی: <b>${moneyFA(g.current)}</b></span>
+          <span class="chip">هدف: <b>${moneyFA(g.target)}</b></span>
+          <span class="chip ok">پیشرفت: <b>${rate}%</b></span>
+        </div>
+
+        <div style="margin-top:10px" class="bar"><i style="width:${rate}%"></i></div>
+
+        <div class="sep"></div>
+        <div class="row" style="gap:10px;align-items:stretch">
+          <div style="flex:1">
+            <label>آپدیت مقدار فعلی</label>
+            <input class="input" type="number" value="${Number(g.current||0)}" data-act="curInput" data-id="${g.id}" />
+          </div>
+          <div style="width: 180px">
+            <label>&nbsp;</label>
+            <button class="btn primary" data-act="saveCur" data-id="${g.id}">ذخیره مقدار</button>
+          </div>
+        </div>
+
+        <div class="sep"></div>
+        <div class="row">
+          <h3 style="margin:0">مایلستون‌ها</h3>
+          <span class="muted2 small">${(g.milestones||[]).filter(m=>m.done).length}/${(g.milestones||[]).length}</span>
+        </div>
+
+        <div class="list" style="margin-top:10px">
+          ${(g.milestones||[]).map(m => `
+            <div class="item" style="align-items:center">
+              <div class="item-main">
+                <div class="item-title" style="${m.done ? "text-decoration:line-through;opacity:.75" : ""}">${escapeHtml(m.text)}</div>
+              </div>
+              <div class="item-actions">
+                <button class="icon-btn" data-act="toggleMs" data-gid="${g.id}" data-mid="${m.id}">${m.done ? "↺" : "✓"}</button>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+
+        ${g.notes ? `<div class="sep"></div><div class="muted small" style="line-height:1.9">${escapeHtml(g.notes)}</div>` : ""}
+      `;
+      list.appendChild(card);
+    });
+  };
+
+  $("#btnAddGoal").addEventListener("click", () => { showView("goals"); openGoalDialog(null); });
+  $("#btnAddGoal2").addEventListener("click", () => openGoalDialog(null));
+
+  $("#goalsList").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-act]");
+    if(!btn) return;
+    const act = btn.dataset.act;
+
+    if(act==="editGoal"){
+      const goal = state.goals.find(g => g.id === btn.dataset.id);
+      if(goal) openGoalDialog(goal);
+      return;
+    }
+    if(act==="delGoal"){
+      const id = btn.dataset.id;
+      state.goals = state.goals.filter(g => g.id !== id);
+      saveState(); renderGoals(); toast("هدف حذف شد.");
+      return;
+    }
+    if(act==="toggleMs"){
+      const gid = btn.dataset.gid;
+      const mid = btn.dataset.mid;
+      const goal = state.goals.find(g => g.id === gid);
+      if(!goal) return;
+      const ms = (goal.milestones||[]).find(m => m.id === mid);
+      if(!ms) return;
+      ms.done = !ms.done;
+      saveState(); renderGoals(); toast("آپدیت شد.");
+      return;
+    }
+    if(act==="saveCur"){
+      const id = btn.dataset.id;
+      const goal = state.goals.find(g => g.id === id);
+      if(!goal) return;
+      const input = $(`[data-act="curInput"][data-id="${id}"]`, $("#goalsList"));
+      goal.current = Number(input.value || 0);
+      saveState(); renderGoals(); toast("مقدار ذخیره شد ✅");
+      return;
+    }
+  });
+
+  $("#btnGoalSave").addEventListener("click", () => {
+    const title = $("#goalTitle").value.trim();
+    if(!title){ toast("عنوان هدف ضروریه."); return; }
+
+    const milestones = $("#goalMilestones").value
+      .split("\n").map(x=>x.trim()).filter(Boolean)
+      .map(text => ({ id: uid(), text, done:false }));
+
+    const patch = {
+      title,
+      horizon: $("#goalHorizon").value.trim() || "—",
+      metric: $("#goalMetric").value.trim() || "—",
+      target: Number($("#goalTarget").value || 0),
+      current: Number($("#goalCurrent").value || 0),
+      notes: $("#goalNotes").value,
+      milestones
+    };
+
+    if(editingGoalId){
+      const idx = state.goals.findIndex(g => g.id === editingGoalId);
+      if(idx >= 0){
+        const prev = state.goals[idx];
+        const prevMap = new Map((prev.milestones||[]).map(m => [m.text, m.done]));
+        patch.milestones = patch.milestones.map(m => ({...m, done: !!prevMap.get(m.text)}));
+        state.goals[idx] = { ...prev, ...patch };
+      }
+      toast("هدف آپدیت شد ✅");
+    } else {
+      state.goals.unshift({ id: uid(), ...patch });
+      toast("هدف ذخیره شد ✅");
+    }
+
+    saveState();
+    closeDlg("dlgGoal");
+    renderAll();
+  });
+
+  $("#btnGoalDelete").addEventListener("click", () => {
+    if(!editingGoalId) return;
+    state.goals = state.goals.filter(g => g.id !== editingGoalId);
+    saveState();
+    closeDlg("dlgGoal");
+    renderAll();
+    toast("هدف حذف شد.");
+  });
+
+  // =========================
+  // Finance / Holdings
+  // =========================
+  let editingHoldingId = null;
+
+  const openHoldingDialog = (h=null) => {
+    editingHoldingId = h ? h.id : null;
+    $("#dlgHoldingTitle").textContent = h ? "ویرایش دارایی" : "افزودن دارایی";
+    $("#btnHoldingDelete").style.visibility = h ? "visible" : "hidden";
+
+    $("#holdType").value = h ? h.type : "طلا";
+    $("#holdUnit").value = h ? h.unit : "تومان";
+    $("#holdAmount").value = h ? Number(h.amount||0) : "";
+
+    openDlg("dlgHolding");
+  };
+
+  const renderHoldings = () => {
+    const tbody = $("#holdingsTbody");
+    tbody.innerHTML = "";
+    $("#holdingsEmpty").style.display = state.assets.holdings.length ? "none" : "block";
+
+    state.assets.holdings.forEach(h => {
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><b>${escapeHtml(h.type)}</b></td>
+        <td>${moneyFA(h.amount)}</td>
+        <td>${escapeHtml(h.unit)}</td>
+        <td class="nowrap">
+          <button class="icon-btn" data-act="editHold" data-id="${h.id}">✎</button>
+          <button class="icon-btn danger" data-act="delHold" data-id="${h.id}">🗑</button>
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  };
+
+  const renderFinancePlan = () => {
+    $("#monthlyMinIncome").value = Number(state.profile.monthlyMinIncome||0);
+    $("#savingsRateTarget").value = Number(state.profile.savingsRateTarget||0);
+
+    const split = state.assets.plan.split;
+    $("#splitGold").value = Number(split.gold||0);
+    $("#splitCrypto").value = Number(split.crypto||0);
+    $("#splitSilver").value = Number(split.silver||0);
+    $("#splitCash").value = Number(split.cash||0);
+
+    const sum = Number(split.gold||0) + Number(split.crypto||0) + Number(split.silver||0) + Number(split.cash||0);
+    $("#splitSum").textContent = sum + "%";
+    $("#splitWarn").style.display = (sum === 100) ? "none" : "inline-flex";
+
+    const base = Number(state.profile.monthlyMinIncome||0) * Number(state.profile.savingsRateTarget||0);
+    const suggestions = [
+      { label: "طلا", pct: split.gold, val: base * (split.gold/100) },
+      { label: "کریپتو", pct: split.crypto, val: base * (split.crypto/100) },
+      { label: "نقره", pct: split.silver, val: base * (split.silver/100) },
+      { label: "نقد/تتر آزاد", pct: split.cash, val: base * (split.cash/100) }
+    ];
+
+    const box = $("#financeSuggestions");
+    box.innerHTML = "";
+    suggestions.forEach(s => {
+      const el = document.createElement("span");
+      el.className = "chip";
+      el.innerHTML = `${s.label}: <b>${moneyFA(Math.round(s.val))}</b> ${state.profile.currency} <span class="muted2">(${s.pct}%)</span>`;
+      box.appendChild(el);
+    });
+  };
+
+  const renderFinance = () => { renderHoldings(); renderFinancePlan(); };
+
+  $("#btnAddHolding").addEventListener("click", () => { showView("finance"); openHoldingDialog(null); });
+  $("#btnAddHolding2").addEventListener("click", () => openHoldingDialog(null));
+
+  $("#holdingsTbody").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-act]");
+    if(!btn) return;
+    const id = btn.dataset.id;
+    const act = btn.dataset.act;
+    const h = state.assets.holdings.find(x => x.id === id);
+    if(!h) return;
+
+    if(act==="editHold"){ openHoldingDialog(h); return; }
+    if(act==="delHold"){
+      state.assets.holdings = state.assets.holdings.filter(x => x.id !== id);
+      saveState(); renderFinance(); renderDashboard(); renderDashboardCharts();
+      toast("دارایی حذف شد.");
+    }
+  });
+
+  $("#btnHoldingSave").addEventListener("click", () => {
+    const type = $("#holdType").value.trim();
+    const unit = $("#holdUnit").value.trim();
+    const amount = Number($("#holdAmount").value || 0);
+    if(!type || !unit){ toast("نوع و واحد ضروریه."); return; }
+
+    const patch = { type, unit, amount };
+
+    if(editingHoldingId){
+      const idx = state.assets.holdings.findIndex(x => x.id === editingHoldingId);
+      if(idx >= 0) state.assets.holdings[idx] = { ...state.assets.holdings[idx], ...patch };
+      toast("دارایی آپدیت شد ✅");
+    } else {
+      state.assets.holdings.unshift({ id: uid(), ...patch });
+      toast("دارایی ذخیره شد ✅");
+    }
+
+    saveState();
+    closeDlg("dlgHolding");
+    renderFinance();
+    renderDashboard();
+    renderDashboardCharts();
+  });
+
+  $("#btnHoldingDelete").addEventListener("click", () => {
+    if(!editingHoldingId) return;
+    state.assets.holdings = state.assets.holdings.filter(x => x.id !== editingHoldingId);
+    saveState();
+    closeDlg("dlgHolding");
+    renderFinance();
+    renderDashboard();
+    renderDashboardCharts();
+    toast("دارایی حذف شد.");
+  });
+
+  $("#monthlyMinIncome").addEventListener("input", (e) => { state.profile.monthlyMinIncome = Number(e.target.value || 0); saveState(); renderFinancePlan(); renderDashboard(); });
+  $("#savingsRateTarget").addEventListener("input", (e) => { state.profile.savingsRateTarget = Number(e.target.value || 0); saveState(); renderFinancePlan(); renderDashboard(); });
+
+  const bindSplit = (id, key) => {
+    $(id).addEventListener("input", (e) => {
+      state.assets.plan.split[key] = Number(e.target.value || 0);
+      saveState(); renderFinancePlan(); renderDashboard();
+    });
+  };
+  bindSplit("#splitGold","gold");
+  bindSplit("#splitCrypto","crypto");
+  bindSplit("#splitSilver","silver");
+  bindSplit("#splitCash","cash");
+
+  $("#btnNormalizeSplit").addEventListener("click", () => {
+    const s = state.assets.plan.split;
+    const sum = Number(s.gold||0)+Number(s.crypto||0)+Number(s.silver||0)+Number(s.cash||0);
+    if(sum <= 0){ toast("اول درصدها رو وارد کن."); return; }
+    s.gold = Math.round((s.gold/sum)*100);
+    s.crypto = Math.round((s.crypto/sum)*100);
+    s.silver = Math.round((s.silver/sum)*100);
+    s.cash = 100 - (s.gold + s.crypto + s.silver);
+    saveState(); renderFinancePlan(); toast("نرمال شد ✅");
+  });
+
+  // =========================
+  // Notes
+  // =========================
+  const renderNotes = () => {
+    $("#noteDaily").value = state.notes.daily || "";
+    $("#noteMotivation").value = state.notes.motivation || "";
+    $("#noteJournal").value = state.notes.journal || "";
+    $("#noteIdeas").value = state.notes.ideas || "";
+  };
+
+  const bindNote = (id, key) => {
+    $(id).addEventListener("input", (e) => {
+      state.notes[key] = e.target.value;
+      saveState();
+      if(key === "motivation") $("#dashMotivation").textContent = state.notes.motivation || "—";
+    });
+  };
+  bindNote("#noteDaily","daily");
+  bindNote("#noteMotivation","motivation");
+  bindNote("#noteJournal","journal");
+  bindNote("#noteIdeas","ideas");
+
+  $("#btnGoNotes").addEventListener("click", () => showView("notes"));
+
+  // =========================
+  // Theme / Export / Import / Reset
+  // =========================
+  $("#btnTheme").addEventListener("click", () => {
+    const next = (state.settings.theme === "dark") ? "light" : "dark";
+    state.settings.theme = next;
+    saveState();
+    renderHeader();
+    renderDashboardCharts();
+    toast("تم تغییر کرد");
+  });
+
+  $("#btnExport").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "ArminOS-backup.json";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast("خروجی گرفته شد ✅");
+  });
+
+  $("#btnImport").addEventListener("click", () => {
+    $("#importFile").value = "";
+    openDlg("dlgImport");
+  });
+
+  $("#btnImportDo").addEventListener("click", async () => {
+    const file = $("#importFile").files && $("#importFile").files[0];
+    if(!file){ toast("فایلی انتخاب نشده."); return; }
+    const text = await file.text();
+    const data = safeParse(text);
+    if(!data || !data.meta){ toast("فایل معتبر نیست."); return; }
+    state = data;
+    saveState();
+    closeDlg("dlgImport");
+    renderAll();
+    renderDashboardCharts();
+    toast("داده‌ها وارد شد ✅");
+  });
+
+  $("#btnReset").addEventListener("click", () => {
+    const ok = confirm("ریست کامل؟ همه داده‌ها پاک می‌شوند. قبلش Export بگیر.");
+    if(!ok) return;
+    state = defaultState();
+    saveState();
+    monthCursor = currentJalaliYM();
+    plannerDate = todayISO();
+    renderAll();
+    renderDashboardCharts();
+    toast("ریست شد.");
+  });
+
+  // =========================
+  // Utilities
+  // =========================
+  function escapeHtml(str){
+    return String(str ?? "")
+      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+      .replaceAll("\"","&quot;").replaceAll("'","&#039;");
+  }
+
+  // =========================
+  // Render All
+  // =========================
+  const renderAll = () => {
+    renderHeader();
+    renderDashboard();
+    renderPlanner();
+    renderCalendar();
+    renderProjects();
+    renderGoals();
+    renderFinance();
+    renderNotes();
+  };
+
+  // Init
+  initLock();
+  renderAll();
+  renderDashboardCharts();
+})();
+</script>
+</body>
+</html>
