@@ -192,6 +192,50 @@ html, body{
   border-radius: 999px;
 }
 .nav::-webkit-scrollbar-track{ background: transparent; }
+/* =========================
+   Mobile Calendar Fix
+   ========================= */
+
+@media (max-width: 480px) {
+
+  /* کل محتوا عرض گوشی رو رعایت کنه */
+  .content,
+  .calendar,
+  .calendar-grid {
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  /* گرید تقویم */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  /* کارت‌های روز */
+  .calendar-day {
+    min-width: 0;
+    padding: 6px 4px;
+    font-size: 11px;
+  }
+
+  /* جلوگیری از افتادن روی هم */
+  .calendar-day * {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* فاصله بین بخش بالا و پایین */
+  .side-top {
+    margin-bottom: 12px;
+  }
+
+  .side-bottom {
+    margin-top: 12px;
+  }
+}
 
     /* Modern icon polish */
 .nav-ic{
