@@ -64,6 +64,115 @@
   font-display: swap;
 }
 
+   /* =========================
+   MOBILE RESPONSIVE PATCH
+   (paste at end of CSS)
+   ========================= */
+
+/* جلوگیری از بیرون‌زدن کل صفحه */
+html, body{
+  overflow-x: hidden;
+}
+
+/* ظرف اصلی */
+.app{
+  width: 100%;
+}
+
+/* کارت‌ها و بخش‌ها تو موبایل فاصله بهتر */
+@media (max-width: 560px){
+  :root{
+    --sidebar: 100%;
+    --gap: 12px;
+  }
+
+  .app{
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .content{
+    min-height: auto;
+  }
+
+  .topbar{
+    padding: 12px;
+    gap: 10px;
+  }
+
+  .views{
+    padding: 12px;
+  }
+
+  .card{
+    padding: 12px;
+    border-radius: 20px;
+  }
+
+  /* تیترها جمع‌وجورتر */
+  .topbar-title{ font-size: 18px; }
+  .topbar-sub{ font-size: 12px; }
+
+  .kpi{ font-size: 22px; }
+}
+
+/* =========================
+   CALENDAR FIX (no overflow)
+   ========================= */
+
+#view-calendar .card{
+  overflow: hidden; /* مهم */
+}
+
+/* گرید تقویم در موبایل: جمع‌تر + متن‌ها نشکنه */
+@media (max-width: 560px){
+
+  .cal-grid{
+    gap: 8px;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+  }
+
+  .cal-dow{
+    padding: 6px 4px;
+    font-size: 11px;
+    border-radius: 12px;
+  }
+
+  .cal-day{
+    min-height: 78px;
+    padding: 8px;
+    border-radius: 18px;
+  }
+
+  .cal-top{
+    gap: 6px;
+  }
+
+  .cal-num{
+    font-size: 13px;
+  }
+
+  .mini{
+    font-size: 10px;
+    padding: 3px 6px;
+    border-radius: 999px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* badges توی روزها کمتر جا بگیرن */
+  .cal-badges{
+    gap: 6px;
+  }
+}
+
+/* یه ترمز نهایی برای هر چی بیرون زد */
+*{
+  max-width: 100%;
+}
+ 
     /* --- FIX: sidebar bottom buttons hidden on large screens --- */
 .sidebar{
   overflow: hidden;
@@ -83,6 +192,30 @@
   border-radius: 999px;
 }
 .nav::-webkit-scrollbar-track{ background: transparent; }
+
+    /* Modern icon polish */
+.nav-ic{
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface2) 70%, transparent);
+}
+
+.nav-ic svg{
+  opacity: .95;
+}
+
+.nav button.active .nav-ic{
+  border-color: rgba(154,230,255,.35);
+  box-shadow: 0 10px 22px rgba(154,230,255,.10);
+}
+
+/* icon buttons (مثل ویرایش/حذف) جمع‌وجورتر تو موبایل */
+@media (max-width: 560px){
+  .icon-btn{
+    width: 36px;
+    height: 36px;
+    border-radius: 14px;
+  }
+}
 
     /* =========================
        Design System (Tokens)
