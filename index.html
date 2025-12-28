@@ -64,6 +64,26 @@
   font-display: swap;
 }
 
+    /* --- FIX: sidebar bottom buttons hidden on large screens --- */
+.sidebar{
+  overflow: hidden;
+  min-height: 0;
+}
+
+.nav{
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+  padding-bottom: 12px;
+}
+
+.nav::-webkit-scrollbar{ width: 8px; }
+.nav::-webkit-scrollbar-thumb{
+  background: rgba(255,255,255,.12);
+  border-radius: 999px;
+}
+.nav::-webkit-scrollbar-track{ background: transparent; }
+
     /* =========================
        Design System (Tokens)
        ========================= */
