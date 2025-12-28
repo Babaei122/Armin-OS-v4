@@ -217,6 +217,31 @@ html, body{
   }
 }
 
+    /* --- FIX: prevent calendar overlap in mobile (sidebar layout) --- */
+.sidebar{
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;      /* یا 100dvh اگر داری */
+}
+
+/* بالا */
+.side-top{
+  flex: 0 0 auto;
+}
+
+/* وسط (منو/محتوا) باید اسکرول‌خور بشه */
+.nav{
+  flex: 1 1 auto;
+  min-height: 0;          /* خیلی مهم: بدون این، اسکرول و محاسبات ارتفاع بهم می‌ریزه */
+  overflow-y: auto;
+}
+
+/* پایین: نباید absolute/fixed باشه که بیفته روی محتوا */
+.side-bottom{
+  flex: 0 0 auto;
+  position: static !important;  /* اگر قبلاً absolute/fixed بوده، این خنثی‌اش می‌کنه */
+}
+
     /* =========================
        Design System (Tokens)
        ========================= */
