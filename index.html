@@ -202,7 +202,7 @@ html, body{
   .content,
   .calendar,
   .calendar-grid {
-    max-width: 100%;
+  
     overflow-x: hidden;
   }
 
@@ -979,6 +979,24 @@ button, input, textarea, select {
       color: var(--danger);
       min-height: 1.6em;
     }
+    /* FINAL FIX — MUST BE LAST */
+.sidebar{
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 100vh !important;
+}
+
+.nav{
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+}
+
+.side-bottom{
+  position: static !important;
+  flex: 0 0 auto !important;
+}
+
   </style>
 </head>
 
