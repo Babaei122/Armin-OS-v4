@@ -64,228 +64,6 @@
   font-display: swap;
 }
 
-   /* =========================
-   MOBILE RESPONSIVE PATCH
-   (paste at end of CSS)
-   ========================= */
-
-/* جلوگیری از بیرون‌زدن کل صفحه */
-html, body{
-  overflow-x: hidden;
-}
-
-/* ظرف اصلی */
-.app{
-  width: 100%;
-}
-
-/* کارت‌ها و بخش‌ها تو موبایل فاصله بهتر */
-@media (max-width: 560px){
-  :root{
-    --sidebar: 100%;
-    --gap: 12px;
-  }
-
-  .app{
-    padding: 12px;
-    gap: 12px;
-  }
-
-  .content{
-    min-height: auto;
-  }
-
-  .topbar{
-    padding: 12px;
-    gap: 10px;
-  }
-
-  .views{
-    padding: 12px;
-  }
-
-  .card{
-    padding: 12px;
-    border-radius: 20px;
-  }
-
-  /* تیترها جمع‌وجورتر */
-  .topbar-title{ font-size: 18px; }
-  .topbar-sub{ font-size: 12px; }
-
-  .kpi{ font-size: 22px; }
-}
-
-/* =========================
-   CALENDAR FIX (no overflow)
-   ========================= */
-
-#view-calendar .card{
-  overflow: hidden; /* مهم */
-}
-
-/* گرید تقویم در موبایل: جمع‌تر + متن‌ها نشکنه */
-@media (max-width: 560px){
-
-  .cal-grid{
-    gap: 8px;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-  }
-
-  .cal-dow{
-    padding: 6px 4px;
-    font-size: 11px;
-    border-radius: 12px;
-  }
-
-  .cal-day{
-    min-height: 78px;
-    padding: 8px;
-    border-radius: 18px;
-  }
-
-  .cal-top{
-    gap: 6px;
-  }
-
-  .cal-num{
-    font-size: 13px;
-  }
-
-  .mini{
-    font-size: 10px;
-    padding: 3px 6px;
-    border-radius: 999px;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  /* badges توی روزها کمتر جا بگیرن */
-  .cal-badges{
-    gap: 6px;
-  }
-}
-
-/* یه ترمز نهایی برای هر چی بیرون زد */
-*{
-  max-width: 100%;
-}
- 
-    /* --- FIX: sidebar bottom buttons hidden on large screens --- */
-.sidebar{
-  overflow: hidden;
-  min-height: 0;
-}
-
-.nav{
-  flex: 1 1 auto;
-  overflow-y: auto;
-  min-height: 0;
-  padding-bottom: 12px;
-}
-
-.nav::-webkit-scrollbar{ width: 8px; }
-.nav::-webkit-scrollbar-thumb{
-  background: rgba(255,255,255,.12);
-  border-radius: 999px;
-}
-.nav::-webkit-scrollbar-track{ background: transparent; }
-/* =========================
-   Mobile Calendar Fix
-   ========================= */
-
-@media (max-width: 480px) {
-
-  /* کل محتوا عرض گوشی رو رعایت کنه */
-  .content,
-  .calendar,
-  .calendar-grid {
-  
-    overflow-x: hidden;
-  }
-
-  /* گرید تقویم */
-  .calendar-grid {
-    display: grid;
-    grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 6px;
-  }
-
-  /* کارت‌های روز */
-  .calendar-day {
-    min-width: 0;
-    padding: 6px 4px;
-    font-size: 11px;
-  }
-
-  /* جلوگیری از افتادن روی هم */
-  .calendar-day * {
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  /* فاصله بین بخش بالا و پایین */
-  .side-top {
-    margin-bottom: 12px;
-  }
-
-  .side-bottom {
-    margin-top: 12px;
-  }
-}
-
-    /* Modern icon polish */
-.nav-ic{
-  border-radius: 18px;
-  background: color-mix(in srgb, var(--surface2) 70%, transparent);
-}
-
-.nav-ic svg{
-  opacity: .95;
-}
-
-.nav button.active .nav-ic{
-  border-color: rgba(154,230,255,.35);
-  box-shadow: 0 10px 22px rgba(154,230,255,.10);
-}
-
-/* icon buttons (مثل ویرایش/حذف) جمع‌وجورتر تو موبایل */
-@media (max-width: 560px){
-  .icon-btn{
-    width: 36px;
-    height: 36px;
-    border-radius: 14px;
-  }
-}
-
-    /* --- FIX: prevent calendar overlap in mobile (sidebar layout) --- */
-.sidebar{
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;      /* یا 100dvh اگر داری */
-}
-
-/* بالا */
-.side-top{
-  flex: 0 0 auto;
-}
-
-/* وسط (منو/محتوا) باید اسکرول‌خور بشه */
-.nav{
-  flex: 1 1 auto;
-  min-height: 0;          /* خیلی مهم: بدون این، اسکرول و محاسبات ارتفاع بهم می‌ریزه */
-  overflow-y: auto;
-}
-
-/* پایین: نباید absolute/fixed باشه که بیفته روی محتوا */
-.side-bottom{
-  flex: 0 0 auto;
-  position: static !important;  /* اگر قبلاً absolute/fixed بوده، این خنثی‌اش می‌کنه */
-}
-
     /* =========================
        Design System (Tokens)
        ========================= */
@@ -384,6 +162,10 @@ button, input, textarea, select {
       -webkit-font-smoothing: antialiased;
       text-rendering: optimizeLegibility;
     }
+    img, video, canvas, iframe{
+      max-width: 100%;
+      height: auto;
+    }
 
     @media (prefers-reduced-motion: reduce){
       *{ animation: none !important; transition: none !important; scroll-behavior: auto !important; }
@@ -431,7 +213,10 @@ button, input, textarea, select {
       flex-direction:column;
     }
     @media (max-width: 1120px){
-      .sidebar{ position: relative; height:auto; }
+      .sidebar{
+        position: static;
+        height: auto;
+      }
     }
 
     .side-top{
@@ -486,7 +271,16 @@ button, input, textarea, select {
       padding: var(--s-3);
       display:grid;
       gap: 10px;
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
     }
+    .nav::-webkit-scrollbar{ width: 8px; }
+    .nav::-webkit-scrollbar-thumb{
+      background: rgba(255,255,255,.12);
+      border-radius: 999px;
+    }
+    .nav::-webkit-scrollbar-track{ background: transparent; }
     .nav button{
       width:100%;
       border: 1px solid var(--border);
@@ -520,9 +314,9 @@ button, input, textarea, select {
     .nav-ic{
       width: 38px;
       height: 38px;
-      border-radius: 16px;
+      border-radius: 18px;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,.04);
+      background: color-mix(in srgb, var(--surface2) 70%, transparent);
       display:flex;
       align-items:center;
       justify-content:center;
@@ -530,7 +324,7 @@ button, input, textarea, select {
       flex: 0 0 auto;
       color: var(--text);
     }
-    .nav-ic svg{ width: 18px; height: 18px; }
+    .nav-ic svg{ width: 18px; height: 18px; opacity: .95; }
     .nav-text{ min-width: 0; }
     .nav-title{ font-size: var(--fs-3); font-weight: 800; line-height: 1.25; }
     .nav-hint{ font-size: var(--fs-1); color: var(--muted2); margin-top: 2px; }
@@ -538,6 +332,10 @@ button, input, textarea, select {
       color: var(--muted2);
       font-size: var(--fs-2);
       user-select:none;
+    }
+    .nav button.active .nav-ic{
+      border-color: rgba(154,230,255,.35);
+      box-shadow: 0 10px 22px rgba(154,230,255,.10);
     }
 
     .side-bottom{
@@ -588,6 +386,7 @@ button, input, textarea, select {
       display:flex;
       flex-direction:column;
       min-height: calc(100vh - (var(--s-4) * 2));
+      min-width: 0;
     }
     @media (max-width: 1120px){
       .content{ min-height:auto; }
@@ -784,7 +583,7 @@ button, input, textarea, select {
     }
     .cal-grid{
       display:grid;
-      grid-template-columns: repeat(7, 1fr);
+      grid-template-columns: repeat(7, minmax(0, 1fr));
       gap: 10px;
     }
     .cal-dow{
@@ -802,6 +601,7 @@ button, input, textarea, select {
       border-radius: var(--r-3);
       padding: 10px;
       min-height: 94px;
+      min-width: 0;
       cursor:pointer;
       transition: transform .14s ease, background .14s ease, border-color .14s ease;
       display:flex;
@@ -816,7 +616,7 @@ button, input, textarea, select {
     .cal-day.blank{ opacity:.35; cursor:default; }
     .cal-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
     .cal-num{ font-weight: 900; }
-    .cal-badges{ display:flex; gap:6px; flex-wrap:wrap; }
+    .cal-badges{ display:flex; gap:6px; flex-wrap:wrap; min-width: 0; }
 
     .mini{
       font-size: 11px;
@@ -826,6 +626,9 @@ button, input, textarea, select {
       color: var(--muted);
       background: rgba(255,255,255,.04);
       white-space:nowrap;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .mini.ok{ border-color: rgba(123,255,181,.28); color: var(--ok); }
     .mini.acc{ border-color: rgba(154,230,255,.28); color: var(--accent); }
@@ -979,24 +782,100 @@ button, input, textarea, select {
       color: var(--danger);
       min-height: 1.6em;
     }
-    /* FINAL FIX — MUST BE LAST */
-.sidebar{
-  display: flex !important;
-  flex-direction: column !important;
-  min-height: 100vh !important;
-}
+    /* =========================
+       Mobile Overrides (layout safety + overflow)
+       ========================= */
+    @media (max-width: 1120px){
+      .nav{
+        overflow: visible;
+      }
+      .side-bottom{
+        position: static;
+      }
+    }
 
-.nav{
-  flex: 1 1 auto !important;
-  min-height: 0 !important;
-  overflow-y: auto !important;
-}
+    @media (max-width: 560px){
+      html, body{
+        overflow-x: hidden;
+      }
 
-.side-bottom{
-  position: static !important;
-  flex: 0 0 auto !important;
-}
+      :root{
+        --sidebar: 100%;
+        --gap: 12px;
+      }
 
+      .app{
+        width: 100%;
+        max-width: 100%;
+        padding: 12px;
+        gap: 12px;
+      }
+
+      .content{
+        min-height: auto;
+      }
+
+      .topbar{
+        padding: 12px;
+        gap: 10px;
+      }
+
+      .views{
+        padding: 12px;
+      }
+
+      .card{
+        padding: 12px;
+        border-radius: 20px;
+      }
+
+      .topbar-title{ font-size: 18px; }
+      .topbar-sub{ font-size: 12px; }
+      .kpi{ font-size: 22px; }
+
+      .icon-btn{
+        width: 36px;
+        height: 36px;
+        border-radius: 14px;
+      }
+
+      #view-calendar .card{
+        overflow: hidden;
+      }
+
+      .cal-grid{
+        gap: 8px;
+      }
+
+      .cal-dow{
+        padding: 6px 4px;
+        font-size: 11px;
+        border-radius: 12px;
+      }
+
+      .cal-day{
+        min-height: 78px;
+        padding: 8px;
+        border-radius: 18px;
+      }
+
+      .cal-top{
+        gap: 6px;
+      }
+
+      .cal-num{
+        font-size: 13px;
+      }
+
+      .mini{
+        font-size: 10px;
+        padding: 3px 6px;
+      }
+
+      .cal-badges{
+        gap: 6px;
+      }
+    }
   </style>
 </head>
 
@@ -3098,4 +2977,3 @@ button, input, textarea, select {
 </script>
 </body>
 </html>
-
