@@ -163,6 +163,10 @@ button, input, textarea, select {
   font-family: inherit;
 }
 
+canvas {
+  font-family: var(--font-sans);
+}
+
     html[data-theme="dark"]{
       /* Optional dark palette */
       --bg: #090d16;
@@ -388,11 +392,50 @@ button, input, textarea, select {
       padding: var(--s-3) var(--s-3) var(--s-4);
       border-top: 1px solid var(--border);
       display:grid;
-      gap: 10px;
+      gap: 12px;
       background: linear-gradient(0deg, var(--surface-3), transparent);
     }
 
     .btn-row{ display:flex; gap: 10px; flex-wrap:wrap; }
+    .side-actions{
+      display:grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+    .side-actions.secondary{
+      padding: 10px;
+      border-radius: var(--r-3);
+      border: 1px solid var(--border);
+      background: var(--surface-4);
+    }
+    .side-actions .btn{
+      width: 100%;
+      justify-content: flex-start;
+      min-height: 46px;
+      padding: 10px 12px;
+      border-radius: 16px;
+      gap: 10px;
+    }
+    .btn-emoji{
+      width: 24px;
+      height: 24px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 16px;
+    }
+    .btn-label{
+      font-weight: 700;
+      font-size: var(--fs-2);
+      white-space: nowrap;
+    }
+    .side-more{
+      display:none;
+      width: 100%;
+      justify-content:center;
+      min-height: 44px;
+      border-radius: 16px;
+    }
     /* Button system */
     .btn{
       border: 1px solid var(--border);
@@ -485,12 +528,17 @@ button, input, textarea, select {
     .topbar{
       padding: var(--s-4);
       border-bottom: 1px solid var(--border);
-      display:flex;
-      gap: var(--s-2);
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--s-3);
       align-items:center;
-      justify-content:space-between;
-      flex-wrap:wrap;
       background: linear-gradient(180deg, var(--surface-3), transparent);
+    }
+    .topbar-main{
+      display:flex;
+      flex-direction:column;
+      gap: 4px;
+      min-width: 0;
     }
     .topbar-title{
       font-size: var(--fs-5);
@@ -502,7 +550,92 @@ button, input, textarea, select {
       font-size: var(--fs-1);
       color: var(--muted);
     }
-    .topbar-actions{ display:flex; gap: 10px; flex-wrap:wrap; align-items:center; }
+    .topbar-actions{
+      display:flex;
+      gap: 10px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+    .topbar-chips{
+      display:flex;
+      flex-wrap:wrap;
+      gap: 8px;
+      align-items:center;
+    }
+    .pill{
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: var(--fs-2);
+      color: var(--muted);
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      white-space:nowrap;
+      box-shadow: 0 6px 14px rgba(15,23,42,.08);
+    }
+    .pill.strong{
+      color: var(--text);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
+      background: color-mix(in srgb, var(--primary) 10%, var(--surface-2) 90%);
+    }
+    .toggle-btn{
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 12px;
+      min-height: 44px;
+      display:inline-flex;
+      align-items:center;
+      gap: 10px;
+      font-size: var(--fs-2);
+      font-weight: 700;
+      cursor:pointer;
+      transition: background .14s ease, border-color .14s ease, box-shadow .14s ease;
+      box-shadow: 0 8px 18px rgba(15,23,42,.08);
+    }
+    .toggle-btn:hover{
+      background: var(--surface-3);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
+    }
+    .toggle-track{
+      width: 44px;
+      height: 24px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--border) 70%, transparent);
+      position: relative;
+      flex: 0 0 auto;
+    }
+    .toggle-thumb{
+      position:absolute;
+      inset-inline-start: 2px;
+      top: 2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      background: var(--surface-1);
+      box-shadow: 0 6px 12px rgba(15,23,42,.2);
+      transition: transform .2s ease, background .2s ease;
+    }
+    .toggle-btn.is-active .toggle-track{
+      background: color-mix(in srgb, var(--primary) 55%, var(--success) 45%);
+    }
+    .toggle-btn.is-active .toggle-thumb{
+      transform: translateX(18px);
+      background: #fff;
+    }
+    :dir(rtl) .toggle-btn.is-active .toggle-thumb{
+      transform: translateX(-18px);
+    }
+    .toggle-state{
+      font-size: var(--fs-1);
+      color: var(--muted);
+      min-width: 48px;
+      text-align:center;
+    }
 
     .views{ padding: var(--s-4); }
     .view{ display:none; }
@@ -1047,6 +1180,18 @@ button, input, textarea, select {
       }
     }
 
+    @media (max-width: 720px){
+      .side-actions.secondary{
+        display: none;
+      }
+      .side-actions.secondary.is-open{
+        display: grid;
+      }
+      .side-more{
+        display: inline-flex;
+      }
+    }
+
     @media (max-width: 560px){
       :root{
         --sidebar: 100%;
@@ -1065,6 +1210,19 @@ button, input, textarea, select {
       .topbar{
         padding: 12px;
         gap: 10px;
+        grid-template-columns: 1fr;
+        align-items:flex-start;
+      }
+      .topbar-actions{
+        width: 100%;
+        justify-content:flex-start;
+      }
+      .topbar-chips{
+        width: 100%;
+      }
+      .toggle-btn{
+        width: 100%;
+        justify-content: space-between;
       }
 
       .views{
@@ -1311,18 +1469,39 @@ button, input, textarea, select {
       </nav>
 
       <div class="side-bottom">
-        <div class="btn-row">
-          <button class="btn btn-secondary" id="btnAddTask">＋ تسک</button>
-          <button class="btn btn-secondary" id="btnAddProject">＋ پروژه</button>
-          <button class="btn btn-secondary" id="btnAddGoal">＋ هدف</button>
-          <button class="btn btn-secondary" id="btnAddHolding">＋ دارایی</button>
+        <div class="side-actions primary">
+          <button class="btn btn-secondary" id="btnAddTask">
+            <span class="btn-emoji">＋</span><span class="btn-label">تسک</span>
+          </button>
+          <button class="btn btn-secondary" id="btnAddProject">
+            <span class="btn-emoji">＋</span><span class="btn-label">پروژه</span>
+          </button>
+          <button class="btn btn-secondary" id="btnAddGoal">
+            <span class="btn-emoji">＋</span><span class="btn-label">هدف</span>
+          </button>
+          <button class="btn btn-secondary" id="btnAddHolding">
+            <span class="btn-emoji">＋</span><span class="btn-label">دارایی</span>
+          </button>
         </div>
-        <div class="btn-row">
-          <button class="btn btn-secondary" id="btnLock">🔒 قفل</button>
-          <button class="btn btn-secondary" id="btnTheme">🌓 تم</button>
-          <button class="btn btn-secondary" id="btnExport">⬇️ خروجی</button>
-          <button class="btn btn-secondary" id="btnImport">⬆️ ورود</button>
-          <button class="btn btn-danger" id="btnReset">ریست</button>
+        <button class="btn btn-ghost side-more" id="btnMoreActions">
+          <span class="btn-emoji">⋯</span><span class="btn-label">بیشتر</span>
+        </button>
+        <div class="side-actions secondary" id="sideSecondaryActions">
+          <button class="btn btn-secondary" id="btnLock">
+            <span class="btn-emoji">🔒</span><span class="btn-label">قفل</span>
+          </button>
+          <button class="btn btn-secondary" id="btnTheme">
+            <span class="btn-emoji">🌓</span><span class="btn-label">تم</span>
+          </button>
+          <button class="btn btn-secondary" id="btnExport">
+            <span class="btn-emoji">⬇️</span><span class="btn-label">خروجی</span>
+          </button>
+          <button class="btn btn-secondary" id="btnImport">
+            <span class="btn-emoji">⬆️</span><span class="btn-label">ورود</span>
+          </button>
+          <button class="btn btn-danger" id="btnReset">
+            <span class="btn-emoji">⚠️</span><span class="btn-label">ریست</span>
+          </button>
         </div>
       </div>
     </aside>
@@ -1330,14 +1509,20 @@ button, input, textarea, select {
     <!-- CONTENT -->
     <section class="content glass">
       <header class="topbar">
-        <div>
+        <div class="topbar-main">
           <div class="topbar-title" id="viewTitle">داشبورد</div>
           <div class="topbar-sub" id="viewSub">نمای کلی پیشرفت، درآمد، سرمایه و اهداف</div>
         </div>
         <div class="topbar-actions">
-          <button class="btn btn-secondary" id="btnFocusMode" aria-pressed="false">Focus Mode: خاموش</button>
-          <span class="badge" id="todayBadge">—</span>
-          <span class="badge" id="monthBadge">—</span>
+          <button class="toggle-btn" id="btnFocusMode" aria-pressed="false">
+            <span class="toggle-label">حالت تمرکز</span>
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            <span class="toggle-state" id="focusState">خاموش</span>
+          </button>
+          <div class="topbar-chips">
+            <span class="pill strong" id="todayBadge">—</span>
+            <span class="pill" id="monthBadge">—</span>
+          </div>
         </div>
       </header>
 
@@ -1404,10 +1589,8 @@ button, input, textarea, select {
                 <span class="badge">Tasks %</span>
               </div>
               <div class="card-body">
-                <div class="muted2 small">اگر Chart.js لود نشه، نمودار نمایش داده نمی‌شه ولی برنامه کامل کار می‌کنه.</div>
                 <div style="height: 280px">
                   <canvas id="chartWeek"></canvas>
-                  <div class="muted small" id="chartWeekFallback" style="display:none;margin-top:8px">Chart.js لود نشد.</div>
                   <div class="empty-state" id="chartWeekEmpty" style="display:none;margin-top:12px">
                     <span class="empty-icon">✅</span>
                     <div class="empty-text">
@@ -1430,7 +1613,6 @@ button, input, textarea, select {
                 </div>
               </div>
               <div class="card-body">
-                <div class="muted2 small">از بخش «یادداشت‌ها» قابل تغییر است.</div>
                 <div class="sep"></div>
                 <div id="dashMotivation" style="line-height:1.9"></div>
                 <div class="sep"></div>
@@ -1449,7 +1631,6 @@ button, input, textarea, select {
               <div class="card-body">
                 <div style="height: 280px">
                   <canvas id="chartIncome"></canvas>
-                  <div class="muted small" id="chartIncomeFallback" style="display:none;margin-top:8px">Chart.js لود نشد.</div>
                   <div class="empty-state" id="chartIncomeEmpty" style="display:none;margin-top:12px">
                     <span class="empty-icon">💼</span>
                     <div class="empty-text">
@@ -1473,10 +1654,8 @@ button, input, textarea, select {
                 <span class="badge">Holdings</span>
               </div>
               <div class="card-body">
-                <div class="muted2 small">براساس «واحد ثبت‌شده» (تومان/USDT/USD...).</div>
                 <div style="height: 280px">
                   <canvas id="chartPortfolio"></canvas>
-                  <div class="muted small" id="chartPortfolioFallback" style="display:none;margin-top:8px">Chart.js لود نشد.</div>
                   <div class="empty-state" id="chartPortfolioEmpty" style="display:none;margin-top:12px">
                     <span class="empty-icon">🧺</span>
                     <div class="empty-text">
@@ -2497,6 +2676,20 @@ button, input, textarea, select {
     showView(btn.dataset.view);
   });
 
+  const moreActionsBtn = $("#btnMoreActions");
+  const sideSecondaryActions = $("#sideSecondaryActions");
+  const setMoreActionsState = (open) => {
+    if (!moreActionsBtn || !sideSecondaryActions) return;
+    sideSecondaryActions.classList.toggle("is-open", open);
+    const label = moreActionsBtn.querySelector(".btn-label");
+    if (label) label.textContent = open ? "بستن" : "بیشتر";
+  };
+  if (moreActionsBtn && sideSecondaryActions) {
+    moreActionsBtn.addEventListener("click", () => {
+      setMoreActionsState(!sideSecondaryActions.classList.contains("is-open"));
+    });
+  }
+
   // Dialog helpers
   const openDlg = (id) => { const d = $("#"+id); if (d) d.showModal(); };
   const closeDlg = (id) => { const d = $("#"+id); if (d) d.close(); };
@@ -2539,7 +2732,9 @@ button, input, textarea, select {
     const btn = $("#btnFocusMode");
     if(btn){
       btn.setAttribute("aria-pressed", isFocus ? "true" : "false");
-      btn.textContent = "Focus Mode: " + (isFocus ? "روشن" : "خاموش");
+      btn.classList.toggle("is-active", isFocus);
+      const stateEl = $("#focusState");
+      if (stateEl) stateEl.textContent = isFocus ? "روشن" : "خاموش";
     }
   };
 
@@ -2601,7 +2796,6 @@ button, input, textarea, select {
 
   const renderDashboardCharts = () => {
     const hasChart = typeof window.Chart !== "undefined";
-    const showFallback = (id, show) => { const el = $(id); if(el) el.style.display = show ? "block" : "none"; };
     const setChartEmpty = (canvasId, emptyId, hasData) => {
       const canvas = $(canvasId);
       const empty = $(emptyId);
@@ -2610,12 +2804,9 @@ button, input, textarea, select {
     };
 
     if(!hasChart){
-      showFallback("#chartWeekFallback", true);
-      showFallback("#chartIncomeFallback", true);
-      showFallback("#chartPortfolioFallback", true);
-      setChartEmpty("#chartWeek", "#chartWeekEmpty", true);
-      setChartEmpty("#chartIncome", "#chartIncomeEmpty", true);
-      setChartEmpty("#chartPortfolio", "#chartPortfolioEmpty", true);
+      setChartEmpty("#chartWeek", "#chartWeekEmpty", false);
+      setChartEmpty("#chartIncome", "#chartIncomeEmpty", false);
+      setChartEmpty("#chartPortfolio", "#chartPortfolioEmpty", false);
       return;
     }
     const rootStyles = getComputedStyle(document.documentElement);
@@ -2636,10 +2827,6 @@ button, input, textarea, select {
     Chart.defaults.font.size = chartFontSize;
     Chart.defaults.color = chartText;
     Chart.defaults.borderColor = chartBorder;
-    showFallback("#chartWeekFallback", false);
-    showFallback("#chartIncomeFallback", false);
-    showFallback("#chartPortfolioFallback", false);
-
     [chartWeek, chartIncome, chartPortfolio].forEach(ch => { if(ch) ch.destroy(); });
 
     // Weekly completion
