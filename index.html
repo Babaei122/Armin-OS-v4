@@ -247,6 +247,12 @@ button, input, textarea, select {
       display:flex;
       gap: var(--s-2);
       align-items:flex-start;
+      cursor: pointer;
+    }
+    .profile:focus-visible{
+      outline: none;
+      box-shadow: var(--ring);
+      border-radius: 18px;
     }
     .avatar{
       width:46px;height:46px;border-radius: 16px;
@@ -256,6 +262,13 @@ button, input, textarea, select {
       font-weight:800;
       box-shadow: var(--shadow-1);
       flex: 0 0 auto;
+      overflow: hidden;
+    }
+    .avatar img{
+      width:100%;
+      height:100%;
+      object-fit: cover;
+      display:block;
     }
     .pname{ font-weight:800; font-size: var(--fs-4); }
     .ptitle{ font-size: var(--fs-1); color: var(--muted); margin-top: 2px; }
@@ -909,7 +922,7 @@ button, input, textarea, select {
           </h1>
           <span class="badge">PWA • Jalali • PIN</span>
         </div>
-        <div class="profile">
+        <div class="profile" id="profileButton" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="dlgProfile">
           <div class="avatar" id="avatar">A</div>
           <div>
             <div class="pname" id="pname">آرمین</div>
@@ -1051,9 +1064,6 @@ button, input, textarea, select {
           <button class="btn" id="btnExport">⬇️ خروجی</button>
           <button class="btn" id="btnImport">⬆️ ورود</button>
           <button class="btn danger" id="btnReset">ریست</button>
-        </div>
-        <div class="small muted2">
-          برای نصب روی موبایل/سیستم: برنامه باید روی <b>https</b> یا <b>localhost</b> اجرا شود (GitHub Pages عالیه).
         </div>
       </div>
     </aside>
@@ -1485,6 +1495,42 @@ button, input, textarea, select {
     </div>
   </dialog>
 
+  <dialog id="dlgProfile">
+    <div class="dlg-head">
+      <div>
+        <div class="dlg-title">ویرایش پروفایل</div>
+        <div class="dlg-sub">نام، عنوان و آواتار را تغییر بده.</div>
+      </div>
+      <button class="icon-btn" data-close="dlgProfile" title="بستن">✕</button>
+    </div>
+    <div class="dlg-body">
+      <div class="form-grid">
+        <div class="full">
+          <label>نام</label>
+          <input class="input" id="profileName" placeholder="مثلاً آرمین" />
+        </div>
+        <div class="full">
+          <label>عنوان/شغل</label>
+          <input class="input" id="profileTitle" placeholder="مثلاً فریلنسر • دانشجوی مهندسی کامپیوتر" />
+        </div>
+        <div class="full">
+          <label>آپلود آواتار</label>
+          <input class="input" type="file" id="profileAvatar" accept="image/*" />
+        </div>
+        <div class="full">
+          <button class="btn danger" id="btnRemoveAvatar">حذف آواتار</button>
+        </div>
+      </div>
+    </div>
+    <div class="dlg-foot">
+      <div></div>
+      <div class="btn-row">
+        <button class="btn" data-close="dlgProfile">انصراف</button>
+        <button class="btn primary" id="btnProfileSave">ذخیره</button>
+      </div>
+    </div>
+  </dialog>
+
   <dialog id="dlgProject">
     <div class="dlg-head">
       <div>
@@ -1840,6 +1886,7 @@ button, input, textarea, select {
       profile: {
         name: "آرمین",
         title: "فریلنسر • دانشجوی مهندسی کامپیوتر",
+        avatarData: "",
         monthlyMinIncome: 20000000,
         savingsRateTarget: 0.30,
         currency: "تومان"
@@ -1893,6 +1940,7 @@ button, input, textarea, select {
     return parsed && parsed.meta ? parsed : null;
   };
   let state = loadState() || defaultState();
+  state.profile.avatarData = state.profile.avatarData || "";
   const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
   const toast = (msg) => {
@@ -2038,7 +2086,16 @@ button, input, textarea, select {
   const renderHeader = () => {
     $("#pname").textContent = state.profile.name || "—";
     $("#ptitle").textContent = state.profile.title || "";
-    $("#avatar").textContent = (state.profile.name || "A").trim().slice(0,1).toUpperCase();
+    const avatar = $("#avatar");
+    avatar.innerHTML = "";
+    if(state.profile.avatarData){
+      const img = document.createElement("img");
+      img.src = state.profile.avatarData;
+      img.alt = state.profile.name || "Avatar";
+      avatar.appendChild(img);
+    } else {
+      avatar.textContent = (state.profile.name || "A").trim().slice(0,1).toUpperCase();
+    }
 
     const tISO = todayISO();
     const tJ = isoToJalaliStr(tISO);
@@ -2116,6 +2173,10 @@ button, input, textarea, select {
       showFallback("#chartPortfolioFallback", true);
       return;
     }
+    const chartFont = getComputedStyle(document.documentElement)
+      .getPropertyValue("--font-sans")
+      .trim() || "IRANSansX";
+    Chart.defaults.font.family = chartFont;
     showFallback("#chartWeekFallback", false);
     showFallback("#chartIncomeFallback", false);
     showFallback("#chartPortfolioFallback", false);
@@ -2172,7 +2233,9 @@ button, input, textarea, select {
     chartPortfolio = new Chart($("#chartPortfolio"), {
       type: "doughnut",
       data: { labels: Array.from(groups.keys()), datasets: [{ data: Array.from(groups.values()) }] },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ position:"bottom" } } }
+      options: { responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:"bottom", labels:{ font:{ family: chartFont } } } }
+      }
     });
   };
 
@@ -2879,6 +2942,53 @@ button, input, textarea, select {
   bindNote("#noteIdeas","ideas");
 
   $("#btnGoNotes").addEventListener("click", () => showView("notes"));
+
+  // =========================
+  // Profile
+  // =========================
+  let pendingAvatarData = state.profile.avatarData || "";
+  const openProfileDialog = () => {
+    $("#profileName").value = state.profile.name || "";
+    $("#profileTitle").value = state.profile.title || "";
+    $("#profileAvatar").value = "";
+    pendingAvatarData = state.profile.avatarData || "";
+    openDlg("dlgProfile");
+  };
+
+  $("#profileButton").addEventListener("click", openProfileDialog);
+  $("#profileButton").addEventListener("keydown", (e) => {
+    if(e.key === "Enter" || e.key === " "){
+      e.preventDefault();
+      openProfileDialog();
+    }
+  });
+
+  $("#profileAvatar").addEventListener("change", (e) => {
+    const file = e.target.files && e.target.files[0];
+    if(!file){ return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      pendingAvatarData = reader.result || "";
+    };
+    reader.readAsDataURL(file);
+  });
+
+  $("#btnRemoveAvatar").addEventListener("click", (e) => {
+    e.preventDefault();
+    pendingAvatarData = "";
+    $("#profileAvatar").value = "";
+    toast("آواتار حذف شد.");
+  });
+
+  $("#btnProfileSave").addEventListener("click", () => {
+    state.profile.name = $("#profileName").value.trim() || "—";
+    state.profile.title = $("#profileTitle").value.trim();
+    state.profile.avatarData = pendingAvatarData || "";
+    saveState();
+    closeDlg("dlgProfile");
+    renderHeader();
+    toast("پروفایل ذخیره شد ✅");
+  });
 
   // =========================
   // Theme / Export / Import / Reset
