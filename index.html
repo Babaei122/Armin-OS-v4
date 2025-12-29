@@ -219,7 +219,10 @@ button, input, textarea, select {
       gap: var(--gap);
       width: min(1360px, 100%);
       margin: 0 auto;
-      padding: var(--s-4);
+      padding: calc(var(--s-4) + env(safe-area-inset-top, 0px))
+        calc(var(--s-4) + env(safe-area-inset-right, 0px))
+        calc(var(--s-4) + env(safe-area-inset-bottom, 0px))
+        calc(var(--s-4) + env(safe-area-inset-left, 0px));
     }
     @media (max-width: 1120px){
       .app{ grid-template-columns: 1fr; }
@@ -327,6 +330,7 @@ button, input, textarea, select {
       color: var(--text);
       border-radius: var(--r-3);
       padding: 12px 12px;
+      min-height: 52px;
       cursor:pointer;
       transition: transform .14s ease, background .14s ease, border-color .14s ease, box-shadow .14s ease;
       text-align:right;
@@ -396,6 +400,7 @@ button, input, textarea, select {
       color: var(--text);
       border-radius: var(--r-3);
       padding: 10px 14px;
+      min-height: 44px;
       cursor:pointer;
       transition: transform .14s ease, background .14s ease, border-color .14s ease, box-shadow .14s ease;
       font-size: var(--fs-2);
@@ -407,8 +412,14 @@ button, input, textarea, select {
       user-select:none;
       line-height: 1.4;
     }
-    .btn:hover{ transform: translateY(-1px); }
-    .btn:active{ transform: translateY(0); }
+    .btn:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 10px 18px rgba(15,23,42,.08);
+    }
+    .btn:active{
+      transform: translateY(0) scale(.98);
+      box-shadow: 0 6px 14px rgba(15,23,42,.06);
+    }
     .btn-secondary{
       background: var(--surface-2);
       border-color: var(--border);
@@ -442,8 +453,8 @@ button, input, textarea, select {
     }
     .btn-icon,
     .icon-btn{
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: 16px;
       padding: 0;
       background: var(--surface-2);
@@ -571,10 +582,12 @@ button, input, textarea, select {
       box-shadow: var(--shadow-2);
       border-color: var(--border-strong);
     }
-    .card:hover{
-      transform: translateY(-1px);
-      background: var(--surface-3);
-      border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
+    @media (hover: hover){
+      .card:hover{
+        transform: translateY(-1px);
+        background: var(--surface-3);
+        border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
+      }
     }
     .card.primary{
       background: var(--surface-1);
@@ -729,15 +742,44 @@ button, input, textarea, select {
       gap: 12px;
       align-items:flex-start;
       justify-content:space-between;
-      transition: transform .14s ease, background .14s ease, border-color .14s ease;
+      transition: transform .14s ease, background .14s ease, border-color .14s ease, box-shadow .14s ease;
     }
     .item:hover{
       transform: translateY(-1px);
       background: var(--surface-3);
       border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
     }
-    .item-main{ flex:1; min-width: 230px; }
-    .item-title{ font-weight: 900; margin:0 0 3px 0; font-size: var(--fs-3); }
+    .item-main{ flex:1; min-width: 0; }
+    .item-title{
+      font-weight: 900;
+      margin:0 0 3px 0;
+      font-size: var(--fs-3);
+      overflow-wrap: anywhere;
+    }
+    .item-actions{
+      display:flex;
+      gap: 6px;
+      align-items:center;
+      flex-wrap:wrap;
+    }
+    .item.done{
+      background: color-mix(in srgb, var(--surface-2) 75%, transparent);
+      border-color: color-mix(in srgb, var(--success) 20%, var(--border));
+      box-shadow: none;
+    }
+    .item.done .item-title{
+      text-decoration: line-through;
+      color: var(--muted);
+    }
+    .item.task-complete{
+      animation: taskComplete .22s ease both;
+    }
+
+    @keyframes taskComplete{
+      0%{ transform: scale(1); }
+      60%{ transform: scale(1.01); }
+      100%{ transform: scale(1); }
+    }
     .item-meta{
       display:flex; flex-wrap:wrap; gap: 8px;
       font-size: var(--fs-1);
@@ -900,7 +942,7 @@ button, input, textarea, select {
     .toast{
       position: fixed;
       left: 18px;
-      bottom: 18px;
+      bottom: calc(18px + env(safe-area-inset-bottom, 0px));
       border: 1px solid var(--border);
       background: var(--surface-4);
       backdrop-filter: blur(12px);
@@ -1013,7 +1055,10 @@ button, input, textarea, select {
 
       .app{
         width: 100%;
-        padding: 12px;
+        padding: calc(12px + env(safe-area-inset-top, 0px))
+          calc(12px + env(safe-area-inset-right, 0px))
+          calc(16px + env(safe-area-inset-bottom, 0px))
+          calc(12px + env(safe-area-inset-left, 0px));
         gap: 12px;
       }
 
@@ -1044,9 +1089,9 @@ button, input, textarea, select {
 
       .btn-icon,
       .icon-btn{
-        width: 36px;
-        height: 36px;
-        border-radius: 14px;
+        width: 44px;
+        height: 44px;
+        border-radius: 16px;
       }
 
       .cal-grid{
@@ -1073,6 +1118,21 @@ button, input, textarea, select {
       .mini{
         font-size: 10px;
         padding: 3px 6px;
+      }
+
+      .item{
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .item-actions{
+        width: 100%;
+        justify-content: flex-start;
+      }
+      .item-main{
+        min-width: 0;
+      }
+      .item-meta{
+        gap: 6px;
       }
     }
 
@@ -2234,6 +2294,7 @@ button, input, textarea, select {
 
   const $ = (sel, root=document) => root.querySelector(sel);
   const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const uid = () => (Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36));
   const todayISO = () => {
     const d = new Date();
@@ -2558,6 +2619,10 @@ button, input, textarea, select {
       return;
     }
     const rootStyles = getComputedStyle(document.documentElement);
+    const isSmallScreen = window.matchMedia("(max-width: 560px)").matches;
+    const chartFontSize = isSmallScreen ? 11 : 12;
+    const chartLegendPadding = isSmallScreen ? 10 : 14;
+    const chartTickPadding = isSmallScreen ? 6 : 10;
     const chartFont = rootStyles.getPropertyValue("--font-sans").trim() || "IRANSansX";
     const chartText = rootStyles.getPropertyValue("--text").trim() || "#ffffff";
     const chartMuted = rootStyles.getPropertyValue("--muted").trim() || "#94a3b8";
@@ -2568,6 +2633,7 @@ button, input, textarea, select {
     const chartWarning = rootStyles.getPropertyValue("--warning").trim() || "#ffd97b";
     const chartDanger = rootStyles.getPropertyValue("--danger").trim() || "#ff7b7b";
     Chart.defaults.font.family = chartFont;
+    Chart.defaults.font.size = chartFontSize;
     Chart.defaults.color = chartText;
     Chart.defaults.borderColor = chartBorder;
     showFallback("#chartWeekFallback", false);
@@ -2606,7 +2672,8 @@ button, input, textarea, select {
             fill: true,
             borderColor: chartPrimary,
             backgroundColor: chartPrimarySoft,
-            pointBackgroundColor: chartPrimary
+            pointBackgroundColor: chartPrimary,
+            pointRadius: isSmallScreen ? 2.5 : 3
           }]
         },
         options: {
@@ -2615,13 +2682,24 @@ button, input, textarea, select {
           plugins:{ legend:{ display:false } },
           scales:{
             x:{
-              ticks:{ color: chartMuted, font:{ family: chartFont } },
+              ticks:{
+                color: chartMuted,
+                font:{ family: chartFont, size: chartFontSize },
+                maxRotation: isSmallScreen ? 0 : 25,
+                minRotation: isSmallScreen ? 0 : 0,
+                padding: chartTickPadding
+              },
               grid:{ color: chartBorder }
             },
             y:{
               min:0,
               max:100,
-              ticks:{ callback:(v)=> v+"%", color: chartMuted, font:{ family: chartFont } },
+              ticks:{
+                callback:(v)=> v+"%",
+                color: chartMuted,
+                font:{ family: chartFont, size: chartFontSize },
+                padding: chartTickPadding
+              },
               grid:{ color: chartBorder }
             }
           }
@@ -2664,11 +2742,22 @@ button, input, textarea, select {
           plugins:{ legend:{ display:false } },
           scales:{
             x:{
-              ticks:{ color: chartMuted, font:{ family: chartFont } },
+              ticks:{
+                color: chartMuted,
+                font:{ family: chartFont, size: chartFontSize },
+                maxRotation: isSmallScreen ? 0 : 25,
+                minRotation: isSmallScreen ? 0 : 0,
+                padding: chartTickPadding
+              },
               grid:{ color: chartBorder }
             },
             y:{
-              ticks:{ callback:(v)=> moneyFA(v), color: chartMuted, font:{ family: chartFont } },
+              ticks:{
+                callback:(v)=> moneyFA(v),
+                color: chartMuted,
+                font:{ family: chartFont, size: chartFontSize },
+                padding: chartTickPadding
+              },
               grid:{ color: chartBorder }
             }
           }
@@ -2703,7 +2792,12 @@ button, input, textarea, select {
           plugins:{
             legend:{
               position:"bottom",
-              labels:{ font:{ family: chartFont }, color: chartText }
+              labels:{
+                font:{ family: chartFont, size: chartFontSize },
+                color: chartText,
+                padding: chartLegendPadding,
+                boxWidth: isSmallScreen ? 10 : 12
+              }
             }
           }
         }
@@ -2742,7 +2836,7 @@ button, input, textarea, select {
       const priChip = t.priority === "high" ? "chip danger" : (t.priority === "low" ? "chip" : "chip acc");
       const doneChip = t.done ? "mini ok" : "mini";
       const item = document.createElement("div");
-      item.className = "item";
+      item.className = `item${t.done ? " done" : ""}`;
       item.innerHTML = `
         <div class="item-main">
           <div class="item-title">${escapeHtml(t.title)}</div>
@@ -2818,7 +2912,20 @@ button, input, textarea, select {
     const task = state.tasks.find(t => t.id === id);
     if(!task) return;
 
-    if(act==="toggle"){ task.done = !task.done; saveState(); renderPlanner(); renderDashboard(); renderDashboardCharts(); return; }
+    if(act==="toggle"){
+      const item = btn.closest(".item");
+      const nextDone = !task.done;
+      if(item && !prefersReducedMotion.matches && nextDone){
+        item.classList.add("task-complete");
+        item.addEventListener("animationend", () => item.classList.remove("task-complete"), { once: true });
+      }
+      task.done = nextDone;
+      saveState();
+      const update = () => { renderPlanner(); renderDashboard(); renderDashboardCharts(); };
+      if(prefersReducedMotion.matches){ update(); }
+      else { setTimeout(update, 160); }
+      return;
+    }
     if(act==="edit"){ openTaskDialog(task); return; }
     if(act==="del"){
       state.tasks = state.tasks.filter(t => t.id !== id);
