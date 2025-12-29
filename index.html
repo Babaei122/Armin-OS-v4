@@ -95,27 +95,38 @@
       --shadow-1: 0 10px 30px rgba(0,0,0,.28);
       --shadow-2: 0 18px 60px rgba(0,0,0,.38);
 
-      --ring: 0 0 0 4px rgba(154,230,255,.20);
-
-      /* colors (dark) */
       --bg: #090d16;
       --bg2:#0b1122;
-      --surface: rgba(255,255,255,.06);
-      --surface2: rgba(255,255,255,.09);
-      --border: rgba(255,255,255,.10);
+      --surface-1: rgba(255,255,255,.04);
+      --surface-2: rgba(255,255,255,.06);
+      --surface-3: rgba(255,255,255,.10);
+      --surface-4: rgba(255,255,255,.16);
+      --border: rgba(255,255,255,.12);
       --text: rgba(255,255,255,.92);
       --muted: rgba(255,255,255,.66);
-      --muted2: rgba(255,255,255,.46);
+      --muted-2: rgba(255,255,255,.46);
 
-      --accent: #9ae6ff;
-      --accent2:#b7ffcf;
+      --primary: #9ae6ff;
+      --primary-2:#b7ffcf;
+      --success:#7bffb5;
+      --warning:#ffd97b;
       --danger:#ff7b7b;
-      --warn:#ffd97b;
-      --ok:#7bffb5;
+
+      --primary-soft: color-mix(in srgb, var(--primary) 24%, transparent);
+      --primary-soft-2: color-mix(in srgb, var(--primary-2) 20%, transparent);
+      --success-soft: color-mix(in srgb, var(--success) 20%, transparent);
+      --warning-soft: color-mix(in srgb, var(--warning) 18%, transparent);
+      --danger-soft: color-mix(in srgb, var(--danger) 20%, transparent);
+
+      --ring: 0 0 0 4px color-mix(in srgb, var(--primary) 24%, transparent);
+      --focus-border: color-mix(in srgb, var(--primary) 40%, var(--border));
+      --overlay: rgba(0,0,0,.55);
+      --overlay-strong: rgba(0,0,0,.60);
+      --scrollbar-thumb: rgba(255,255,255,.16);
 
       --grad:
-        radial-gradient(950px 520px at 8% 10%, rgba(154,230,255,.18), transparent 60%),
-        radial-gradient(980px 520px at 96% 26%, rgba(183,255,207,.14), transparent 55%),
+        radial-gradient(950px 520px at 8% 10%, var(--primary-soft), transparent 60%),
+        radial-gradient(980px 520px at 96% 26%, var(--primary-soft-2), transparent 55%),
         linear-gradient(180deg, var(--bg), var(--bg2));
     }
 html, body {
@@ -130,24 +141,43 @@ button, input, textarea, select {
   font-family: inherit;
 }
 
+canvas {
+  font-family: var(--font-sans);
+}
+
     html[data-theme="light"]{
+      /* Light theme tokens: tweak these values to refine the palette. */
       --bg:#f5f7fc;
       --bg2:#eef2fb;
-      --surface: rgba(0,0,0,.04);
-      --surface2: rgba(0,0,0,.06);
-      --border: rgba(0,0,0,.10);
-      --text: rgba(0,0,0,.86);
-      --muted: rgba(0,0,0,.58);
-      --muted2: rgba(0,0,0,.42);
-      --accent:#0ea5e9;
-      --accent2:#22c55e;
-      --ring: 0 0 0 4px rgba(14,165,233,.16);
-      --shadow-1: 0 10px 26px rgba(0,0,0,.12);
-      --shadow-2: 0 18px 54px rgba(0,0,0,.14);
+      --surface-1: rgba(15,23,42,.04);
+      --surface-2: rgba(15,23,42,.06);
+      --surface-3: rgba(15,23,42,.10);
+      --surface-4: rgba(15,23,42,.14);
+      --border: rgba(15,23,42,.12);
+      --text: #0f172a;
+      --muted: rgba(15,23,42,.64);
+      --muted-2: rgba(15,23,42,.48);
+      --primary:#0284c7;
+      --primary-2:#16a34a;
+      --success:#16a34a;
+      --warning:#d97706;
+      --danger:#dc2626;
+      --primary-soft: color-mix(in srgb, var(--primary) 18%, transparent);
+      --primary-soft-2: color-mix(in srgb, var(--primary-2) 16%, transparent);
+      --success-soft: color-mix(in srgb, var(--success) 18%, transparent);
+      --warning-soft: color-mix(in srgb, var(--warning) 16%, transparent);
+      --danger-soft: color-mix(in srgb, var(--danger) 16%, transparent);
+      --ring: 0 0 0 4px color-mix(in srgb, var(--primary) 18%, transparent);
+      --focus-border: color-mix(in srgb, var(--primary) 40%, var(--border));
+      --shadow-1: 0 10px 26px rgba(15,23,42,.12);
+      --shadow-2: 0 18px 54px rgba(15,23,42,.16);
+      --overlay: rgba(15,23,42,.48);
+      --overlay-strong: rgba(15,23,42,.56);
+      --scrollbar-thumb: rgba(15,23,42,.18);
 
       --grad:
-        radial-gradient(950px 520px at 8% 10%, rgba(14,165,233,.12), transparent 60%),
-        radial-gradient(980px 520px at 96% 26%, rgba(34,197,94,.12), transparent 55%),
+        radial-gradient(950px 520px at 8% 10%, var(--primary-soft), transparent 60%),
+        radial-gradient(980px 520px at 96% 26%, var(--primary-soft-2), transparent 55%),
         linear-gradient(180deg, var(--bg), var(--bg2));
     }
 
@@ -178,7 +208,7 @@ button, input, textarea, select {
     :where(button, input, select, textarea, a):focus-visible{
       outline: none;
       box-shadow: var(--ring);
-      border-color: rgba(154,230,255,.30);
+      border-color: var(--focus-border);
     }
 
     .app{
@@ -195,7 +225,7 @@ button, input, textarea, select {
 
     .glass{
       border: 1px solid var(--border);
-      background: color-mix(in srgb, var(--surface) 86%, transparent);
+      background: color-mix(in srgb, var(--surface-2) 86%, transparent);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       box-shadow: var(--shadow-2);
@@ -215,7 +245,7 @@ button, input, textarea, select {
     .side-top{
       padding: var(--s-4);
       border-bottom: 1px solid var(--border);
-      background: linear-gradient(180deg, var(--surface2), transparent);
+      background: linear-gradient(180deg, var(--surface-3), transparent);
     }
     .brand{
       display:flex;
@@ -236,7 +266,7 @@ button, input, textarea, select {
       padding: 6px 10px;
       border-radius: 999px;
       border: 1px solid var(--border);
-      background: var(--surface2);
+      background: var(--surface-3);
       color: var(--muted);
       user-select:none;
       white-space:nowrap;
@@ -257,7 +287,7 @@ button, input, textarea, select {
     .avatar{
       width:46px;height:46px;border-radius: 16px;
       border: 1px solid var(--border);
-      background: linear-gradient(135deg, rgba(154,230,255,.22), rgba(183,255,207,.10));
+      background: linear-gradient(135deg, var(--primary-soft), var(--primary-soft-2));
       display:flex;align-items:center;justify-content:center;
       font-weight:800;
       box-shadow: var(--shadow-1);
@@ -283,14 +313,14 @@ button, input, textarea, select {
     }
     .nav::-webkit-scrollbar{ width: 8px; }
     .nav::-webkit-scrollbar-thumb{
-      background: rgba(255,255,255,.12);
+      background: var(--scrollbar-thumb);
       border-radius: 999px;
     }
     .nav::-webkit-scrollbar-track{ background: transparent; }
     .nav button{
       width:100%;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,.03);
+      background: var(--surface-1);
       color: var(--text);
       border-radius: var(--r-3);
       padding: 12px 12px;
@@ -304,12 +334,12 @@ button, input, textarea, select {
     }
     .nav button:hover{
       transform: translateY(-1px);
-      background: rgba(255,255,255,.06);
-      border-color: color-mix(in srgb, var(--border) 60%, var(--accent) 40%);
+      background: var(--surface-2);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
     }
     .nav button.active{
-      background: linear-gradient(135deg, rgba(154,230,255,.14), rgba(183,255,207,.10));
-      border-color: rgba(154,230,255,.32);
+      background: linear-gradient(135deg, var(--primary-soft), var(--primary-soft-2));
+      border-color: color-mix(in srgb, var(--primary) 42%, var(--border));
     }
     .nav-left{
       display:flex;
@@ -322,7 +352,7 @@ button, input, textarea, select {
       height: 38px;
       border-radius: 18px;
       border: 1px solid var(--border);
-      background: color-mix(in srgb, var(--surface2) 70%, transparent);
+      background: color-mix(in srgb, var(--surface-3) 70%, transparent);
       display:flex;
       align-items:center;
       justify-content:center;
@@ -331,15 +361,15 @@ button, input, textarea, select {
       color: var(--text);
     }
     .nav button.active .nav-ic{
-      border-color: rgba(154,230,255,.35);
-      box-shadow: 0 10px 22px rgba(154,230,255,.10);
+      border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+      box-shadow: 0 10px 22px color-mix(in srgb, var(--primary) 20%, transparent);
     }
     .nav-ic svg{ width: 18px; height: 18px; opacity: .95; }
     .nav-text{ min-width: 0; }
     .nav-title{ font-size: var(--fs-3); font-weight: 800; line-height: 1.25; }
-    .nav-hint{ font-size: var(--fs-1); color: var(--muted2); margin-top: 2px; }
+    .nav-hint{ font-size: var(--fs-1); color: var(--muted-2); margin-top: 2px; }
     .nav-arrow{
-      color: var(--muted2);
+      color: var(--muted-2);
       font-size: var(--fs-2);
       user-select:none;
     }
@@ -350,13 +380,13 @@ button, input, textarea, select {
       border-top: 1px solid var(--border);
       display:grid;
       gap: 10px;
-      background: linear-gradient(0deg, var(--surface2), transparent);
+      background: linear-gradient(0deg, var(--surface-3), transparent);
     }
 
     .btn-row{ display:flex; gap: 10px; flex-wrap:wrap; }
     .btn{
       border: 1px solid var(--border);
-      background: var(--surface2);
+      background: var(--surface-3);
       color: var(--text);
       border-radius: var(--r-3);
       padding: 10px 12px;
@@ -370,18 +400,18 @@ button, input, textarea, select {
     }
     .btn:hover{
       transform: translateY(-1px);
-      background: rgba(255,255,255,.10);
-      border-color: color-mix(in srgb, var(--border) 60%, var(--accent) 40%);
+      background: var(--surface-4);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
     }
     .btn:active{ transform: translateY(0); }
     .btn.primary{
-      background: linear-gradient(135deg, rgba(154,230,255,.20), rgba(183,255,207,.12));
-      border-color: rgba(154,230,255,.35);
+      background: linear-gradient(135deg, var(--primary-soft), var(--primary-soft-2));
+      border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
     }
     .btn.danger{
-      border-color: rgba(255,123,123,.30);
+      border-color: color-mix(in srgb, var(--danger) 40%, var(--border));
       color: var(--danger);
-      background: color-mix(in srgb, var(--surface2) 85%, rgba(255,123,123,.12) 15%);
+      background: color-mix(in srgb, var(--surface-3) 85%, var(--danger-soft));
     }
     .btn.ghost{ background: transparent; }
 
@@ -405,7 +435,7 @@ button, input, textarea, select {
       align-items:center;
       justify-content:space-between;
       flex-wrap:wrap;
-      background: linear-gradient(180deg, var(--surface2), transparent);
+      background: linear-gradient(180deg, var(--surface-3), transparent);
     }
     .topbar-title{
       font-size: var(--fs-5);
@@ -436,7 +466,7 @@ button, input, textarea, select {
 
     .card{
       border: 1px solid var(--border);
-      background: rgba(255,255,255,.04);
+      background: var(--surface-1);
       border-radius: var(--r-3);
       padding: var(--s-4);
       box-shadow: var(--shadow-1);
@@ -444,8 +474,8 @@ button, input, textarea, select {
     }
     .card:hover{
       transform: translateY(-1px);
-      background: rgba(255,255,255,.06);
-      border-color: color-mix(in srgb, var(--border) 60%, var(--accent) 40%);
+      background: var(--surface-2);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
     }
     .card h3{
       margin: 0 0 8px 0;
@@ -453,7 +483,7 @@ button, input, textarea, select {
       font-weight: 900;
     }
     .muted{ color: var(--muted); }
-    .muted2{ color: var(--muted2); }
+    .muted2{ color: var(--muted-2); }
     .small{ font-size: var(--fs-1); }
     .kpi{
       font-size: 26px;
@@ -472,7 +502,7 @@ button, input, textarea, select {
     .input, select, textarea{
       width:100%;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,.04);
+      background: var(--surface-1);
       color: var(--text);
       border-radius: 16px;
       padding: 10px 12px;
@@ -498,7 +528,7 @@ button, input, textarea, select {
     .chips{ display:flex; flex-wrap:wrap; gap: 8px; }
     .chip{
       border: 1px solid var(--border);
-      background: rgba(255,255,255,.04);
+      background: var(--surface-1);
       padding: 6px 10px;
       border-radius: 999px;
       font-size: var(--fs-1);
@@ -508,16 +538,16 @@ button, input, textarea, select {
       gap: 6px;
       user-select:none;
     }
-    .chip.ok{ border-color: rgba(123,255,181,.30); color: var(--ok); }
-    .chip.warn{ border-color: rgba(255,217,123,.30); color: var(--warn); }
-    .chip.danger{ border-color: rgba(255,123,123,.30); color: var(--danger); }
-    .chip.acc{ border-color: rgba(154,230,255,.30); color: var(--accent); }
+    .chip.ok{ border-color: color-mix(in srgb, var(--success) 40%, var(--border)); color: var(--success); }
+    .chip.warn{ border-color: color-mix(in srgb, var(--warning) 40%, var(--border)); color: var(--warning); }
+    .chip.danger{ border-color: color-mix(in srgb, var(--danger) 40%, var(--border)); color: var(--danger); }
+    .chip.acc{ border-color: color-mix(in srgb, var(--primary) 40%, var(--border)); color: var(--primary); }
 
     /* Lists */
     .list{ display:grid; gap: 10px; }
     .item{
       border: 1px solid var(--border);
-      background: rgba(255,255,255,.03);
+      background: var(--surface-1);
       border-radius: var(--r-3);
       padding: 12px;
       display:flex;
@@ -528,8 +558,8 @@ button, input, textarea, select {
     }
     .item:hover{
       transform: translateY(-1px);
-      background: rgba(255,255,255,.06);
-      border-color: color-mix(in srgb, var(--border) 60%, var(--accent) 40%);
+      background: var(--surface-2);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
     }
     .item-main{ flex:1; min-width: 230px; }
     .item-title{ font-weight: 900; margin:0 0 3px 0; font-size: var(--fs-3); }
@@ -544,7 +574,7 @@ button, input, textarea, select {
       height: 40px;
       border-radius: 16px;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,.04);
+      background: var(--surface-1);
       color: var(--text);
       cursor:pointer;
       display:flex;
@@ -555,17 +585,17 @@ button, input, textarea, select {
     }
     .icon-btn:hover{
       transform: translateY(-1px);
-      background: rgba(255,255,255,.08);
-      border-color: color-mix(in srgb, var(--border) 60%, var(--accent) 40%);
+      background: var(--surface-2);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
     }
-    .icon-btn.danger{ border-color: rgba(255,123,123,.30); color: var(--danger); }
+    .icon-btn.danger{ border-color: color-mix(in srgb, var(--danger) 40%, var(--border)); color: var(--danger); }
 
     /* Progress bar */
     .bar{
       width:100%;
       height: 10px;
       border-radius: 999px;
-      background: rgba(255,255,255,.08);
+      background: var(--surface-3);
       overflow:hidden;
       border: 1px solid var(--border);
     }
@@ -573,7 +603,7 @@ button, input, textarea, select {
       display:block;
       height:100%;
       width:0%;
-      background: linear-gradient(90deg, rgba(154,230,255,.85), rgba(183,255,207,.75));
+      background: linear-gradient(90deg, color-mix(in srgb, var(--primary) 85%, transparent), color-mix(in srgb, var(--primary-2) 75%, transparent));
       transition: width .22s ease;
     }
 
@@ -600,12 +630,12 @@ button, input, textarea, select {
       padding: 8px 10px;
       border-radius: 16px;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,.03);
+      background: var(--surface-1);
       text-align:center;
     }
     .cal-day{
       border: 1px solid var(--border);
-      background: rgba(255,255,255,.03);
+      background: var(--surface-1);
       border-radius: var(--r-3);
       padding: 10px;
       min-height: 94px;
@@ -618,8 +648,8 @@ button, input, textarea, select {
     }
     .cal-day:hover{
       transform: translateY(-1px);
-      background: rgba(255,255,255,.06);
-      border-color: color-mix(in srgb, var(--border) 60%, var(--accent) 40%);
+      background: var(--surface-2);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
     }
     .cal-day.blank{ opacity:.35; cursor:default; }
     .cal-top{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
@@ -637,14 +667,14 @@ button, input, textarea, select {
       border-radius: 999px;
       border: 1px solid var(--border);
       color: var(--muted);
-      background: rgba(255,255,255,.04);
+      background: var(--surface-1);
       white-space:nowrap;
       max-width: 100%;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-    .mini.ok{ border-color: rgba(123,255,181,.28); color: var(--ok); }
-    .mini.acc{ border-color: rgba(154,230,255,.28); color: var(--accent); }
+    .mini.ok{ border-color: color-mix(in srgb, var(--success) 38%, var(--border)); color: var(--success); }
+    .mini.acc{ border-color: color-mix(in srgb, var(--primary) 38%, var(--border)); color: var(--primary); }
 
     /* Tables */
     table{ width:100%; border-collapse:separate; border-spacing:0 10px; }
@@ -657,7 +687,7 @@ button, input, textarea, select {
     }
     td{
       padding: 12px 10px;
-      background: rgba(255,255,255,.03);
+      background: var(--surface-1);
       border-top: 1px solid var(--border);
       border-bottom: 1px solid var(--border);
       vertical-align: top;
@@ -670,7 +700,7 @@ button, input, textarea, select {
     dialog{
       border: 1px solid var(--border);
       border-radius: 26px;
-      background: color-mix(in srgb, var(--surface2) 85%, transparent);
+      background: color-mix(in srgb, var(--surface-3) 85%, transparent);
       color: var(--text);
       box-shadow: var(--shadow-2);
       width: min(760px, 92vw);
@@ -680,7 +710,7 @@ button, input, textarea, select {
       -webkit-backdrop-filter: blur(16px);
     }
     dialog::backdrop{
-      background: rgba(0,0,0,.55);
+      background: var(--overlay);
       backdrop-filter: blur(10px);
     }
     .dlg-head{
@@ -690,7 +720,7 @@ button, input, textarea, select {
       align-items:flex-start;
       justify-content:space-between;
       gap: 10px;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), transparent);
+      background: linear-gradient(180deg, var(--surface-2), transparent);
     }
     .dlg-title{ font-weight: 1000; margin:0; font-size: var(--fs-4); }
     .dlg-sub{ font-size: var(--fs-1); color: var(--muted); margin-top:4px; }
@@ -702,7 +732,7 @@ button, input, textarea, select {
       justify-content:space-between;
       gap:10px;
       flex-wrap:wrap;
-      background: linear-gradient(0deg, rgba(255,255,255,.06), transparent);
+      background: linear-gradient(0deg, var(--surface-2), transparent);
     }
 
     /* Toast */
@@ -711,7 +741,7 @@ button, input, textarea, select {
       left: 18px;
       bottom: 18px;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,.10);
+      background: var(--surface-3);
       backdrop-filter: blur(12px);
       color: var(--text);
       border-radius: 18px;
@@ -738,9 +768,9 @@ button, input, textarea, select {
       justify-content: center;
       padding: var(--s-4);
       background:
-        radial-gradient(800px 420px at 10% 10%, rgba(154,230,255,.22), transparent 60%),
-        radial-gradient(900px 420px at 90% 70%, rgba(183,255,207,.18), transparent 55%),
-        rgba(0,0,0,.60);
+        radial-gradient(800px 420px at 10% 10%, var(--primary-soft), transparent 60%),
+        radial-gradient(900px 420px at 90% 70%, var(--primary-soft-2), transparent 55%),
+        var(--overlay-strong);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
     }
@@ -748,7 +778,7 @@ button, input, textarea, select {
       width: min(520px, 94vw);
       border-radius: var(--r-4);
       border: 1px solid var(--border);
-      background: color-mix(in srgb, var(--surface2) 90%, transparent);
+      background: color-mix(in srgb, var(--surface-3) 90%, transparent);
       box-shadow: var(--shadow-2);
       padding: var(--s-5);
       text-align: center;
@@ -778,7 +808,7 @@ button, input, textarea, select {
       font-weight: 900;
       border-radius: 18px;
       border: 1px solid var(--border);
-      background: rgba(255,255,255,.05);
+      background: var(--surface-2);
       color: var(--text);
       outline: none;
     }
@@ -2129,6 +2159,24 @@ button, input, textarea, select {
   // =========================
   let chartWeek = null, chartIncome = null, chartPortfolio = null;
 
+  const getThemeTokens = () => {
+    const styles = getComputedStyle(document.documentElement);
+    const pick = (name, fallback="") => styles.getPropertyValue(name).trim() || fallback;
+    return {
+      font: pick("--font-sans", "IRANSansX"),
+      text: pick("--text", "#ffffff"),
+      muted: pick("--muted", "#cbd5f5"),
+      border: pick("--border", "rgba(255,255,255,.12)"),
+      primary: pick("--primary", "#9ae6ff"),
+      primary2: pick("--primary-2", "#b7ffcf"),
+      success: pick("--success", "#7bffb5"),
+      warning: pick("--warning", "#ffd97b"),
+      danger: pick("--danger", "#ff7b7b"),
+      primarySoft: pick("--primary-soft", "rgba(154,230,255,.24)"),
+      primarySoft2: pick("--primary-soft-2", "rgba(183,255,207,.20)")
+    };
+  };
+
   const renderDashboard = () => {
     const t = todayISO();
     const todayTasks = tasksByDate(t);
@@ -2173,10 +2221,10 @@ button, input, textarea, select {
       showFallback("#chartPortfolioFallback", true);
       return;
     }
-    const chartFont = getComputedStyle(document.documentElement)
-      .getPropertyValue("--font-sans")
-      .trim() || "IRANSansX";
-    Chart.defaults.font.family = chartFont;
+    const theme = getThemeTokens();
+    Chart.defaults.font.family = theme.font;
+    Chart.defaults.color = theme.text;
+    Chart.defaults.borderColor = theme.border;
     showFallback("#chartWeekFallback", false);
     showFallback("#chartIncomeFallback", false);
     showFallback("#chartPortfolioFallback", false);
@@ -2198,9 +2246,24 @@ button, input, textarea, select {
 
     chartWeek = new Chart($("#chartWeek"), {
       type: "line",
-      data: { labels, datasets: [{ label: "درصد انجام تسک", data: values, tension: .35, fill: true }] },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
-        scales:{ y:{ min:0, max:100, ticks:{ callback:(v)=> v+"%" } } }
+      data: { labels, datasets: [{
+        label: "درصد انجام تسک",
+        data: values,
+        tension: .35,
+        fill: true,
+        borderColor: theme.primary,
+        backgroundColor: theme.primarySoft,
+        pointBackgroundColor: theme.primary,
+        pointBorderColor: theme.primary
+      }] },
+      options: {
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{ legend:{ display:false } },
+        scales:{
+          x:{ grid:{ color: theme.border }, ticks:{ color: theme.muted } },
+          y:{ min:0, max:100, grid:{ color: theme.border }, border:{ color: theme.border }, ticks:{ color: theme.muted, callback:(v)=> v+"%" } }
+        }
       }
     });
 
@@ -2218,9 +2281,20 @@ button, input, textarea, select {
 
     chartIncome = new Chart($("#chartIncome"), {
       type: "bar",
-      data: { labels: incLabels, datasets: [{ label: "درآمد", data: incValues }] },
-      options: { responsive:true, maintainAspectRatio:false, plugins:{ legend:{ display:false } },
-        scales:{ y:{ ticks:{ callback:(v)=> moneyFA(v) } } }
+      data: { labels: incLabels, datasets: [{
+        label: "درآمد",
+        data: incValues,
+        backgroundColor: theme.primarySoft2,
+        borderColor: theme.primary
+      }] },
+      options: {
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{ legend:{ display:false } },
+        scales:{
+          x:{ grid:{ color: theme.border }, ticks:{ color: theme.muted } },
+          y:{ grid:{ color: theme.border }, border:{ color: theme.border }, ticks:{ color: theme.muted, callback:(v)=> moneyFA(v) } }
+        }
       }
     });
 
@@ -2230,11 +2304,16 @@ button, input, textarea, select {
       const key = `${h.type} (${h.unit})`;
       groups.set(key, (groups.get(key)||0) + Number(h.amount||0));
     }
+    const palette = [theme.primary, theme.primary2, theme.success, theme.warning, theme.danger];
+    const doughnutColors = Array.from({ length: groups.size }, (_, i) => palette[i % palette.length]);
     chartPortfolio = new Chart($("#chartPortfolio"), {
       type: "doughnut",
-      data: { labels: Array.from(groups.keys()), datasets: [{ data: Array.from(groups.values()) }] },
+      data: {
+        labels: Array.from(groups.keys()),
+        datasets: [{ data: Array.from(groups.values()), backgroundColor: doughnutColors }]
+      },
       options: { responsive:true, maintainAspectRatio:false,
-        plugins:{ legend:{ position:"bottom", labels:{ font:{ family: chartFont } } } }
+        plugins:{ legend:{ position:"bottom", labels:{ color: theme.muted, font:{ family: theme.font } } } }
       }
     });
   };
