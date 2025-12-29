@@ -322,17 +322,18 @@ button, input, textarea, select {
     .nav button{
       width:100%;
       border: 1px solid var(--border);
-      background: var(--surface-1);
+      background: color-mix(in srgb, var(--surface-1) 85%, var(--surface-2) 15%);
       color: var(--text);
       border-radius: var(--r-3);
       padding: 12px 12px;
       cursor:pointer;
-      transition: transform .14s ease, background .14s ease, border-color .14s ease;
+      transition: transform .14s ease, background .14s ease, border-color .14s ease, box-shadow .14s ease;
       text-align:right;
       display:flex;
       align-items:center;
       justify-content:space-between;
       gap: var(--s-2);
+      box-shadow: 0 8px 18px rgba(15,23,42,.06);
     }
     .nav button:hover{
       transform: translateY(-1px);
@@ -342,6 +343,7 @@ button, input, textarea, select {
     .nav button.active{
       background: linear-gradient(135deg, var(--primary-soft), var(--success-soft));
       border-color: var(--border-strong);
+      box-shadow: 0 12px 26px color-mix(in srgb, var(--primary) 16%, transparent);
     }
     .nav-left{
       display:flex;
@@ -369,9 +371,9 @@ button, input, textarea, select {
     .nav-ic svg{ width: 18px; height: 18px; opacity: .95; }
     .nav-text{ min-width: 0; }
     .nav-title{ font-size: var(--fs-3); font-weight: 800; line-height: 1.25; }
-    .nav-hint{ font-size: var(--fs-1); color: var(--muted-2); margin-top: 2px; }
+    .nav-hint{ font-size: var(--fs-1); color: var(--muted); margin-top: 2px; }
     .nav-arrow{
-      color: var(--muted-2);
+      color: var(--muted);
       font-size: var(--fs-2);
       user-select:none;
     }
@@ -511,17 +513,91 @@ button, input, textarea, select {
       border-radius: var(--r-3);
       padding: var(--s-4);
       box-shadow: var(--shadow-1);
-      transition: transform .14s ease, background .14s ease, border-color .14s ease;
+      transition: transform .14s ease, background .14s ease, border-color .14s ease, box-shadow .14s ease;
+      display:flex;
+      flex-direction:column;
+      gap: var(--s-3);
     }
     .card:hover{
       transform: translateY(-1px);
       background: var(--surface-3);
       border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
     }
-    .card h3{
-      margin: 0 0 8px 0;
+    .card.primary{
+      background: var(--surface-1);
+      border-color: var(--border-strong);
+      box-shadow: var(--shadow-2);
+    }
+    .card.secondary{
+      background: var(--surface-2);
+    }
+    .card.passive{
+      background: var(--surface-4);
+      border-color: color-mix(in srgb, var(--border) 70%, transparent);
+      box-shadow: none;
+    }
+    .card.passive:hover{
+      transform: none;
+      background: var(--surface-4);
+      border-color: color-mix(in srgb, var(--border) 70%, transparent);
+    }
+    .card-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: var(--s-3);
+      flex-wrap:wrap;
+    }
+    .card-title-group{
+      display:flex;
+      align-items:flex-start;
+      gap: var(--s-2);
+      min-width: 0;
+    }
+    .card-icon{
+      width: 36px;
+      height: 36px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--surface-3);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 16px;
+      color: var(--text);
+      box-shadow: var(--shadow-1);
+      flex: 0 0 auto;
+    }
+    .card.primary .card-icon{
+      border-color: var(--border-strong);
+      box-shadow: 0 12px 22px color-mix(in srgb, var(--primary) 18%, transparent);
+    }
+    .card.passive .card-icon{
+      background: var(--surface-2);
+      color: var(--muted);
+      box-shadow: none;
+    }
+    .card-title{
+      margin:0;
       font-size: var(--fs-3);
+      font-weight: 800;
+    }
+    .card.primary .card-title{
       font-weight: 900;
+    }
+    .card.passive .card-title{
+      color: var(--muted);
+    }
+    .card-subtitle{
+      font-size: var(--fs-1);
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .card-body{
+      display:flex;
+      flex-direction:column;
+      gap: var(--s-3);
+      min-width: 0;
     }
     .muted{ color: var(--muted); }
     .muted2{ color: var(--muted-2); }
@@ -902,6 +978,13 @@ button, input, textarea, select {
         border-radius: 20px;
       }
 
+      .card-icon{
+        width: 32px;
+        height: 32px;
+        border-radius: 12px;
+        font-size: 14px;
+      }
+
       .topbar-title{ font-size: 18px; }
       .topbar-sub{ font-size: 12px; }
       .kpi{ font-size: 22px; }
@@ -1148,82 +1231,119 @@ button, input, textarea, select {
         <!-- DASHBOARD -->
         <section class="view active" id="view-dashboard">
           <div class="grid cols-12">
-            <div class="card col-4">
-              <div class="row">
-                <h3>پیشرفت امروز</h3>
+            <div class="card primary col-4">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">📅</span>
+                  <h3 class="card-title">پیشرفت امروز</h3>
+                </div>
                 <span class="chip" id="dashTodayChip">—</span>
               </div>
-              <div class="kpi" id="dashTodayKpi">—</div>
-              <div class="muted small" id="dashTodayMeta">—</div>
-              <div style="margin-top:10px" class="bar"><i id="dashTodayBar"></i></div>
+              <div class="card-body">
+                <div class="kpi" id="dashTodayKpi">—</div>
+                <div class="muted small" id="dashTodayMeta">—</div>
+                <div class="bar"><i id="dashTodayBar"></i></div>
+              </div>
             </div>
 
-            <div class="card col-4">
-              <div class="row">
-                <h3>تسک‌های این ماه (شمسی)</h3>
+            <div class="card primary col-4">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">✅</span>
+                  <h3 class="card-title">تسک‌های این ماه (شمسی)</h3>
+                </div>
                 <span class="chip" id="dashMonthChip">—</span>
               </div>
-              <div class="kpi" id="dashMonthKpi">—</div>
-              <div class="muted small" id="dashMonthMeta">—</div>
-              <div style="margin-top:10px" class="bar"><i id="dashMonthBar"></i></div>
+              <div class="card-body">
+                <div class="kpi" id="dashMonthKpi">—</div>
+                <div class="muted small" id="dashMonthMeta">—</div>
+                <div class="bar"><i id="dashMonthBar"></i></div>
+              </div>
             </div>
 
-            <div class="card col-4">
-              <div class="row">
-                <h3>درآمد این ماه (شمسی)</h3>
+            <div class="card primary col-4">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">💼</span>
+                  <h3 class="card-title">درآمد این ماه (شمسی)</h3>
+                </div>
                 <span class="chip acc">💼</span>
               </div>
-              <div class="kpi" id="dashIncomeKpi">—</div>
-              <div class="muted small" id="dashIncomeMeta">—</div>
-              <div class="sep"></div>
-              <div class="small muted">هدف پس‌انداز ماهانه:</div>
-              <div class="row" style="margin-top:6px">
-                <span class="chip ok" id="dashSaveTarget">—</span>
-                <span class="muted2 small">نرخ: <span id="dashSaveRate">—</span></span>
+              <div class="card-body">
+                <div class="kpi" id="dashIncomeKpi">—</div>
+                <div class="muted small" id="dashIncomeMeta">—</div>
+                <div class="sep"></div>
+                <div class="small muted">هدف پس‌انداز ماهانه:</div>
+                <div class="row">
+                  <span class="chip ok" id="dashSaveTarget">—</span>
+                  <span class="muted2 small">نرخ: <span id="dashSaveRate">—</span></span>
+                </div>
               </div>
             </div>
 
-            <div class="card col-8">
-              <div class="row">
-                <h3>نمودار ۷ روز اخیر (نرخ انجام تسک)</h3>
+            <div class="card secondary col-8">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">📊</span>
+                  <h3 class="card-title">نمودار ۷ روز اخیر (نرخ انجام تسک)</h3>
+                </div>
                 <span class="badge">Tasks %</span>
               </div>
-              <div class="muted2 small">اگر Chart.js لود نشه، نمودار نمایش داده نمی‌شه ولی برنامه کامل کار می‌کنه.</div>
-              <div style="height: 280px; margin-top: 10px">
-                <canvas id="chartWeek"></canvas>
-                <div class="muted small" id="chartWeekFallback" style="display:none;margin-top:8px">Chart.js لود نشد.</div>
+              <div class="card-body">
+                <div class="muted2 small">اگر Chart.js لود نشه، نمودار نمایش داده نمی‌شه ولی برنامه کامل کار می‌کنه.</div>
+                <div style="height: 280px">
+                  <canvas id="chartWeek"></canvas>
+                  <div class="muted small" id="chartWeekFallback" style="display:none;margin-top:8px">Chart.js لود نشد.</div>
+                </div>
               </div>
             </div>
 
-            <div class="card col-4">
-              <h3>جمله امروز</h3>
-              <div class="muted2 small">از بخش «یادداشت‌ها» قابل تغییر است.</div>
-              <div class="sep"></div>
-              <div id="dashMotivation" style="line-height:1.9"></div>
-              <div class="sep"></div>
-              <button class="btn btn-secondary" id="btnGoNotes">رفتن به یادداشت‌ها</button>
+            <div class="card passive col-4">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">💡</span>
+                  <h3 class="card-title">جمله امروز</h3>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="muted2 small">از بخش «یادداشت‌ها» قابل تغییر است.</div>
+                <div class="sep"></div>
+                <div id="dashMotivation" style="line-height:1.9"></div>
+                <div class="sep"></div>
+                <button class="btn btn-secondary" id="btnGoNotes">رفتن به یادداشت‌ها</button>
+              </div>
             </div>
 
-            <div class="card col-6">
-              <div class="row">
-                <h3>درآمد ۶ ماه اخیر (شمسی)</h3>
+            <div class="card secondary col-6">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">📈</span>
+                  <h3 class="card-title">درآمد ۶ ماه اخیر (شمسی)</h3>
+                </div>
                 <span class="badge">Income</span>
               </div>
-              <div style="height: 280px; margin-top: 10px">
-                <canvas id="chartIncome"></canvas>
-                <div class="muted small" id="chartIncomeFallback" style="display:none;margin-top:8px">Chart.js لود نشد.</div>
+              <div class="card-body">
+                <div style="height: 280px">
+                  <canvas id="chartIncome"></canvas>
+                  <div class="muted small" id="chartIncomeFallback" style="display:none;margin-top:8px">Chart.js لود نشد.</div>
+                </div>
               </div>
             </div>
 
-            <div class="card col-6">
-              <div class="row">
-                <h3>پرتفوی دارایی‌ها</h3>
+            <div class="card secondary col-6">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">🧺</span>
+                  <h3 class="card-title">پرتفوی دارایی‌ها</h3>
+                </div>
                 <span class="badge">Holdings</span>
               </div>
-              <div class="muted2 small">براساس «واحد ثبت‌شده» (تومان/USDT/USD...).</div>
-              <div style="height: 280px; margin-top: 10px">
-                <canvas id="chartPortfolio"></canvas>
-                <div class="muted small" id="chartPortfolioFallback" style="display:none;margin-top:8px">Chart.js لود نشد.</div>
+              <div class="card-body">
+                <div class="muted2 small">براساس «واحد ثبت‌شده» (تومان/USDT/USD...).</div>
+                <div style="height: 280px">
+                  <canvas id="chartPortfolio"></canvas>
+                  <div class="muted small" id="chartPortfolioFallback" style="display:none;margin-top:8px">Chart.js لود نشد.</div>
+                </div>
               </div>
             </div>
           </div>
@@ -1232,11 +1352,14 @@ button, input, textarea, select {
         <!-- PLANNER -->
         <section class="view" id="view-planner">
           <div class="grid cols-12">
-            <div class="card col-12">
-              <div class="row">
-                <div>
-                  <h3 style="margin-bottom:2px">برنامه روزانه</h3>
-                  <div class="muted small">تسک اضافه کن، تیک بزن، و گزارش بگیر.</div>
+            <div class="card secondary col-12">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">🗓️</span>
+                  <div>
+                    <h3 class="card-title">برنامه روزانه</h3>
+                    <div class="card-subtitle">تسک اضافه کن، تیک بزن، و گزارش بگیر.</div>
+                  </div>
                 </div>
                 <div class="btn-row" style="align-items:center">
                   <input class="input" type="date" id="plannerDate" style="width: 180px" />
@@ -1245,41 +1368,48 @@ button, input, textarea, select {
                 </div>
               </div>
 
-              <div class="sep"></div>
+              <div class="card-body">
+                <div class="sep"></div>
 
-              <div class="form-grid">
-                <div class="full">
-                  <label>افزودن سریع</label>
-                  <div class="row" style="gap:10px; align-items:stretch">
-                    <input class="input" id="quickTaskTitle" placeholder="مثلاً: ۴۵ دقیقه تمرین طراحی / پیام به مشتری / مطالعه..." />
-                    <button class="btn btn-secondary nowrap" id="btnQuickAdd">افزودن</button>
-                  </div>
-                  <div class="row" style="margin-top:10px">
-                    <div class="chips">
-                      <span class="chip">تعداد: <b id="plannerCount">0</b></span>
-                      <span class="chip ok">انجام‌شده: <b id="plannerDone">0</b></span>
-                      <span class="chip acc">پیشرفت: <b id="plannerRate">0%</b></span>
+                <div class="form-grid">
+                  <div class="full">
+                    <label>افزودن سریع</label>
+                    <div class="row" style="gap:10px; align-items:stretch">
+                      <input class="input" id="quickTaskTitle" placeholder="مثلاً: ۴۵ دقیقه تمرین طراحی / پیام به مشتری / مطالعه..." />
+                      <button class="btn btn-secondary nowrap" id="btnQuickAdd">افزودن</button>
                     </div>
-                    <div style="width: min(420px, 100%); margin-top:8px">
-                      <div class="bar"><i id="plannerBar"></i></div>
+                    <div class="row" style="margin-top:10px">
+                      <div class="chips">
+                        <span class="chip">تعداد: <b id="plannerCount">0</b></span>
+                        <span class="chip ok">انجام‌شده: <b id="plannerDone">0</b></span>
+                        <span class="chip acc">پیشرفت: <b id="plannerRate">0%</b></span>
+                      </div>
+                      <div style="width: min(420px, 100%); margin-top:8px">
+                        <div class="bar"><i id="plannerBar"></i></div>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div class="card col-12">
-              <div class="row">
-                <h3>لیست تسک‌های این روز</h3>
+            <div class="card secondary col-12">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">📋</span>
+                  <h3 class="card-title">لیست تسک‌های این روز</h3>
+                </div>
                 <div class="chips">
                   <span class="chip">فیلتر:</span>
                   <button class="btn btn-ghost" id="toggleShowDone">نمایش انجام‌شده‌ها: <b id="showDoneState">روشن</b></button>
                 </div>
               </div>
-              <div class="sep"></div>
-              <div class="list" id="plannerList"></div>
-              <div class="muted small" id="plannerEmpty" style="display:none">
-                هنوز تسکی برای این روز نداری. از بالا «افزودن» کن.
+              <div class="card-body">
+                <div class="sep"></div>
+                <div class="list" id="plannerList"></div>
+                <div class="muted small" id="plannerEmpty" style="display:none">
+                  هنوز تسکی برای این روز نداری. از بالا «افزودن» کن.
+                </div>
               </div>
             </div>
           </div>
@@ -1287,11 +1417,14 @@ button, input, textarea, select {
 
         <!-- CALENDAR -->
         <section class="view" id="view-calendar">
-          <div class="card">
-            <div class="cal-head">
-              <div>
-                <h3 style="margin-bottom:2px">تقویم ماهانه (شمسی)</h3>
-                <div class="muted small">روی هر روز کلیک کن تا برنامه همون روز باز شه.</div>
+          <div class="card secondary">
+            <div class="card-header">
+              <div class="card-title-group">
+                <span class="card-icon">🗓️</span>
+                <div>
+                  <h3 class="card-title">تقویم ماهانه (شمسی)</h3>
+                  <div class="card-subtitle">روی هر روز کلیک کن تا برنامه همون روز باز شه.</div>
+                </div>
               </div>
               <div class="btn-row">
                 <button class="btn btn-secondary" id="btnPrevMonth">◀ ماه قبل</button>
@@ -1300,20 +1433,25 @@ button, input, textarea, select {
               </div>
             </div>
 
-            <div class="cal-grid" id="calDow"></div>
-            <div style="height:10px"></div>
-            <div class="cal-grid" id="calGrid"></div>
+            <div class="card-body">
+              <div class="cal-grid" id="calDow"></div>
+              <div style="height:10px"></div>
+              <div class="cal-grid" id="calGrid"></div>
+            </div>
           </div>
         </section>
 
         <!-- PROJECTS -->
         <section class="view" id="view-projects">
           <div class="grid cols-12">
-            <div class="card col-12">
-              <div class="row">
-                <div>
-                  <h3 style="margin-bottom:2px">پروژه‌ها</h3>
-                  <div class="muted small">ثبت پروژه، مبلغ، وضعیت و یادداشت‌ها.</div>
+            <div class="card secondary col-12">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">📁</span>
+                  <div>
+                    <h3 class="card-title">پروژه‌ها</h3>
+                    <div class="card-subtitle">ثبت پروژه، مبلغ، وضعیت و یادداشت‌ها.</div>
+                  </div>
                 </div>
                 <div class="btn-row">
                   <button class="btn btn-primary" id="btnAddProject2">＋ افزودن پروژه</button>
@@ -1325,28 +1463,38 @@ button, input, textarea, select {
                   </select>
                 </div>
               </div>
-              <div class="sep"></div>
-              <div class="chips">
-                <span class="chip">این ماه (شمسی): <b id="projMonthCount">0</b> پروژه</span>
-                <span class="chip acc">درآمد این ماه: <b id="projMonthIncome">0</b></span>
+              <div class="card-body">
+                <div class="sep"></div>
+                <div class="chips">
+                  <span class="chip">این ماه (شمسی): <b id="projMonthCount">0</b> پروژه</span>
+                  <span class="chip acc">درآمد این ماه: <b id="projMonthIncome">0</b></span>
+                </div>
               </div>
             </div>
 
-            <div class="card col-12">
-              <table>
-                <thead>
-                  <tr>
-                    <th>عنوان</th>
-                    <th>مشتری</th>
-                    <th>مبلغ</th>
-                    <th>تاریخ (شمسی)</th>
-                    <th>وضعیت</th>
-                    <th>عملیات</th>
-                  </tr>
-                </thead>
-                <tbody id="projectTbody"></tbody>
-              </table>
-              <div class="muted small" id="projectsEmpty" style="display:none">هنوز پروژه‌ای ثبت نشده.</div>
+            <div class="card secondary col-12">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">📊</span>
+                  <h3 class="card-title">لیست پروژه‌ها</h3>
+                </div>
+              </div>
+              <div class="card-body">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>عنوان</th>
+                      <th>مشتری</th>
+                      <th>مبلغ</th>
+                      <th>تاریخ (شمسی)</th>
+                      <th>وضعیت</th>
+                      <th>عملیات</th>
+                    </tr>
+                  </thead>
+                  <tbody id="projectTbody"></tbody>
+                </table>
+                <div class="muted small" id="projectsEmpty" style="display:none">هنوز پروژه‌ای ثبت نشده.</div>
+              </div>
             </div>
           </div>
         </section>
@@ -1354,11 +1502,14 @@ button, input, textarea, select {
         <!-- GOALS -->
         <section class="view" id="view-goals">
           <div class="grid cols-12">
-            <div class="card col-12">
-              <div class="row">
-                <div>
-                  <h3 style="margin-bottom:2px">اهداف بزرگ</h3>
-                  <div class="muted small">هدف + مایلستون + درصد پیشرفت.</div>
+            <div class="card secondary col-12">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">🎯</span>
+                  <div>
+                    <h3 class="card-title">اهداف بزرگ</h3>
+                    <div class="card-subtitle">هدف + مایلستون + درصد پیشرفت.</div>
+                  </div>
                 </div>
                 <button class="btn btn-primary" id="btnAddGoal2">＋ افزودن هدف</button>
               </div>
@@ -1372,78 +1523,92 @@ button, input, textarea, select {
         <!-- FINANCE -->
         <section class="view" id="view-finance">
           <div class="grid cols-12">
-            <div class="card col-6">
-              <div class="row">
-                <div>
-                  <h3 style="margin-bottom:2px">دارایی‌ها</h3>
-                  <div class="muted small">طلا/نقره/کریپتو/نقد… هر چیزی رو ثبت کن.</div>
+            <div class="card secondary col-6">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">💰</span>
+                  <div>
+                    <h3 class="card-title">دارایی‌ها</h3>
+                    <div class="card-subtitle">طلا/نقره/کریپتو/نقد… هر چیزی رو ثبت کن.</div>
+                  </div>
                 </div>
                 <button class="btn btn-primary" id="btnAddHolding2">＋ دارایی</button>
               </div>
-              <div class="sep"></div>
-              <div class="muted2 small">پیشنهاد: هر هفته/ماه آپدیت کن تا نمودارها معنی‌دار بشن.</div>
-              <div style="height:10px"></div>
-              <table>
-                <thead>
-                  <tr>
-                    <th>نوع</th>
-                    <th>مقدار</th>
-                    <th>واحد</th>
-                    <th>عملیات</th>
-                  </tr>
-                </thead>
-                <tbody id="holdingsTbody"></tbody>
-              </table>
-              <div class="muted small" id="holdingsEmpty" style="display:none">هنوز دارایی ثبت نشده.</div>
+              <div class="card-body">
+                <div class="sep"></div>
+                <div class="muted2 small">پیشنهاد: هر هفته/ماه آپدیت کن تا نمودارها معنی‌دار بشن.</div>
+                <div style="height:10px"></div>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>نوع</th>
+                      <th>مقدار</th>
+                      <th>واحد</th>
+                      <th>عملیات</th>
+                    </tr>
+                  </thead>
+                  <tbody id="holdingsTbody"></tbody>
+                </table>
+                <div class="muted small" id="holdingsEmpty" style="display:none">هنوز دارایی ثبت نشده.</div>
+              </div>
             </div>
 
-            <div class="card col-6">
-              <h3 style="margin-bottom:2px">پلن سرمایه‌گذاری</h3>
-              <div class="muted small">درصدها رو استاندارد نگه دار.</div>
-              <div class="sep"></div>
-
-              <label>حداقل درآمد ماهانه</label>
-              <input class="input" type="number" id="monthlyMinIncome" />
-
-              <label>نرخ پس‌انداز هدف (مثلاً 0.3 یعنی 30%)</label>
-              <input class="input" type="number" step="0.01" id="savingsRateTarget" />
-
-              <div class="sep"></div>
-              <div class="row">
-                <h3 style="margin:0">تقسیم سرمایه‌گذاری</h3>
-                <button class="btn btn-secondary" id="btnNormalizeSplit">نرمال‌سازی به 100%</button>
-              </div>
-
-              <div class="form-grid" style="margin-top:10px">
-                <div>
-                  <label>طلا (%)</label>
-                  <input class="input" type="number" id="splitGold" />
-                </div>
-                <div>
-                  <label>کریپتو (%)</label>
-                  <input class="input" type="number" id="splitCrypto" />
-                </div>
-                <div>
-                  <label>نقره (%)</label>
-                  <input class="input" type="number" id="splitSilver" />
-                </div>
-                <div>
-                  <label>نقد/تتر آزاد (%)</label>
-                  <input class="input" type="number" id="splitCash" />
-                </div>
-                <div class="full">
-                  <div class="chips">
-                    <span class="chip">جمع: <b id="splitSum">100%</b></span>
-                    <span class="chip warn" id="splitWarn" style="display:none">جمع درصدها باید 100% باشد.</span>
+            <div class="card secondary col-6">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">🧭</span>
+                  <div>
+                    <h3 class="card-title">پلن سرمایه‌گذاری</h3>
+                    <div class="card-subtitle">درصدها رو استاندارد نگه دار.</div>
                   </div>
                 </div>
               </div>
+              <div class="card-body">
+                <div class="sep"></div>
 
-              <div class="sep"></div>
-              <h3 style="margin-bottom:4px">پیشنهاد خروجی ماهانه</h3>
-              <div class="muted small">براساس حداقل درآمد و نرخ پس‌انداز.</div>
-              <div class="sep"></div>
-              <div class="chips" id="financeSuggestions"></div>
+                <label>حداقل درآمد ماهانه</label>
+                <input class="input" type="number" id="monthlyMinIncome" />
+
+                <label>نرخ پس‌انداز هدف (مثلاً 0.3 یعنی 30%)</label>
+                <input class="input" type="number" step="0.01" id="savingsRateTarget" />
+
+                <div class="sep"></div>
+                <div class="row">
+                  <h3 class="card-title">تقسیم سرمایه‌گذاری</h3>
+                  <button class="btn btn-secondary" id="btnNormalizeSplit">نرمال‌سازی به 100%</button>
+                </div>
+
+                <div class="form-grid" style="margin-top:10px">
+                  <div>
+                    <label>طلا (%)</label>
+                    <input class="input" type="number" id="splitGold" />
+                  </div>
+                  <div>
+                    <label>کریپتو (%)</label>
+                    <input class="input" type="number" id="splitCrypto" />
+                  </div>
+                  <div>
+                    <label>نقره (%)</label>
+                    <input class="input" type="number" id="splitSilver" />
+                  </div>
+                  <div>
+                    <label>نقد/تتر آزاد (%)</label>
+                    <input class="input" type="number" id="splitCash" />
+                  </div>
+                  <div class="full">
+                    <div class="chips">
+                      <span class="chip">جمع: <b id="splitSum">100%</b></span>
+                      <span class="chip warn" id="splitWarn" style="display:none">جمع درصدها باید 100% باشد.</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="sep"></div>
+                <h3 class="card-title">پیشنهاد خروجی ماهانه</h3>
+                <div class="muted small">براساس حداقل درآمد و نرخ پس‌انداز.</div>
+                <div class="sep"></div>
+                <div class="chips" id="financeSuggestions"></div>
+              </div>
             </div>
           </div>
         </section>
@@ -1451,38 +1616,69 @@ button, input, textarea, select {
         <!-- NOTES -->
         <section class="view" id="view-notes">
           <div class="grid cols-12">
-            <div class="card col-12">
-              <div class="row">
-                <div>
-                  <h3 style="margin-bottom:2px">یادداشت‌ها و ژورنال</h3>
-                  <div class="muted small">هر چی مهمه ثبت کن (Auto Save).</div>
+            <div class="card secondary col-12">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">📝</span>
+                  <div>
+                    <h3 class="card-title">یادداشت‌ها و ژورنال</h3>
+                    <div class="card-subtitle">هر چی مهمه ثبت کن (Auto Save).</div>
+                  </div>
                 </div>
                 <span class="badge">Auto Save</span>
               </div>
             </div>
 
-            <div class="card col-6">
-              <h3>برنامه/نیت روزانه</h3>
-              <label>چی امروز مهمه؟</label>
-              <textarea id="noteDaily" placeholder="امروز ۲ کار اصلی..."></textarea>
+            <div class="card passive col-6">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">📌</span>
+                  <h3 class="card-title">برنامه/نیت روزانه</h3>
+                </div>
+              </div>
+              <div class="card-body">
+                <label>چی امروز مهمه؟</label>
+                <textarea id="noteDaily" placeholder="امروز ۲ کار اصلی..."></textarea>
+              </div>
             </div>
 
-            <div class="card col-6">
-              <h3>جمله انگیزشی</h3>
-              <label>جمله کوتاه روز</label>
-              <textarea id="noteMotivation" placeholder="تمرکز روی سیستم، نه هیجان."></textarea>
+            <div class="card passive col-6">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">✨</span>
+                  <h3 class="card-title">جمله انگیزشی</h3>
+                </div>
+              </div>
+              <div class="card-body">
+                <label>جمله کوتاه روز</label>
+                <textarea id="noteMotivation" placeholder="تمرکز روی سیستم، نه هیجان."></textarea>
+              </div>
             </div>
 
-            <div class="card col-12">
-              <h3>ژورنال</h3>
-              <label>ثبت اتفاقات، درس‌ها، احساسات</label>
-              <textarea id="noteJournal" placeholder="امروز چی یاد گرفتم؟"></textarea>
+            <div class="card passive col-12">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">📓</span>
+                  <h3 class="card-title">ژورنال</h3>
+                </div>
+              </div>
+              <div class="card-body">
+                <label>ثبت اتفاقات، درس‌ها، احساسات</label>
+                <textarea id="noteJournal" placeholder="امروز چی یاد گرفتم؟"></textarea>
+              </div>
             </div>
 
-            <div class="card col-12">
-              <h3>ایده‌ها</h3>
-              <label>ایده‌های پروژه/محصول/یادگیری</label>
-              <textarea id="noteIdeas" placeholder="ایده: ..."></textarea>
+            <div class="card passive col-12">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">💭</span>
+                  <h3 class="card-title">ایده‌ها</h3>
+                </div>
+              </div>
+              <div class="card-body">
+                <label>ایده‌های پروژه/محصول/یادگیری</label>
+                <textarea id="noteIdeas" placeholder="ایده: ..."></textarea>
+              </div>
             </div>
           </div>
         </section>
