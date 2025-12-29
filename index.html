@@ -243,6 +243,7 @@ button, input, textarea, select {
       display:flex;
       flex-direction:column;
       min-height: 0;
+      transition: opacity .2s ease, filter .2s ease, transform .2s ease;
     }
     .side-top{
       padding: var(--s-4);
@@ -513,10 +514,62 @@ button, input, textarea, select {
       border-radius: var(--r-3);
       padding: var(--s-4);
       box-shadow: var(--shadow-1);
-      transition: transform .14s ease, background .14s ease, border-color .14s ease, box-shadow .14s ease;
+      transition: transform .14s ease, background .14s ease, border-color .14s ease, box-shadow .14s ease, opacity .2s ease, filter .2s ease;
       display:flex;
       flex-direction:column;
       gap: var(--s-3);
+    }
+
+    .empty-state{
+      border: 1px dashed color-mix(in srgb, var(--border) 70%, var(--primary) 30%);
+      background: linear-gradient(180deg, var(--surface-3), transparent);
+      border-radius: var(--r-3);
+      padding: var(--s-4);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: var(--s-3);
+    }
+    .empty-icon{
+      width: 46px;
+      height: 46px;
+      border-radius: 16px;
+      background: var(--primary-soft);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 22px;
+      flex: 0 0 auto;
+    }
+    .empty-text{
+      display:flex;
+      flex-direction:column;
+      gap: 4px;
+      min-width: 0;
+    }
+    .empty-title{ font-weight: 800; font-size: var(--fs-3); }
+    .empty-sub{ font-size: var(--fs-1); color: var(--muted); }
+    .empty-actions{ display:flex; gap: 8px; flex-wrap:wrap; }
+
+    body.focus-mode .sidebar{
+      opacity: .42;
+      filter: grayscale(.25);
+      transform: scale(.99);
+    }
+    body.focus-mode .sidebar:hover{
+      opacity: .88;
+      filter: none;
+    }
+    body.focus-mode .focus-scope .card{
+      opacity: .5;
+      filter: grayscale(.15);
+    }
+    body.focus-mode .focus-scope .card.focus-priority{
+      opacity: 1;
+      filter: none;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-2);
+      border-color: var(--border-strong);
     }
     .card:hover{
       transform: translateY(-1px);
@@ -1222,6 +1275,7 @@ button, input, textarea, select {
           <div class="topbar-sub" id="viewSub">نمای کلی پیشرفت، درآمد، سرمایه و اهداف</div>
         </div>
         <div class="topbar-actions">
+          <button class="btn btn-secondary" id="btnFocusMode" aria-pressed="false">Focus Mode: خاموش</button>
           <span class="badge" id="todayBadge">—</span>
           <span class="badge" id="monthBadge">—</span>
         </div>
@@ -1229,9 +1283,9 @@ button, input, textarea, select {
 
       <main class="views">
         <!-- DASHBOARD -->
-        <section class="view active" id="view-dashboard">
+        <section class="view active focus-scope" id="view-dashboard">
           <div class="grid cols-12">
-            <div class="card primary col-4">
+            <div class="card primary col-4 focus-priority">
               <div class="card-header">
                 <div class="card-title-group">
                   <span class="card-icon">📅</span>
@@ -1294,6 +1348,16 @@ button, input, textarea, select {
                 <div style="height: 280px">
                   <canvas id="chartWeek"></canvas>
                   <div class="muted small" id="chartWeekFallback" style="display:none;margin-top:8px">Chart.js لود نشد.</div>
+                  <div class="empty-state" id="chartWeekEmpty" style="display:none;margin-top:12px">
+                    <span class="empty-icon">✅</span>
+                    <div class="empty-text">
+                      <div class="empty-title">هنوز داده‌ای برای این هفته نداریم.</div>
+                      <div class="empty-sub">چند تسک برای امروز ثبت کن تا نمودار کامل بشه.</div>
+                    </div>
+                    <div class="empty-actions">
+                      <button class="btn btn-secondary" id="chartWeekCTA">افزودن تسک</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1326,6 +1390,16 @@ button, input, textarea, select {
                 <div style="height: 280px">
                   <canvas id="chartIncome"></canvas>
                   <div class="muted small" id="chartIncomeFallback" style="display:none;margin-top:8px">Chart.js لود نشد.</div>
+                  <div class="empty-state" id="chartIncomeEmpty" style="display:none;margin-top:12px">
+                    <span class="empty-icon">💼</span>
+                    <div class="empty-text">
+                      <div class="empty-title">هنوز پروژه‌ای ثبت نشده.</div>
+                      <div class="empty-sub">اولین پروژه رو اضافه کن تا روند درآمد شکل بگیره.</div>
+                    </div>
+                    <div class="empty-actions">
+                      <button class="btn btn-secondary" id="chartIncomeCTA">افزودن پروژه</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1343,6 +1417,16 @@ button, input, textarea, select {
                 <div style="height: 280px">
                   <canvas id="chartPortfolio"></canvas>
                   <div class="muted small" id="chartPortfolioFallback" style="display:none;margin-top:8px">Chart.js لود نشد.</div>
+                  <div class="empty-state" id="chartPortfolioEmpty" style="display:none;margin-top:12px">
+                    <span class="empty-icon">🧺</span>
+                    <div class="empty-text">
+                      <div class="empty-title">هنوز دارایی ثبت نشده.</div>
+                      <div class="empty-sub">دارایی‌هات رو اضافه کن تا ترکیب پرتفوی ببینی.</div>
+                    </div>
+                    <div class="empty-actions">
+                      <button class="btn btn-secondary" id="chartPortfolioCTA">افزودن دارایی</button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1350,7 +1434,7 @@ button, input, textarea, select {
         </section>
 
         <!-- PLANNER -->
-        <section class="view" id="view-planner">
+        <section class="view focus-scope" id="view-planner">
           <div class="grid cols-12">
             <div class="card secondary col-12">
               <div class="card-header">
@@ -1393,7 +1477,7 @@ button, input, textarea, select {
               </div>
             </div>
 
-            <div class="card secondary col-12">
+            <div class="card secondary col-12 focus-priority">
               <div class="card-header">
                 <div class="card-title-group">
                   <span class="card-icon">📋</span>
@@ -1407,8 +1491,15 @@ button, input, textarea, select {
               <div class="card-body">
                 <div class="sep"></div>
                 <div class="list" id="plannerList"></div>
-                <div class="muted small" id="plannerEmpty" style="display:none">
-                  هنوز تسکی برای این روز نداری. از بالا «افزودن» کن.
+                <div class="empty-state" id="plannerEmpty" style="display:none">
+                  <span class="empty-icon">📋</span>
+                  <div class="empty-text">
+                    <div class="empty-title">برای امروز تسکی نداری.</div>
+                    <div class="empty-sub">با یک تسک کوچیک شروع کن تا تمرکزت برگرده.</div>
+                  </div>
+                  <div class="empty-actions">
+                    <button class="btn btn-secondary" id="btnPlannerEmptyAdd">افزودن تسک</button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1626,6 +1717,19 @@ button, input, textarea, select {
                   </div>
                 </div>
                 <span class="badge">Auto Save</span>
+              </div>
+            </div>
+
+            <div class="card secondary col-12" id="notesEmpty" style="display:none">
+              <div class="empty-state">
+                <span class="empty-icon">📝</span>
+                <div class="empty-text">
+                  <div class="empty-title">دفتر امروزت خالیه.</div>
+                  <div class="empty-sub">چند جمله کوتاه بنویس تا ذهنت سبک‌تر بشه.</div>
+                </div>
+                <div class="empty-actions">
+                  <button class="btn btn-secondary" id="btnStartNotes">شروع نوشتن</button>
+                </div>
               </div>
             </div>
 
@@ -2150,7 +2254,7 @@ button, input, textarea, select {
         savingsRateTarget: 0.30,
         currency: "تومان"
       },
-      settings: { theme: "light", rtl: true },
+      settings: { theme: "light", rtl: true, focusMode: false },
       notes: {
         daily: "امروز فقط یک قدم کوچک — ولی واقعی.",
         motivation: "تمرکز روی سیستم، نه هیجان.",
@@ -2200,6 +2304,8 @@ button, input, textarea, select {
   };
   let state = loadState() || defaultState();
   state.profile.avatarData = state.profile.avatarData || "";
+  state.settings = { theme: "light", rtl: true, focusMode: false, ...state.settings };
+  state.settings.focusMode = !!state.settings.focusMode;
   const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
   const toast = (msg) => {
@@ -2366,6 +2472,16 @@ button, input, textarea, select {
     document.documentElement.setAttribute("data-theme", state.settings.theme || "light");
   };
 
+  const applyFocusMode = () => {
+    const isFocus = !!state.settings.focusMode;
+    document.body.classList.toggle("focus-mode", isFocus);
+    const btn = $("#btnFocusMode");
+    if(btn){
+      btn.setAttribute("aria-pressed", isFocus ? "true" : "false");
+      btn.textContent = "Focus Mode: " + (isFocus ? "روشن" : "خاموش");
+    }
+  };
+
   // =========================
   // Metrics
   // =========================
@@ -2425,11 +2541,20 @@ button, input, textarea, select {
   const renderDashboardCharts = () => {
     const hasChart = typeof window.Chart !== "undefined";
     const showFallback = (id, show) => { const el = $(id); if(el) el.style.display = show ? "block" : "none"; };
+    const setChartEmpty = (canvasId, emptyId, hasData) => {
+      const canvas = $(canvasId);
+      const empty = $(emptyId);
+      if(canvas) canvas.style.display = hasData ? "block" : "none";
+      if(empty) empty.style.display = hasData ? "none" : "flex";
+    };
 
     if(!hasChart){
       showFallback("#chartWeekFallback", true);
       showFallback("#chartIncomeFallback", true);
       showFallback("#chartPortfolioFallback", true);
+      setChartEmpty("#chartWeek", "#chartWeekEmpty", true);
+      setChartEmpty("#chartIncome", "#chartIncomeEmpty", true);
+      setChartEmpty("#chartPortfolio", "#chartPortfolioEmpty", true);
       return;
     }
     const rootStyles = getComputedStyle(document.documentElement);
@@ -2454,88 +2579,102 @@ button, input, textarea, select {
     // Weekly completion
     const labels = [];
     const values = [];
+    const weekCounts = [];
     const now = new Date();
     for(let i=6;i>=0;i--){
       const d = new Date(now);
       d.setDate(d.getDate()-i);
       const iso = d.getFullYear()+"-"+pad2(d.getMonth()+1)+"-"+pad2(d.getDate());
-      const s = calcTaskRate(tasksByDate(iso));
+      const dayTasks = tasksByDate(iso);
+      const s = calcTaskRate(dayTasks);
       labels.push(isoToJalaliStr(iso).slice(5)); // MM/DD in jalali digits
       values.push(s.rate);
+      weekCounts.push(dayTasks.length);
     }
 
-    chartWeek = new Chart($("#chartWeek"), {
-      type: "line",
-      data: {
-        labels,
-        datasets: [{
-          label: "درصد انجام تسک",
-          data: values,
-          tension: .35,
-          fill: true,
-          borderColor: chartPrimary,
-          backgroundColor: chartPrimarySoft,
-          pointBackgroundColor: chartPrimary
-        }]
-      },
-      options: {
-        responsive:true,
-        maintainAspectRatio:false,
-        plugins:{ legend:{ display:false } },
-        scales:{
-          x:{
-            ticks:{ color: chartMuted, font:{ family: chartFont } },
-            grid:{ color: chartBorder }
-          },
-          y:{
-            min:0,
-            max:100,
-            ticks:{ callback:(v)=> v+"%", color: chartMuted, font:{ family: chartFont } },
-            grid:{ color: chartBorder }
+    const hasWeekData = weekCounts.some(c => c > 0);
+    setChartEmpty("#chartWeek", "#chartWeekEmpty", hasWeekData);
+    if(hasWeekData){
+      chartWeek = new Chart($("#chartWeek"), {
+        type: "line",
+        data: {
+          labels,
+          datasets: [{
+            label: "درصد انجام تسک",
+            data: values,
+            tension: .35,
+            fill: true,
+            borderColor: chartPrimary,
+            backgroundColor: chartPrimarySoft,
+            pointBackgroundColor: chartPrimary
+          }]
+        },
+        options: {
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{ legend:{ display:false } },
+          scales:{
+            x:{
+              ticks:{ color: chartMuted, font:{ family: chartFont } },
+              grid:{ color: chartBorder }
+            },
+            y:{
+              min:0,
+              max:100,
+              ticks:{ callback:(v)=> v+"%", color: chartMuted, font:{ family: chartFont } },
+              grid:{ color: chartBorder }
+            }
           }
         }
-      }
-    });
+      });
+    }
 
     // Income last 6 Jalali months
     const { jy, jm } = currentJalaliYM();
     const incLabels = [];
     const incValues = [];
+    const incCounts = [];
     for(let i=5;i>=0;i--){
       const m = shiftJalaliMonth(jy, jm, -i);
       const r = jalaliMonthRangeISO(m.jy, m.jm);
-      const inc = calcIncome(projectsInRange(r.s, r.e));
+      const monthProjects = projectsInRange(r.s, r.e);
+      const inc = calcIncome(monthProjects);
       incLabels.push(jalaliMonthLabel(m.jy, m.jm));
       incValues.push(inc);
+      incCounts.push(monthProjects.length);
     }
 
-    chartIncome = new Chart($("#chartIncome"), {
-      type: "bar",
-      data: {
-        labels: incLabels,
-        datasets: [{
-          label: "درآمد",
-          data: incValues,
-          backgroundColor: chartPrimary,
-          borderRadius: 10
-        }]
-      },
-      options: {
-        responsive:true,
-        maintainAspectRatio:false,
-        plugins:{ legend:{ display:false } },
-        scales:{
-          x:{
-            ticks:{ color: chartMuted, font:{ family: chartFont } },
-            grid:{ color: chartBorder }
-          },
-          y:{
-            ticks:{ callback:(v)=> moneyFA(v), color: chartMuted, font:{ family: chartFont } },
-            grid:{ color: chartBorder }
+    const hasIncomeData = incCounts.some(c => c > 0);
+    setChartEmpty("#chartIncome", "#chartIncomeEmpty", hasIncomeData);
+    if(hasIncomeData){
+      chartIncome = new Chart($("#chartIncome"), {
+        type: "bar",
+        data: {
+          labels: incLabels,
+          datasets: [{
+            label: "درآمد",
+            data: incValues,
+            backgroundColor: chartPrimary,
+            borderRadius: 10
+          }]
+        },
+        options: {
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{ legend:{ display:false } },
+          scales:{
+            x:{
+              ticks:{ color: chartMuted, font:{ family: chartFont } },
+              grid:{ color: chartBorder }
+            },
+            y:{
+              ticks:{ callback:(v)=> moneyFA(v), color: chartMuted, font:{ family: chartFont } },
+              grid:{ color: chartBorder }
+            }
           }
         }
-      }
-    });
+      });
+    }
 
     // Portfolio (grouped by type+unit)
     const groups = new Map();
@@ -2544,27 +2683,32 @@ button, input, textarea, select {
       groups.set(key, (groups.get(key)||0) + Number(h.amount||0));
     }
     const portfolioPalette = [chartPrimary, chartSuccess, chartWarning, chartDanger, chartPrimarySoft];
-    chartPortfolio = new Chart($("#chartPortfolio"), {
-      type: "doughnut",
-      data: {
-        labels: Array.from(groups.keys()),
-        datasets: [{
-          data: Array.from(groups.values()),
-          backgroundColor: Array.from(groups.keys()).map((_, i) => portfolioPalette[i % portfolioPalette.length]),
-          borderColor: chartBorder
-        }]
-      },
-      options: {
-        responsive:true,
-        maintainAspectRatio:false,
-        plugins:{
-          legend:{
-            position:"bottom",
-            labels:{ font:{ family: chartFont }, color: chartText }
+    const portfolioValues = Array.from(groups.values());
+    const hasPortfolioData = state.assets.holdings.some(h => Number(h.amount || 0) > 0);
+    setChartEmpty("#chartPortfolio", "#chartPortfolioEmpty", hasPortfolioData);
+    if(hasPortfolioData){
+      chartPortfolio = new Chart($("#chartPortfolio"), {
+        type: "doughnut",
+        data: {
+          labels: Array.from(groups.keys()),
+          datasets: [{
+            data: portfolioValues,
+            backgroundColor: Array.from(groups.keys()).map((_, i) => portfolioPalette[i % portfolioPalette.length]),
+            borderColor: chartBorder
+          }]
+        },
+        options: {
+          responsive:true,
+          maintainAspectRatio:false,
+          plugins:{
+            legend:{
+              position:"bottom",
+              labels:{ font:{ family: chartFont }, color: chartText }
+            }
           }
         }
-      }
-    });
+      });
+    }
   };
 
   // =========================
@@ -2650,6 +2794,10 @@ button, input, textarea, select {
 
   $("#btnAddTask").addEventListener("click", () => { showView("planner"); openTaskDialog(null); });
   $("#btnAddTask2").addEventListener("click", () => openTaskDialog(null));
+  $("#btnPlannerEmptyAdd").addEventListener("click", () => openTaskDialog(null));
+  $("#chartWeekCTA").addEventListener("click", () => { showView("planner"); openTaskDialog(null); });
+  $("#chartIncomeCTA").addEventListener("click", () => { showView("projects"); openProjectDialog(null); });
+  $("#chartPortfolioCTA").addEventListener("click", () => { showView("finance"); openHoldingDialog(null); });
 
   $("#btnQuickAdd").addEventListener("click", () => {
     const title = $("#quickTaskTitle").value.trim();
@@ -3250,17 +3398,24 @@ button, input, textarea, select {
   // =========================
   // Notes
   // =========================
+  const updateNotesEmpty = () => {
+    const emptyNotes = !state.notes.daily && !state.notes.motivation && !state.notes.journal && !state.notes.ideas;
+    $("#notesEmpty").style.display = emptyNotes ? "block" : "none";
+  };
+
   const renderNotes = () => {
     $("#noteDaily").value = state.notes.daily || "";
     $("#noteMotivation").value = state.notes.motivation || "";
     $("#noteJournal").value = state.notes.journal || "";
     $("#noteIdeas").value = state.notes.ideas || "";
+    updateNotesEmpty();
   };
 
   const bindNote = (id, key) => {
     $(id).addEventListener("input", (e) => {
       state.notes[key] = e.target.value;
       saveState();
+      updateNotesEmpty();
       if(key === "motivation") $("#dashMotivation").textContent = state.notes.motivation || "—";
     });
   };
@@ -3269,7 +3424,18 @@ button, input, textarea, select {
   bindNote("#noteJournal","journal");
   bindNote("#noteIdeas","ideas");
 
+  $("#btnStartNotes").addEventListener("click", () => {
+    showView("notes");
+    $("#noteDaily").focus();
+  });
+
   $("#btnGoNotes").addEventListener("click", () => showView("notes"));
+
+  $("#btnFocusMode").addEventListener("click", () => {
+    state.settings.focusMode = !state.settings.focusMode;
+    saveState();
+    applyFocusMode();
+  });
 
   // =========================
   // Profile
@@ -3353,6 +3519,8 @@ button, input, textarea, select {
     const data = safeParse(text);
     if(!data || !data.meta){ toast("فایل معتبر نیست."); return; }
     state = data;
+    state.settings = { theme: "light", rtl: true, focusMode: false, ...state.settings };
+    state.settings.focusMode = !!state.settings.focusMode;
     saveState();
     closeDlg("dlgImport");
     renderAll();
@@ -3386,6 +3554,7 @@ button, input, textarea, select {
   // =========================
   const renderAll = () => {
     renderHeader();
+    applyFocusMode();
     renderDashboard();
     renderPlanner();
     renderCalendar();
