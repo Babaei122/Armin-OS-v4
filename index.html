@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="fa" dir="rtl" data-theme="dark">
+<html lang="fa" dir="rtl" data-theme="light">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -7,7 +7,7 @@
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#090d16">
+  <meta name="theme-color" content="#f6f8fd">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" href="icons/icon-192.png">
@@ -70,67 +70,85 @@
     :root{
       --font-sans: "IRANSansX", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
 
-      --fs-1: 12px;
-      --fs-2: 13px;
-      --fs-3: 14px;
-      --fs-4: 16px;
-      --fs-5: 18px;
+      --font-1: 12px;
+      --font-2: 13px;
+      --font-3: 14px;
+      --font-4: 16px;
+      --font-5: 20px;
 
-      --lh: 1.75;
+      --fs-1: var(--font-1);
+      --fs-2: var(--font-2);
+      --fs-3: var(--font-3);
+      --fs-4: var(--font-4);
+      --fs-5: var(--font-5);
 
-      --s-1: 6px;
-      --s-2: 10px;
-      --s-3: 14px;
-      --s-4: 18px;
-      --s-5: 24px;
+      --lh: 1.85;
 
-      --r-1: 14px;
-      --r-2: 18px;
-      --r-3: 24px;
-      --r-4: 30px;
+      --space-1: 6px;
+      --space-2: 10px;
+      --space-3: 14px;
+      --space-4: 18px;
+      --space-5: 24px;
+
+      --s-1: var(--space-1);
+      --s-2: var(--space-2);
+      --s-3: var(--space-3);
+      --s-4: var(--space-4);
+      --s-5: var(--space-5);
+
+      --radius-1: 12px;
+      --radius-2: 16px;
+      --radius-3: 20px;
+      --radius-4: 28px;
+
+      --r-1: var(--radius-1);
+      --r-2: var(--radius-2);
+      --r-3: var(--radius-3);
+      --r-4: var(--radius-4);
 
       --sidebar: 292px;
       --gap: var(--s-3);
 
-      --shadow-1: 0 10px 30px rgba(0,0,0,.28);
-      --shadow-2: 0 18px 60px rgba(0,0,0,.38);
+      /* Core light palette */
+      --bg: #f6f8fd;
+      --bg2: #eef2fb;
+      --surface: #ffffff;
+      --surface-2: #f4f7ff;
+      --border: #d7deee;
+      --text: #0f172a;
+      --text-muted: #5b6b86;
+      --primary: #2563eb;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --shadow: 0 10px 28px rgba(15,23,42,.12);
 
-      --ring: 0 0 0 4px rgba(154,230,255,.20);
+      --surface-1: var(--surface);
+      --surface-3: color-mix(in srgb, var(--surface-2) 72%, var(--surface) 28%);
+      --surface-4: color-mix(in srgb, var(--surface-2) 84%, var(--surface) 16%);
 
-      /* colors (dark) */
-      --bg: #090d16;
-      --bg2: #0b1122;
+      --muted: var(--text-muted);
+      --muted-2: color-mix(in srgb, var(--text) 42%, var(--bg));
 
-      --surface-1: rgba(255,255,255,.03);
-      --surface-2: rgba(255,255,255,.05);
-      --surface-3: rgba(255,255,255,.08);
-      --surface-4: rgba(255,255,255,.12);
+      --primary-soft: color-mix(in srgb, var(--primary) 14%, transparent);
+      --primary-soft-2: color-mix(in srgb, var(--primary) 8%, transparent);
+      --success-soft: color-mix(in srgb, var(--success) 14%, transparent);
+      --warning: #f59e0b;
+      --warning-soft: color-mix(in srgb, var(--warning) 16%, transparent);
+      --danger-soft: color-mix(in srgb, var(--danger) 14%, transparent);
 
-      --border: rgba(255,255,255,.12);
-      --border-strong: rgba(154,230,255,.32);
+      --shadow-1: var(--shadow);
+      --shadow-2: 0 18px 54px rgba(15,23,42,.16);
 
-      --text: rgba(255,255,255,.92);
-      --muted: rgba(255,255,255,.66);
-      --muted-2: rgba(255,255,255,.46);
+      --ring: 0 0 0 4px color-mix(in srgb, var(--primary) 20%, transparent);
 
-      --primary: #9ae6ff;
-      --primary-soft: rgba(154,230,255,.18);
-      --primary-soft-2: rgba(154,230,255,.10);
-
-      --success: #7bffb5;
-      --success-soft: rgba(123,255,181,.16);
-      --warning: #ffd97b;
-      --warning-soft: rgba(255,217,123,.18);
-      --danger: #ff7b7b;
-      --danger-soft: rgba(255,123,123,.16);
-
-      --scrollbar-thumb: rgba(255,255,255,.16);
-      --overlay: rgba(0,0,0,.55);
-      --overlay-strong: rgba(0,0,0,.60);
+      --border-strong: color-mix(in srgb, var(--primary) 30%, var(--border));
+      --scrollbar-thumb: color-mix(in srgb, var(--text) 28%, transparent);
+      --overlay: rgba(15,23,42,.32);
+      --overlay-strong: rgba(15,23,42,.5);
 
       --grad:
         radial-gradient(950px 520px at 8% 10%, var(--primary-soft), transparent 60%),
-        radial-gradient(980px 520px at 96% 26%, color-mix(in srgb, var(--success) 18%, transparent), transparent 55%),
+        radial-gradient(980px 520px at 96% 26%, color-mix(in srgb, var(--success) 12%, transparent), transparent 55%),
         linear-gradient(180deg, var(--bg), var(--bg2));
     }
 html, body {
@@ -145,46 +163,23 @@ button, input, textarea, select {
   font-family: inherit;
 }
 
-    html[data-theme="light"]{
-      /* Light theme tokens (adjust these to tune the palette) */
-      --bg: #f6f8fd;
-      --bg2: #eef2fb;
-
-      --surface-1: rgba(0,0,0,.02);
-      --surface-2: rgba(0,0,0,.04);
-      --surface-3: rgba(0,0,0,.06);
-      --surface-4: rgba(0,0,0,.10);
-
-      --border: rgba(15,23,42,.14);
-      --border-strong: rgba(14,165,233,.36);
-
-      --text: rgba(15,23,42,.94);
-      --muted: rgba(15,23,42,.64);
-      --muted-2: rgba(15,23,42,.46);
-
-      --primary: #0ea5e9;
-      --primary-soft: rgba(14,165,233,.16);
-      --primary-soft-2: rgba(14,165,233,.10);
-
-      --success: #22c55e;
-      --success-soft: rgba(34,197,94,.16);
-      --warning: #f59e0b;
-      --warning-soft: rgba(245,158,11,.18);
-      --danger: #ef4444;
-      --danger-soft: rgba(239,68,68,.16);
-
-      --scrollbar-thumb: rgba(15,23,42,.24);
-      --overlay: rgba(15,23,42,.32);
-      --overlay-strong: rgba(15,23,42,.46);
-
-      --ring: 0 0 0 4px rgba(14,165,233,.16);
-      --shadow-1: 0 10px 26px rgba(15,23,42,.12);
-      --shadow-2: 0 18px 54px rgba(15,23,42,.16);
-
-      --grad:
-        radial-gradient(950px 520px at 8% 10%, var(--primary-soft), transparent 60%),
-        radial-gradient(980px 520px at 96% 26%, color-mix(in srgb, var(--success) 16%, transparent), transparent 55%),
-        linear-gradient(180deg, var(--bg), var(--bg2));
+    html[data-theme="dark"]{
+      /* Optional dark palette */
+      --bg: #090d16;
+      --bg2: #0b1122;
+      --surface: rgba(255,255,255,.03);
+      --surface-2: rgba(255,255,255,.05);
+      --border: rgba(255,255,255,.12);
+      --text: rgba(255,255,255,.92);
+      --text-muted: rgba(255,255,255,.66);
+      --primary: #9ae6ff;
+      --danger: #ff7b7b;
+      --success: #7bffb5;
+      --shadow: 0 10px 30px rgba(0,0,0,.28);
+      --overlay: rgba(0,0,0,.55);
+      --overlay-strong: rgba(0,0,0,.6);
+      --border-strong: rgba(154,230,255,.32);
+      --scrollbar-thumb: rgba(255,255,255,.16);
     }
 
     *{ box-sizing:border-box; }
@@ -195,6 +190,7 @@ button, input, textarea, select {
     body{
       margin:0;
       font-family: var(--font-sans);
+      font-size: var(--fs-4);
       color: var(--text);
       background: var(--grad);
       line-height: var(--lh);
@@ -390,36 +386,75 @@ button, input, textarea, select {
     }
 
     .btn-row{ display:flex; gap: 10px; flex-wrap:wrap; }
+    /* Button system */
     .btn{
       border: 1px solid var(--border);
-      background: var(--surface-3);
+      background: transparent;
       color: var(--text);
       border-radius: var(--r-3);
-      padding: 10px 12px;
+      padding: 10px 14px;
       cursor:pointer;
-      transition: transform .14s ease, background .14s ease, border-color .14s ease;
+      transition: transform .14s ease, background .14s ease, border-color .14s ease, box-shadow .14s ease;
       font-size: var(--fs-2);
+      font-weight: 600;
       display:inline-flex;
       align-items:center;
+      justify-content:center;
       gap: 8px;
       user-select:none;
+      line-height: 1.4;
     }
-    .btn:hover{
-      transform: translateY(-1px);
-      background: var(--surface-4);
+    .btn:hover{ transform: translateY(-1px); }
+    .btn:active{ transform: translateY(0); }
+    .btn-secondary{
+      background: var(--surface-2);
+      border-color: var(--border);
+    }
+    .btn-secondary:hover{
+      background: var(--surface-3);
       border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
     }
-    .btn:active{ transform: translateY(0); }
-    .btn.primary{
-      background: linear-gradient(135deg, var(--primary-soft), var(--success-soft));
-      border-color: var(--border-strong);
+    .btn-primary{
+      background: var(--primary);
+      color: #fff;
+      border-color: color-mix(in srgb, var(--primary) 70%, var(--border));
+      box-shadow: 0 10px 20px color-mix(in srgb, var(--primary) 18%, transparent);
     }
-    .btn.danger{
-      border-color: color-mix(in srgb, var(--danger) 30%, transparent);
-      color: var(--danger);
-      background: color-mix(in srgb, var(--surface-3) 85%, var(--danger-soft) 15%);
+    .btn-primary:hover{ filter: brightness(.96); }
+    .btn-danger{
+      background: var(--danger);
+      color: #fff;
+      border-color: color-mix(in srgb, var(--danger) 60%, var(--border));
+      box-shadow: 0 8px 18px color-mix(in srgb, var(--danger) 18%, transparent);
     }
-    .btn.ghost{ background: transparent; }
+    .btn-danger:hover{ filter: brightness(.96); }
+    .btn-ghost{
+      background: transparent;
+      border-color: transparent;
+      color: var(--text);
+    }
+    .btn-ghost:hover{
+      background: var(--surface-2);
+      border-color: var(--border);
+    }
+    .btn-icon,
+    .icon-btn{
+      width: 40px;
+      height: 40px;
+      border-radius: 16px;
+      padding: 0;
+      background: var(--surface-2);
+      color: var(--text);
+      border-color: var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+    .btn-icon:hover,
+    .icon-btn:hover{
+      background: var(--surface-3);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
+    }
 
     /* Content */
     .content{
@@ -529,6 +564,11 @@ button, input, textarea, select {
     @media (max-width: 720px){
       .form-grid{ grid-template-columns: 1fr; }
       .form-grid .full{ grid-column: span 1; }
+      table{
+        display: block;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
     }
 
     .chips{ display:flex; flex-wrap:wrap; gap: 8px; }
@@ -575,26 +615,12 @@ button, input, textarea, select {
       color: var(--muted);
     }
 
-    .icon-btn{
-      width: 40px;
-      height: 40px;
-      border-radius: 16px;
-      border: 1px solid var(--border);
-      background: var(--surface-2);
-      color: var(--text);
-      cursor:pointer;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      transition: transform .14s ease, background .14s ease, border-color .14s ease;
-      user-select:none;
+    .icon-btn.danger,
+    .btn-icon.btn-danger{
+      border-color: color-mix(in srgb, var(--danger) 30%, transparent);
+      color: #fff;
+      background: var(--danger);
     }
-    .icon-btn:hover{
-      transform: translateY(-1px);
-      background: var(--surface-4);
-      border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
-    }
-    .icon-btn.danger{ border-color: color-mix(in srgb, var(--danger) 30%, transparent); color: var(--danger); }
 
     /* Progress bar */
     .bar{
@@ -880,6 +906,7 @@ button, input, textarea, select {
       .topbar-sub{ font-size: 12px; }
       .kpi{ font-size: 22px; }
 
+      .btn-icon,
       .icon-btn{
         width: 36px;
         height: 36px;
@@ -931,8 +958,8 @@ button, input, textarea, select {
       </div>
 
       <div class="lock-actions">
-        <button class="btn primary" id="btnUnlock">ورود</button>
-        <button class="btn" id="btnClearPin">پاک کردن</button>
+        <button class="btn btn-primary" id="btnUnlock">ورود</button>
+        <button class="btn btn-secondary" id="btnClearPin">پاک کردن</button>
       </div>
 
       <div class="lock-error" id="lockError"></div>
@@ -1089,17 +1116,17 @@ button, input, textarea, select {
 
       <div class="side-bottom">
         <div class="btn-row">
-          <button class="btn primary" id="btnAddTask">＋ تسک</button>
-          <button class="btn" id="btnAddProject">＋ پروژه</button>
-          <button class="btn" id="btnAddGoal">＋ هدف</button>
-          <button class="btn" id="btnAddHolding">＋ دارایی</button>
+          <button class="btn btn-secondary" id="btnAddTask">＋ تسک</button>
+          <button class="btn btn-secondary" id="btnAddProject">＋ پروژه</button>
+          <button class="btn btn-secondary" id="btnAddGoal">＋ هدف</button>
+          <button class="btn btn-secondary" id="btnAddHolding">＋ دارایی</button>
         </div>
         <div class="btn-row">
-          <button class="btn" id="btnLock">🔒 قفل</button>
-          <button class="btn" id="btnTheme">🌓 تم</button>
-          <button class="btn" id="btnExport">⬇️ خروجی</button>
-          <button class="btn" id="btnImport">⬆️ ورود</button>
-          <button class="btn danger" id="btnReset">ریست</button>
+          <button class="btn btn-secondary" id="btnLock">🔒 قفل</button>
+          <button class="btn btn-secondary" id="btnTheme">🌓 تم</button>
+          <button class="btn btn-secondary" id="btnExport">⬇️ خروجی</button>
+          <button class="btn btn-secondary" id="btnImport">⬆️ ورود</button>
+          <button class="btn btn-danger" id="btnReset">ریست</button>
         </div>
       </div>
     </aside>
@@ -1174,7 +1201,7 @@ button, input, textarea, select {
               <div class="sep"></div>
               <div id="dashMotivation" style="line-height:1.9"></div>
               <div class="sep"></div>
-              <button class="btn" id="btnGoNotes">رفتن به یادداشت‌ها</button>
+              <button class="btn btn-secondary" id="btnGoNotes">رفتن به یادداشت‌ها</button>
             </div>
 
             <div class="card col-6">
@@ -1214,7 +1241,7 @@ button, input, textarea, select {
                 <div class="btn-row" style="align-items:center">
                   <input class="input" type="date" id="plannerDate" style="width: 180px" />
                   <span class="badge" id="plannerJalaliBadge">—</span>
-                  <button class="btn primary" id="btnAddTask2">＋ افزودن تسک</button>
+                  <button class="btn btn-primary" id="btnAddTask2">＋ افزودن تسک</button>
                 </div>
               </div>
 
@@ -1225,7 +1252,7 @@ button, input, textarea, select {
                   <label>افزودن سریع</label>
                   <div class="row" style="gap:10px; align-items:stretch">
                     <input class="input" id="quickTaskTitle" placeholder="مثلاً: ۴۵ دقیقه تمرین طراحی / پیام به مشتری / مطالعه..." />
-                    <button class="btn primary nowrap" id="btnQuickAdd">افزودن</button>
+                    <button class="btn btn-secondary nowrap" id="btnQuickAdd">افزودن</button>
                   </div>
                   <div class="row" style="margin-top:10px">
                     <div class="chips">
@@ -1246,7 +1273,7 @@ button, input, textarea, select {
                 <h3>لیست تسک‌های این روز</h3>
                 <div class="chips">
                   <span class="chip">فیلتر:</span>
-                  <button class="btn ghost" id="toggleShowDone">نمایش انجام‌شده‌ها: <b id="showDoneState">روشن</b></button>
+                  <button class="btn btn-ghost" id="toggleShowDone">نمایش انجام‌شده‌ها: <b id="showDoneState">روشن</b></button>
                 </div>
               </div>
               <div class="sep"></div>
@@ -1267,9 +1294,9 @@ button, input, textarea, select {
                 <div class="muted small">روی هر روز کلیک کن تا برنامه همون روز باز شه.</div>
               </div>
               <div class="btn-row">
-                <button class="btn" id="btnPrevMonth">◀ ماه قبل</button>
+                <button class="btn btn-secondary" id="btnPrevMonth">◀ ماه قبل</button>
                 <span class="badge" id="calMonthLabel">—</span>
-                <button class="btn" id="btnNextMonth">ماه بعد ▶</button>
+                <button class="btn btn-secondary" id="btnNextMonth">ماه بعد ▶</button>
               </div>
             </div>
 
@@ -1289,7 +1316,7 @@ button, input, textarea, select {
                   <div class="muted small">ثبت پروژه، مبلغ، وضعیت و یادداشت‌ها.</div>
                 </div>
                 <div class="btn-row">
-                  <button class="btn primary" id="btnAddProject2">＋ افزودن پروژه</button>
+                  <button class="btn btn-primary" id="btnAddProject2">＋ افزودن پروژه</button>
                   <select id="projectFilter" style="width: 180px">
                     <option value="all">همه وضعیت‌ها</option>
                     <option value="todo">در انتظار</option>
@@ -1333,7 +1360,7 @@ button, input, textarea, select {
                   <h3 style="margin-bottom:2px">اهداف بزرگ</h3>
                   <div class="muted small">هدف + مایلستون + درصد پیشرفت.</div>
                 </div>
-                <button class="btn primary" id="btnAddGoal2">＋ افزودن هدف</button>
+                <button class="btn btn-primary" id="btnAddGoal2">＋ افزودن هدف</button>
               </div>
             </div>
 
@@ -1351,7 +1378,7 @@ button, input, textarea, select {
                   <h3 style="margin-bottom:2px">دارایی‌ها</h3>
                   <div class="muted small">طلا/نقره/کریپتو/نقد… هر چیزی رو ثبت کن.</div>
                 </div>
-                <button class="btn primary" id="btnAddHolding2">＋ دارایی</button>
+                <button class="btn btn-primary" id="btnAddHolding2">＋ دارایی</button>
               </div>
               <div class="sep"></div>
               <div class="muted2 small">پیشنهاد: هر هفته/ماه آپدیت کن تا نمودارها معنی‌دار بشن.</div>
@@ -1384,7 +1411,7 @@ button, input, textarea, select {
               <div class="sep"></div>
               <div class="row">
                 <h3 style="margin:0">تقسیم سرمایه‌گذاری</h3>
-                <button class="btn" id="btnNormalizeSplit">نرمال‌سازی به 100%</button>
+                <button class="btn btn-secondary" id="btnNormalizeSplit">نرمال‌سازی به 100%</button>
               </div>
 
               <div class="form-grid" style="margin-top:10px">
@@ -1470,7 +1497,7 @@ button, input, textarea, select {
         <div class="dlg-title" id="dlgTaskTitle">افزودن تسک</div>
         <div class="dlg-sub">تسک، تاریخ، اولویت و تایم‌بلاک را مشخص کن.</div>
       </div>
-      <button class="icon-btn" data-close="dlgTask" title="بستن">✕</button>
+      <button class="btn btn-icon" data-close="dlgTask" title="بستن">✕</button>
     </div>
     <div class="dlg-body">
       <div class="form-grid">
@@ -1523,10 +1550,10 @@ button, input, textarea, select {
       </div>
     </div>
     <div class="dlg-foot">
-      <button class="btn danger" id="btnTaskDelete" style="visibility:hidden">حذف</button>
+      <button class="btn btn-danger" id="btnTaskDelete" style="visibility:hidden">حذف</button>
       <div class="btn-row">
-        <button class="btn" data-close="dlgTask">انصراف</button>
-        <button class="btn primary" id="btnTaskSave">ذخیره</button>
+        <button class="btn btn-secondary" data-close="dlgTask">انصراف</button>
+        <button class="btn btn-primary" id="btnTaskSave">ذخیره</button>
       </div>
     </div>
   </dialog>
@@ -1537,7 +1564,7 @@ button, input, textarea, select {
         <div class="dlg-title">ویرایش پروفایل</div>
         <div class="dlg-sub">نام، عنوان و آواتار را تغییر بده.</div>
       </div>
-      <button class="icon-btn" data-close="dlgProfile" title="بستن">✕</button>
+      <button class="btn btn-icon" data-close="dlgProfile" title="بستن">✕</button>
     </div>
     <div class="dlg-body">
       <div class="form-grid">
@@ -1554,15 +1581,15 @@ button, input, textarea, select {
           <input class="input" type="file" id="profileAvatar" accept="image/*" />
         </div>
         <div class="full">
-          <button class="btn danger" id="btnRemoveAvatar">حذف آواتار</button>
+          <button class="btn btn-danger" id="btnRemoveAvatar">حذف آواتار</button>
         </div>
       </div>
     </div>
     <div class="dlg-foot">
       <div></div>
       <div class="btn-row">
-        <button class="btn" data-close="dlgProfile">انصراف</button>
-        <button class="btn primary" id="btnProfileSave">ذخیره</button>
+        <button class="btn btn-secondary" data-close="dlgProfile">انصراف</button>
+        <button class="btn btn-primary" id="btnProfileSave">ذخیره</button>
       </div>
     </div>
   </dialog>
@@ -1573,7 +1600,7 @@ button, input, textarea, select {
         <div class="dlg-title" id="dlgProjectTitle">افزودن پروژه</div>
         <div class="dlg-sub">ثبت پروژه‌ها باعث میشه درآمد و رشد واقعی‌ت مشخص بشه.</div>
       </div>
-      <button class="icon-btn" data-close="dlgProject" title="بستن">✕</button>
+      <button class="btn btn-icon" data-close="dlgProject" title="بستن">✕</button>
     </div>
     <div class="dlg-body">
       <div class="form-grid">
@@ -1613,10 +1640,10 @@ button, input, textarea, select {
       </div>
     </div>
     <div class="dlg-foot">
-      <button class="btn danger" id="btnProjectDelete" style="visibility:hidden">حذف</button>
+      <button class="btn btn-danger" id="btnProjectDelete" style="visibility:hidden">حذف</button>
       <div class="btn-row">
-        <button class="btn" data-close="dlgProject">انصراف</button>
-        <button class="btn primary" id="btnProjectSave">ذخیره</button>
+        <button class="btn btn-secondary" data-close="dlgProject">انصراف</button>
+        <button class="btn btn-primary" id="btnProjectSave">ذخیره</button>
       </div>
     </div>
   </dialog>
@@ -1627,7 +1654,7 @@ button, input, textarea, select {
         <div class="dlg-title" id="dlgGoalTitle">افزودن هدف</div>
         <div class="dlg-sub">هدف بزرگ = مسیر روشن. مایلستون‌ها = حرکت واقعی.</div>
       </div>
-      <button class="icon-btn" data-close="dlgGoal" title="بستن">✕</button>
+      <button class="btn btn-icon" data-close="dlgGoal" title="بستن">✕</button>
     </div>
     <div class="dlg-body">
       <div class="form-grid">
@@ -1665,10 +1692,10 @@ button, input, textarea, select {
       </div>
     </div>
     <div class="dlg-foot">
-      <button class="btn danger" id="btnGoalDelete" style="visibility:hidden">حذف</button>
+      <button class="btn btn-danger" id="btnGoalDelete" style="visibility:hidden">حذف</button>
       <div class="btn-row">
-        <button class="btn" data-close="dlgGoal">انصراف</button>
-        <button class="btn primary" id="btnGoalSave">ذخیره</button>
+        <button class="btn btn-secondary" data-close="dlgGoal">انصراف</button>
+        <button class="btn btn-primary" id="btnGoalSave">ذخیره</button>
       </div>
     </div>
   </dialog>
@@ -1679,7 +1706,7 @@ button, input, textarea, select {
         <div class="dlg-title" id="dlgHoldingTitle">افزودن دارایی</div>
         <div class="dlg-sub">دارایی‌ها رو دقیق ثبت کن تا پرتفوی معنی‌دار بشه.</div>
       </div>
-      <button class="icon-btn" data-close="dlgHolding" title="بستن">✕</button>
+      <button class="btn btn-icon" data-close="dlgHolding" title="بستن">✕</button>
     </div>
     <div class="dlg-body">
       <div class="form-grid">
@@ -1698,10 +1725,10 @@ button, input, textarea, select {
       </div>
     </div>
     <div class="dlg-foot">
-      <button class="btn danger" id="btnHoldingDelete" style="visibility:hidden">حذف</button>
+      <button class="btn btn-danger" id="btnHoldingDelete" style="visibility:hidden">حذف</button>
       <div class="btn-row">
-        <button class="btn" data-close="dlgHolding">انصراف</button>
-        <button class="btn primary" id="btnHoldingSave">ذخیره</button>
+        <button class="btn btn-secondary" data-close="dlgHolding">انصراف</button>
+        <button class="btn btn-primary" id="btnHoldingSave">ذخیره</button>
       </div>
     </div>
   </dialog>
@@ -1712,7 +1739,7 @@ button, input, textarea, select {
         <div class="dlg-title">ورود داده (Import)</div>
         <div class="dlg-sub">فایل JSON خروجی رو وارد کن.</div>
       </div>
-      <button class="icon-btn" data-close="dlgImport" title="بستن">✕</button>
+      <button class="btn btn-icon" data-close="dlgImport" title="بستن">✕</button>
     </div>
     <div class="dlg-body">
       <label>فایل خروجی (JSON)</label>
@@ -1723,8 +1750,8 @@ button, input, textarea, select {
       </div>
     </div>
     <div class="dlg-foot">
-      <button class="btn" data-close="dlgImport">انصراف</button>
-      <button class="btn primary" id="btnImportDo">وارد کردن</button>
+      <button class="btn btn-secondary" data-close="dlgImport">انصراف</button>
+      <button class="btn btn-primary" id="btnImportDo">وارد کردن</button>
     </div>
   </dialog>
 
@@ -1927,7 +1954,7 @@ button, input, textarea, select {
         savingsRateTarget: 0.30,
         currency: "تومان"
       },
-      settings: { theme: "dark", rtl: true },
+      settings: { theme: "light", rtl: true },
       notes: {
         daily: "امروز فقط یک قدم کوچک — ولی واقعی.",
         motivation: "تمرکز روی سیستم، نه هیجان.",
@@ -2140,7 +2167,7 @@ button, input, textarea, select {
     $("#todayBadge").textContent = "امروز: " + tJ + " • " + tISO;
     $("#monthBadge").textContent = "ماه: " + jalaliMonthLabel(j.jy, j.jm);
     document.documentElement.setAttribute("dir", state.settings.rtl ? "rtl" : "ltr");
-    document.documentElement.setAttribute("data-theme", state.settings.theme || "dark");
+    document.documentElement.setAttribute("data-theme", state.settings.theme || "light");
   };
 
   // =========================
@@ -2388,9 +2415,9 @@ button, input, textarea, select {
           </div>
         </div>
         <div class="item-actions">
-          <button class="icon-btn" title="تیک" data-act="toggle" data-id="${t.id}">✓</button>
-          <button class="icon-btn" title="ویرایش" data-act="edit" data-id="${t.id}">✎</button>
-          <button class="icon-btn danger" title="حذف" data-act="del" data-id="${t.id}">🗑</button>
+          <button class="btn btn-icon" title="تیک" data-act="toggle" data-id="${t.id}">✓</button>
+          <button class="btn btn-icon" title="ویرایش" data-act="edit" data-id="${t.id}">✎</button>
+          <button class="btn btn-icon btn-danger" title="حذف" data-act="del" data-id="${t.id}">🗑</button>
         </div>
       `;
       list.appendChild(item);
@@ -2626,8 +2653,8 @@ button, input, textarea, select {
         <td class="nowrap"><b>${isoToJalaliStr(p.date)}</b><div class="muted2 small">${escapeHtml(p.date)}</div></td>
         <td><span class="${chipClass}">${statusLabel(p.status)}</span></td>
         <td class="nowrap">
-          <button class="icon-btn" data-act="edit" data-id="${p.id}" title="ویرایش">✎</button>
-          <button class="icon-btn danger" data-act="del" data-id="${p.id}" title="حذف">🗑</button>
+          <button class="btn btn-icon" data-act="edit" data-id="${p.id}" title="ویرایش">✎</button>
+          <button class="btn btn-icon btn-danger" data-act="del" data-id="${p.id}" title="حذف">🗑</button>
         </td>
       `;
       tbody.appendChild(tr);
@@ -2737,8 +2764,8 @@ button, input, textarea, select {
             <div class="muted small">افق: ${escapeHtml(g.horizon||"—")} • متریک: ${escapeHtml(g.metric||"—")}</div>
           </div>
           <div class="btn-row">
-            <button class="btn" data-act="editGoal" data-id="${g.id}">ویرایش</button>
-            <button class="btn danger" data-act="delGoal" data-id="${g.id}">حذف</button>
+            <button class="btn btn-secondary" data-act="editGoal" data-id="${g.id}">ویرایش</button>
+            <button class="btn btn-danger" data-act="delGoal" data-id="${g.id}">حذف</button>
           </div>
         </div>
 
@@ -2758,7 +2785,7 @@ button, input, textarea, select {
           </div>
           <div style="width: 180px">
             <label>&nbsp;</label>
-            <button class="btn primary" data-act="saveCur" data-id="${g.id}">ذخیره مقدار</button>
+            <button class="btn btn-secondary" data-act="saveCur" data-id="${g.id}">ذخیره مقدار</button>
           </div>
         </div>
 
@@ -2775,7 +2802,7 @@ button, input, textarea, select {
                 <div class="item-title" style="${m.done ? "text-decoration:line-through;opacity:.75" : ""}">${escapeHtml(m.text)}</div>
               </div>
               <div class="item-actions">
-                <button class="icon-btn" data-act="toggleMs" data-gid="${g.id}" data-mid="${m.id}">${m.done ? "↺" : "✓"}</button>
+                <button class="btn btn-icon" data-act="toggleMs" data-gid="${g.id}" data-mid="${m.id}">${m.done ? "↺" : "✓"}</button>
               </div>
             </div>
           `).join("")}
@@ -2903,8 +2930,8 @@ button, input, textarea, select {
         <td>${moneyFA(h.amount)}</td>
         <td>${escapeHtml(h.unit)}</td>
         <td class="nowrap">
-          <button class="icon-btn" data-act="editHold" data-id="${h.id}">✎</button>
-          <button class="icon-btn danger" data-act="delHold" data-id="${h.id}">🗑</button>
+          <button class="btn btn-icon" data-act="editHold" data-id="${h.id}">✎</button>
+          <button class="btn btn-icon btn-danger" data-act="delHold" data-id="${h.id}">🗑</button>
         </td>
       `;
       tbody.appendChild(tr);
