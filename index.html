@@ -1352,6 +1352,8 @@ canvas {
       .sidebar{
         height: calc(100vh - 24px);
         overflow: hidden;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
       }
       .side-top{
         padding: 12px;
@@ -1400,9 +1402,42 @@ canvas {
       .nav-hint{ font-size: 11px; }
 
       .side-bottom{
-        padding: 12px;
-        gap: 10px;
-        margin-top: auto;
+        padding: 10px 10px 12px;
+        gap: 8px;
+        margin-top: 0;
+      }
+      .side-actions-group{
+        gap: 6px;
+      }
+      .side-actions-title{
+        font-size: 10px;
+      }
+      .side-actions{
+        gap: 8px;
+      }
+      .side-actions.primary,
+      .side-actions.secondary{
+        padding: 8px;
+        border-radius: 16px;
+      }
+      .side-actions .btn{
+        min-height: 44px;
+        padding: 8px 10px;
+        border-radius: 14px;
+        gap: 8px;
+      }
+      .btn-emoji{
+        width: 20px;
+        height: 20px;
+        font-size: 14px;
+      }
+      .btn-label{
+        font-size: 11px;
+      }
+      .side-more{
+        min-height: 44px;
+        border-radius: 14px;
+        font-size: 11px;
       }
 
       .card{
