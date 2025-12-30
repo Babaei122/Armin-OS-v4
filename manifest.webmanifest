@@ -1,6 +1,6 @@
 {
-  "name": "ArminOS",
-  "short_name": "ArminOS",
+  "name": "PlanOS",
+  "short_name": "PlanOS",
   "description": "Personal planner (Tasks, Projects, Goals, Finance) with Jalali calendar + PIN lock.",
   "lang": "fa",
   "dir": "rtl",
