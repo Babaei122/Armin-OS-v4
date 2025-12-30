@@ -1,7 +1,7 @@
-// ArminOS Service Worker (PWA)
+// PlanOS Service Worker (PWA)
 // Cache-first for app shell, network-first for everything else (simple + reliable)
 
-const CACHE_NAME = "arminos-pwa-v1";
+const CACHE_NAME = "planos-pwa-v1";
 const ASSETS = [
   "./",
   "./index.html",

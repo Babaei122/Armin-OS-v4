@@ -3,11 +3,13 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ArminOS • Personal Planner</title>
+  <title>PlanOS • Personal Planner</title>
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest">
   <meta name="theme-color" content="#f6f8fd">
+  <meta name="application-name" content="PlanOS">
+  <meta name="apple-mobile-web-app-title" content="PlanOS">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" href="icons/icon-192.png">
@@ -396,17 +398,33 @@ canvas {
       background: linear-gradient(0deg, var(--surface-3), transparent);
     }
 
+    .side-actions-group{
+      display:grid;
+      gap: 8px;
+    }
+    .side-actions-title{
+      font-size: var(--fs-1);
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .2px;
+    }
     .btn-row{ display:flex; gap: 10px; flex-wrap:wrap; }
     .side-actions{
       display:grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 10px;
     }
+    .side-actions.primary{
+      padding: 10px;
+      border-radius: var(--r-3);
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 8%, var(--surface-2) 92%), var(--surface-2));
+    }
     .side-actions.secondary{
       padding: 10px;
       border-radius: var(--r-3);
       border: 1px solid var(--border);
-      background: var(--surface-4);
+      background: color-mix(in srgb, var(--surface-2) 70%, transparent);
     }
     .side-actions .btn{
       width: 100%;
@@ -415,6 +433,11 @@ canvas {
       padding: 10px 12px;
       border-radius: 16px;
       gap: 10px;
+    }
+    .side-actions.primary .btn{
+      border-color: color-mix(in srgb, var(--primary) 28%, var(--border));
+      background: color-mix(in srgb, var(--primary) 8%, var(--surface));
+      font-weight: 700;
     }
     .btn-emoji{
       width: 24px;
@@ -462,6 +485,12 @@ canvas {
     .btn:active{
       transform: translateY(0) scale(.98);
       box-shadow: 0 6px 14px rgba(15,23,42,.06);
+    }
+    .btn:disabled{
+      opacity: .55;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
     }
     .btn-secondary{
       background: var(--surface-2);
@@ -552,10 +581,24 @@ canvas {
     }
     .topbar-actions{
       display:flex;
-      gap: 10px;
+      gap: 12px;
       flex-wrap:wrap;
       align-items:center;
       justify-content:flex-end;
+    }
+    .topbar-meta{
+      display:grid;
+      gap: 6px;
+      padding: 8px 12px;
+      border-radius: var(--r-3);
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      box-shadow: 0 10px 22px rgba(15,23,42,.08);
+    }
+    .topbar-meta-label{
+      font-size: var(--fs-1);
+      font-weight: 700;
+      color: var(--muted);
     }
     .topbar-chips{
       display:flex;
@@ -580,6 +623,72 @@ canvas {
       color: var(--text);
       border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
       background: color-mix(in srgb, var(--primary) 10%, var(--surface-2) 90%);
+    }
+    .focus-btn{
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      color: var(--text);
+      border-radius: var(--r-3);
+      padding: 10px 12px;
+      min-height: 56px;
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      cursor:pointer;
+      font-size: var(--fs-2);
+      font-weight: 700;
+      box-shadow: 0 10px 20px rgba(15,23,42,.08);
+      transition: transform .14s ease, background .14s ease, border-color .14s ease, box-shadow .14s ease;
+    }
+    .focus-btn:hover{
+      background: var(--surface-3);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
+      transform: translateY(-1px);
+    }
+    .focus-btn:active{
+      transform: translateY(0) scale(.98);
+      box-shadow: 0 6px 14px rgba(15,23,42,.06);
+    }
+    .focus-btn.is-active{
+      border-color: color-mix(in srgb, var(--primary) 60%, var(--border));
+      background: color-mix(in srgb, var(--primary) 12%, var(--surface-2) 88%);
+    }
+    .focus-icon{
+      width: 36px;
+      height: 36px;
+      border-radius: 14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: color-mix(in srgb, var(--primary) 14%, transparent);
+      font-size: 18px;
+    }
+    .focus-text{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-start;
+      gap: 2px;
+      min-width: 0;
+    }
+    .focus-title{
+      font-weight: 800;
+      font-size: var(--fs-2);
+    }
+    .focus-state{
+      font-size: var(--fs-1);
+      color: var(--muted);
+    }
+    .focus-indicator{
+      margin-inline-start: auto;
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: var(--border);
+      box-shadow: inset 0 0 0 2px var(--surface-1);
+    }
+    .focus-btn.is-active .focus-indicator{
+      background: var(--success);
+      box-shadow: 0 0 0 4px color-mix(in srgb, var(--success) 30%, transparent);
     }
     .toggle-btn{
       border: 1px solid var(--border);
@@ -1187,6 +1296,12 @@ canvas {
       .side-actions.secondary.is-open{
         display: grid;
       }
+      .secondary-group .side-actions-title{
+        display: none;
+      }
+      .secondary-group.is-open .side-actions-title{
+        display: block;
+      }
       .side-more{
         display: inline-flex;
       }
@@ -1216,11 +1331,16 @@ canvas {
       .topbar-actions{
         width: 100%;
         justify-content:flex-start;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .topbar-meta{
+        width: 100%;
       }
       .topbar-chips{
         width: 100%;
       }
-      .toggle-btn{
+      .focus-btn{
         width: 100%;
         justify-content: space-between;
       }
@@ -1301,8 +1421,8 @@ canvas {
   <!-- Lock Screen -->
   <div class="lock-screen" id="lockScreen" aria-hidden="true">
     <div class="lock-card">
-      <div class="lock-title">ArminOS</div>
-      <div class="lock-sub">برای ورود، پین ۴ رقمی را وارد کن</div>
+      <div class="lock-title">PlanOS</div>
+      <div class="lock-sub" id="lockSub">برای ورود، پین ۴ رقمی را وارد کن</div>
 
       <div class="pin-row" id="pinRow">
         <input class="pin" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-idx="0" />
@@ -1335,15 +1455,15 @@ canvas {
                 <path d="M8 9h8M8 12h8M8 15h5"/>
               </svg>
             </span>
-            ArminOS
+            PlanOS
           </h1>
           <span class="badge">PWA • Jalali • PIN</span>
         </div>
         <div class="profile" id="profileButton" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="dlgProfile">
           <div class="avatar" id="avatar">A</div>
           <div>
-            <div class="pname" id="pname">آرمین</div>
-            <div class="ptitle" id="ptitle">فریلنسر • دانشجوی مهندسی کامپیوتر</div>
+            <div class="pname" id="pname">نام شما</div>
+            <div class="ptitle" id="ptitle">عنوان شما</div>
           </div>
         </div>
       </div>
@@ -1469,7 +1589,9 @@ canvas {
       </nav>
 
       <div class="side-bottom">
-        <div class="side-actions primary">
+        <div class="side-actions-group">
+          <div class="side-actions-title">افزودن سریع</div>
+          <div class="side-actions primary">
           <button class="btn btn-secondary" id="btnAddTask">
             <span class="btn-emoji">＋</span><span class="btn-label">تسک</span>
           </button>
@@ -1482,26 +1604,30 @@ canvas {
           <button class="btn btn-secondary" id="btnAddHolding">
             <span class="btn-emoji">＋</span><span class="btn-label">دارایی</span>
           </button>
+          </div>
         </div>
         <button class="btn btn-ghost side-more" id="btnMoreActions">
           <span class="btn-emoji">⋯</span><span class="btn-label">بیشتر</span>
         </button>
-        <div class="side-actions secondary" id="sideSecondaryActions">
-          <button class="btn btn-secondary" id="btnLock">
-            <span class="btn-emoji">🔒</span><span class="btn-label">قفل</span>
-          </button>
-          <button class="btn btn-secondary" id="btnTheme">
-            <span class="btn-emoji">🌓</span><span class="btn-label">تم</span>
-          </button>
-          <button class="btn btn-secondary" id="btnExport">
-            <span class="btn-emoji">⬇️</span><span class="btn-label">خروجی</span>
-          </button>
-          <button class="btn btn-secondary" id="btnImport">
-            <span class="btn-emoji">⬆️</span><span class="btn-label">ورود</span>
-          </button>
-          <button class="btn btn-danger" id="btnReset">
-            <span class="btn-emoji">⚠️</span><span class="btn-label">ریست</span>
-          </button>
+        <div class="side-actions-group secondary-group">
+          <div class="side-actions-title">کنترل‌ها</div>
+          <div class="side-actions secondary" id="sideSecondaryActions">
+            <button class="btn btn-secondary" id="btnLock">
+              <span class="btn-emoji">🔒</span><span class="btn-label">قفل</span>
+            </button>
+            <button class="btn btn-secondary" id="btnTheme">
+              <span class="btn-emoji">🌓</span><span class="btn-label">تم</span>
+            </button>
+            <button class="btn btn-secondary" id="btnExport">
+              <span class="btn-emoji">⬇️</span><span class="btn-label">خروجی</span>
+            </button>
+            <button class="btn btn-secondary" id="btnImport">
+              <span class="btn-emoji">⬆️</span><span class="btn-label">ورود</span>
+            </button>
+            <button class="btn btn-danger" id="btnReset">
+              <span class="btn-emoji">⚠️</span><span class="btn-label">ریست</span>
+            </button>
+          </div>
         </div>
       </div>
     </aside>
@@ -1514,15 +1640,21 @@ canvas {
           <div class="topbar-sub" id="viewSub">نمای کلی پیشرفت، درآمد، سرمایه و اهداف</div>
         </div>
         <div class="topbar-actions">
-          <button class="toggle-btn" id="btnFocusMode" aria-pressed="false">
-            <span class="toggle-label">حالت تمرکز</span>
-            <span class="toggle-track"><span class="toggle-thumb"></span></span>
-            <span class="toggle-state" id="focusState">خاموش</span>
-          </button>
-          <div class="topbar-chips">
-            <span class="pill strong" id="todayBadge">—</span>
-            <span class="pill" id="monthBadge">—</span>
+          <div class="topbar-meta">
+            <div class="topbar-meta-label">تقویم</div>
+            <div class="topbar-chips">
+              <span class="pill strong" id="todayBadge">—</span>
+              <span class="pill" id="monthBadge">—</span>
+            </div>
           </div>
+          <button class="focus-btn" id="btnFocusMode" aria-pressed="false">
+            <span class="focus-icon">🎯</span>
+            <span class="focus-text">
+              <span class="focus-title">حالت تمرکز</span>
+              <span class="focus-state" id="focusState">خاموش</span>
+            </span>
+            <span class="focus-indicator"></span>
+          </button>
         </div>
       </header>
 
@@ -2109,15 +2241,19 @@ canvas {
       <div class="form-grid">
         <div class="full">
           <label>نام</label>
-          <input class="input" id="profileName" placeholder="مثلاً آرمین" />
+          <input class="input" id="profileName" placeholder="نام شما" />
         </div>
         <div class="full">
           <label>عنوان/شغل</label>
-          <input class="input" id="profileTitle" placeholder="مثلاً فریلنسر • دانشجوی مهندسی کامپیوتر" />
+          <input class="input" id="profileTitle" placeholder="عنوان شما" />
         </div>
         <div class="full">
           <label>آپلود آواتار</label>
           <input class="input" type="file" id="profileAvatar" accept="image/*" />
+        </div>
+        <div class="full">
+          <label>پین قفل (۴ رقم)</label>
+          <input class="input" id="profilePin" type="password" inputmode="numeric" maxlength="4" placeholder="مثلاً ۱۲۳۴" />
         </div>
         <div class="full">
           <button class="btn btn-danger" id="btnRemoveAvatar">حذف آواتار</button>
@@ -2467,9 +2603,8 @@ canvas {
   // =========================
   // Storage & Helpers
   // =========================
-  const STORAGE_KEY = "armin_os_v1"; // keep stable
-  const LOCK_SESSION_KEY = "arminos_unlocked";
-  const PIN_CODE = "5823"; // requested PIN
+  const STORAGE_KEY = "planos_v1"; // keep stable
+  const LOCK_SESSION_KEY = "planos_unlocked";
 
   const $ = (sel, root=document) => root.querySelector(sel);
   const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
@@ -2483,56 +2618,29 @@ canvas {
   const safeParse = (raw) => { try { return JSON.parse(raw); } catch { return null; } };
 
   const defaultState = () => {
-    const t = todayISO();
     return {
       meta: { version: 3, createdAt: new Date().toISOString() },
       profile: {
-        name: "آرمین",
-        title: "فریلنسر • دانشجوی مهندسی کامپیوتر",
+        name: "",
+        title: "",
         avatarData: "",
-        monthlyMinIncome: 20000000,
-        savingsRateTarget: 0.30,
+        monthlyMinIncome: 0,
+        savingsRateTarget: 0,
         currency: "تومان"
       },
-      settings: { theme: "light", rtl: true, focusMode: false },
+      settings: { theme: "light", rtl: true, focusMode: false, pin: "" },
       notes: {
-        daily: "امروز فقط یک قدم کوچک — ولی واقعی.",
-        motivation: "تمرکز روی سیستم، نه هیجان.",
+        daily: "",
+        motivation: "",
         journal: "",
         ideas: ""
       },
-      tasks: [
-        { id: uid(), title: "۳۰ دقیقه تمرین UI", date: t, done: false, priority: "medium", category: "مهارت", timeBlock: "صبح", estimateMin: 30 },
-        { id: uid(), title: "پیگیری پروژه مشتری", date: t, done: true, priority: "high", category: "کار", timeBlock: "عصر", estimateMin: 20 },
-      ],
-      projects: [
-        { id: uid(), name: "طراحی هویت بصری", client: "نمونه", amount: 6500000, date: t, status: "done", tags: ["برندینگ"], notes: "تحویل شد — فیدبک عالی" }
-      ],
-      goals: [
-        {
-          id: uid(),
-          title: "رسیدن به ۴۰ میلیون درآمد ماهانه",
-          horizon: "۶ ماه",
-          metric: "درآمد",
-          target: 40000000,
-          current: 20000000,
-          notes: "افزایش قیمت‌گذاری + جذب مشتری بین‌المللی",
-          milestones: [
-            { id: uid(), text: "پورتفولیو جدید", done: true },
-            { id: uid(), text: "۳ کیس‌استادی کامل", done: false }
-          ]
-        }
-      ],
+      tasks: [],
+      projects: [],
+      goals: [],
       assets: {
-        holdings: [
-          { id: uid(), type: "طلا", amount: 18000000, unit: "تومان" },
-          { id: uid(), type: "نقره", amount: 3000000, unit: "تومان" },
-          { id: uid(), type: "XRP", amount: 80, unit: "USDT" },
-          { id: uid(), type: "ETH", amount: 15, unit: "USD" },
-          { id: uid(), type: "TON", amount: 10, unit: "USD" },
-          { id: uid(), type: "NOT", amount: 5, unit: "USD" }
-        ],
-        plan: { split: { gold: 40, crypto: 45, silver: 10, cash: 5 } }
+        holdings: [],
+        plan: { split: { gold: 0, crypto: 0, silver: 0, cash: 0 } }
       }
     };
   };
@@ -2544,8 +2652,10 @@ canvas {
   };
   let state = loadState() || defaultState();
   state.profile.avatarData = state.profile.avatarData || "";
-  state.settings = { theme: "light", rtl: true, focusMode: false, ...state.settings };
+  state.settings = { theme: "light", rtl: true, focusMode: false, pin: "", ...state.settings };
   state.settings.focusMode = !!state.settings.focusMode;
+  const normalizePin = (val) => String(val || "").replace(/\D/g, "").slice(0,4);
+  const getPinCode = () => normalizePin(state.settings.pin || "");
   const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
   const toast = (msg) => {
@@ -2559,7 +2669,28 @@ canvas {
   // =========================
   // PIN Lock
   // =========================
+  const updateLockAvailability = () => {
+    const hasPin = getPinCode().length === 4;
+    const btnLock = $("#btnLock");
+    if (btnLock) {
+      btnLock.disabled = !hasPin;
+      btnLock.classList.toggle("is-disabled", !hasPin);
+      btnLock.title = hasPin ? "قفل" : "پین تنظیم نشده است";
+    }
+    const lockSub = $("#lockSub");
+    if (lockSub) {
+      lockSub.textContent = hasPin
+        ? "برای ورود، پین ۴ رقمی را وارد کن"
+        : "برای فعال‌سازی قفل، پین ۴ رقمی را در پروفایل تنظیم کن.";
+    }
+    return hasPin;
+  };
+
   const showLock = () => {
+    if (!updateLockAvailability()) {
+      hideLock();
+      return;
+    }
     const lock = $("#lockScreen");
     lock.style.display = "flex";
     lock.setAttribute("aria-hidden", "false");
@@ -2578,12 +2709,17 @@ canvas {
   const getPinValue = () => pinInputs().map(i => i.value).join("");
 
   const tryUnlock = () => {
+    const pinCode = getPinCode();
+    if (!pinCode) {
+      $("#lockError").textContent = "پین هنوز تنظیم نشده است.";
+      return;
+    }
     const val = getPinValue();
     if (val.length < 4) {
       $("#lockError").textContent = "پین باید ۴ رقم باشد.";
       return;
     }
-    if (val === PIN_CODE) {
+    if (val === pinCode) {
       sessionStorage.setItem(LOCK_SESSION_KEY, "1");
       hideLock();
       toast("خوش اومدی ✅");
@@ -2632,10 +2768,23 @@ canvas {
 
     $("#btnUnlock").addEventListener("click", tryUnlock);
     $("#btnClearPin").addEventListener("click", () => { clearPinInputs(); $("#lockError").textContent = ""; pinInputs()[0]?.focus(); });
-    $("#btnLock").addEventListener("click", () => { sessionStorage.removeItem(LOCK_SESSION_KEY); showLock(); });
+    $("#btnLock").addEventListener("click", () => {
+      if (!updateLockAvailability()) {
+        toast("ابتدا پین را در پروفایل تنظیم کن.");
+        openProfileDialog();
+        return;
+      }
+      sessionStorage.removeItem(LOCK_SESSION_KEY);
+      showLock();
+    });
 
+    const hasPin = updateLockAvailability();
     const unlocked = sessionStorage.getItem(LOCK_SESSION_KEY) === "1";
-    if (unlocked) hideLock(); else showLock();
+    if (!hasPin || unlocked) {
+      hideLock();
+    } else {
+      showLock();
+    }
   };
 
   // =========================
@@ -2678,9 +2827,11 @@ canvas {
 
   const moreActionsBtn = $("#btnMoreActions");
   const sideSecondaryActions = $("#sideSecondaryActions");
+  const secondaryGroup = sideSecondaryActions ? sideSecondaryActions.closest(".secondary-group") : null;
   const setMoreActionsState = (open) => {
     if (!moreActionsBtn || !sideSecondaryActions) return;
     sideSecondaryActions.classList.toggle("is-open", open);
+    if (secondaryGroup) secondaryGroup.classList.toggle("is-open", open);
     const label = moreActionsBtn.querySelector(".btn-label");
     if (label) label.textContent = open ? "بستن" : "بیشتر";
   };
@@ -2703,8 +2854,8 @@ canvas {
   // Header Render
   // =========================
   const renderHeader = () => {
-    $("#pname").textContent = state.profile.name || "—";
-    $("#ptitle").textContent = state.profile.title || "";
+    $("#pname").textContent = state.profile.name || "نام شما";
+    $("#ptitle").textContent = state.profile.title || "عنوان شما";
     const avatar = $("#avatar");
     avatar.innerHTML = "";
     if(state.profile.avatarData){
@@ -2713,15 +2864,15 @@ canvas {
       img.alt = state.profile.name || "Avatar";
       avatar.appendChild(img);
     } else {
-      avatar.textContent = (state.profile.name || "A").trim().slice(0,1).toUpperCase();
+      avatar.textContent = (state.profile.name || "پ").trim().slice(0,1).toUpperCase();
     }
 
     const tISO = todayISO();
     const tJ = isoToJalaliStr(tISO);
     const j = isoToJalali(tISO);
 
-    $("#todayBadge").textContent = "امروز: " + tJ + " • " + tISO;
-    $("#monthBadge").textContent = "ماه: " + jalaliMonthLabel(j.jy, j.jm);
+    $("#todayBadge").textContent = tJ;
+    $("#monthBadge").textContent = jalaliMonthLabel(j.jy, j.jm);
     document.documentElement.setAttribute("dir", state.settings.rtl ? "rtl" : "ltr");
     document.documentElement.setAttribute("data-theme", state.settings.theme || "light");
   };
@@ -3739,6 +3890,7 @@ canvas {
     $("#profileName").value = state.profile.name || "";
     $("#profileTitle").value = state.profile.title || "";
     $("#profileAvatar").value = "";
+    $("#profilePin").value = state.settings.pin || "";
     pendingAvatarData = state.profile.avatarData || "";
     openDlg("dlgProfile");
   };
@@ -3769,12 +3921,26 @@ canvas {
   });
 
   $("#btnProfileSave").addEventListener("click", () => {
-    state.profile.name = $("#profileName").value.trim() || "—";
-    state.profile.title = $("#profileTitle").value.trim();
+    const nameValue = $("#profileName").value.trim();
+    const titleValue = $("#profileTitle").value.trim();
+    const pinValue = normalizePin($("#profilePin").value.trim());
+    if (pinValue && pinValue.length !== 4) {
+      toast("پین باید ۴ رقم باشد.");
+      return;
+    }
+
+    state.profile.name = nameValue;
+    state.profile.title = titleValue;
     state.profile.avatarData = pendingAvatarData || "";
+    state.settings.pin = pinValue;
+    if (!pinValue) {
+      sessionStorage.removeItem(LOCK_SESSION_KEY);
+      hideLock();
+    }
     saveState();
     closeDlg("dlgProfile");
     renderHeader();
+    updateLockAvailability();
     toast("پروفایل ذخیره شد ✅");
   });
 
@@ -3795,7 +3961,7 @@ canvas {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "ArminOS-backup.json";
+    a.download = "PlanOS-backup.json";
     a.click();
     URL.revokeObjectURL(url);
     toast("خروجی گرفته شد ✅");
@@ -3813,12 +3979,15 @@ canvas {
     const data = safeParse(text);
     if(!data || !data.meta){ toast("فایل معتبر نیست."); return; }
     state = data;
-    state.settings = { theme: "light", rtl: true, focusMode: false, ...state.settings };
+    state.settings = { theme: "light", rtl: true, focusMode: false, pin: "", ...state.settings };
     state.settings.focusMode = !!state.settings.focusMode;
     saveState();
     closeDlg("dlgImport");
     renderAll();
     renderDashboardCharts();
+    if (getPinCode().length === 4 && sessionStorage.getItem(LOCK_SESSION_KEY) !== "1") {
+      showLock();
+    }
     toast("داده‌ها وارد شد ✅");
   });
 
@@ -3827,6 +3996,8 @@ canvas {
     if(!ok) return;
     state = defaultState();
     saveState();
+    sessionStorage.removeItem(LOCK_SESSION_KEY);
+    hideLock();
     monthCursor = currentJalaliYM();
     plannerDate = todayISO();
     renderAll();
@@ -3849,6 +4020,7 @@ canvas {
   const renderAll = () => {
     renderHeader();
     applyFocusMode();
+    updateLockAvailability();
     renderDashboard();
     renderPlanner();
     renderCalendar();
