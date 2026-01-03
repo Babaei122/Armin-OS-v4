@@ -1149,10 +1149,16 @@ canvas {
       color: var(--text);
       box-shadow: var(--shadow-2);
       width: min(760px, 92vw);
+      max-height: calc(100vh - 24px);
       padding: 0;
       overflow:hidden;
+      display: flex;
+      flex-direction: column;
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
+    }
+    @supports (height: 100dvh){
+      dialog{ max-height: calc(100dvh - 24px); }
     }
     dialog::backdrop{
       background: var(--overlay);
@@ -1166,10 +1172,19 @@ canvas {
       justify-content:space-between;
       gap: 10px;
       background: linear-gradient(180deg, var(--surface-3), transparent);
+      position: sticky;
+      top: 0;
+      z-index: 2;
     }
     .dlg-title{ font-weight: 1000; margin:0; font-size: var(--fs-4); }
     .dlg-sub{ font-size: var(--fs-1); color: var(--muted); margin-top:4px; }
-    .dlg-body{ padding: 14px; }
+    .dlg-body{
+      padding: 14px;
+      overflow-y: auto;
+      flex: 1 1 auto;
+      -webkit-overflow-scrolling: touch;
+      overscroll-behavior: contain;
+    }
     .dlg-foot{
       padding: 12px 14px 14px;
       border-top: 1px solid var(--border);
@@ -1178,6 +1193,25 @@ canvas {
       gap:10px;
       flex-wrap:wrap;
       background: linear-gradient(0deg, var(--surface-3), transparent);
+      position: sticky;
+      bottom: 0;
+      z-index: 2;
+    }
+    body.modal-open{
+      overflow: hidden;
+      touch-action: none;
+    }
+    @media (max-width: 480px){
+      dialog{
+        width: calc(100% - 24px);
+        margin: auto;
+      }
+      .dlg-foot{
+        padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+      }
+      .dlg-body{
+        padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+      }
     }
 
     /* Toast */
@@ -2933,8 +2967,21 @@ canvas {
   }
 
   // Dialog helpers
-  const openDlg = (id) => { const d = $("#"+id); if (d) d.showModal(); };
+  const syncModalState = () => {
+    document.body.classList.toggle("modal-open", !!document.querySelector("dialog[open]"));
+  };
+  const openDlg = (id) => {
+    const d = $("#"+id);
+    if (d) {
+      d.showModal();
+      syncModalState();
+    }
+  };
   const closeDlg = (id) => { const d = $("#"+id); if (d) d.close(); };
+  $$("dialog").forEach((dlg) => {
+    dlg.addEventListener("close", syncModalState);
+    dlg.addEventListener("cancel", syncModalState);
+  });
   document.addEventListener("click", (e) => {
     const c = e.target.closest("[data-close]");
     if(!c) return;
