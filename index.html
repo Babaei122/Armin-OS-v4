@@ -400,10 +400,10 @@ canvas {
 
     .side-bottom{
       margin-top:auto;
-      padding: var(--s-3) var(--s-3) var(--s-4);
+      padding: var(--s-2) var(--s-3) var(--s-3);
       border-top: 1px solid var(--border);
       display:grid;
-      gap: 12px;
+      gap: 10px;
       background: linear-gradient(0deg, var(--surface-3), transparent);
     }
 
@@ -424,7 +424,7 @@ canvas {
       gap: 10px;
     }
     .side-actions.primary{
-      padding: 10px;
+      padding: 8px;
       border-radius: var(--r-3);
       border: 1px solid var(--border);
       background: linear-gradient(180deg, color-mix(in srgb, var(--primary) 8%, var(--surface-2) 92%), var(--surface-2));
@@ -438,8 +438,8 @@ canvas {
     .side-actions .btn{
       width: 100%;
       justify-content: flex-start;
-      min-height: 46px;
-      padding: 10px 12px;
+      min-height: 44px;
+      padding: 8px 12px;
       border-radius: 16px;
       gap: 10px;
     }
@@ -461,12 +461,71 @@ canvas {
       font-size: var(--fs-2);
       white-space: nowrap;
     }
-    .side-more{
-      display:none;
+    .more-drawer{
+      display:grid;
+      gap: 10px;
+    }
+    .more-toggle{
       width: 100%;
-      justify-content:center;
-      min-height: 44px;
+      justify-content: space-between;
+      min-height: 46px;
       border-radius: 16px;
+      padding: 10px 12px;
+    }
+    .more-toggle:focus-visible{
+      outline: none;
+      box-shadow: var(--ring);
+    }
+    .more-label{
+      display:inline-flex;
+      align-items:center;
+      gap: 8px;
+      font-weight: 700;
+      font-size: var(--fs-2);
+    }
+    .more-chevron{
+      width: 22px;
+      height: 22px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      transition: transform .22s ease, background .22s ease, border-color .22s ease;
+    }
+    .more-drawer.is-open .more-chevron{
+      transform: rotate(180deg);
+      background: var(--surface-3);
+      border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
+    }
+    .more-panel{
+      border-radius: var(--r-3);
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--surface-2) 78%, transparent);
+      box-shadow: 0 12px 28px rgba(15,23,42,.12);
+      padding: 10px;
+      display:grid;
+      gap: 8px;
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transform: translateY(-6px);
+      pointer-events: none;
+      transition: max-height .28s ease, opacity .2s ease, transform .2s ease;
+    }
+    .more-drawer.is-open .more-panel{
+      max-height: 360px;
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+    .more-panel-title{
+      font-size: var(--fs-1);
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: .2px;
+      padding: 0 2px;
     }
     /* Button system */
     .btn{
@@ -1433,24 +1492,6 @@ canvas {
       }
     }
 
-    @media (max-width: 720px){
-      .side-actions.secondary{
-        display: none;
-      }
-      .side-actions.secondary.is-open{
-        display: grid;
-      }
-      .secondary-group .side-actions-title{
-        display: none;
-      }
-      .secondary-group.is-open .side-actions-title{
-        display: block;
-      }
-      .side-more{
-        display: inline-flex;
-      }
-    }
-
     @media (max-width: 560px){
       :root{
         --sidebar: 100%;
@@ -1571,7 +1612,7 @@ canvas {
         border-radius: 16px;
       }
       .side-actions .btn{
-        min-height: 44px;
+        min-height: 42px;
         padding: 8px 10px;
         border-radius: 14px;
         gap: 8px;
@@ -1584,10 +1625,18 @@ canvas {
       .btn-label{
         font-size: 11px;
       }
-      .side-more{
+      .more-toggle{
         min-height: 44px;
         border-radius: 14px;
         font-size: 11px;
+      }
+      .more-chevron{
+        width: 20px;
+        height: 20px;
+      }
+      .more-panel{
+        padding: 8px;
+        border-radius: 14px;
       }
 
       .card{
@@ -1856,27 +1905,34 @@ canvas {
           </button>
           </div>
         </div>
-        <button class="btn btn-ghost side-more" id="btnMoreActions">
-          <span class="btn-emoji">⋯</span><span class="btn-label">بیشتر</span>
-        </button>
-        <div class="side-actions-group secondary-group">
-          <div class="side-actions-title">کنترل‌ها</div>
-          <div class="side-actions secondary" id="sideSecondaryActions">
-            <button class="btn btn-secondary" id="btnLock">
-              <span class="btn-emoji">🔒</span><span class="btn-label">قفل</span>
-            </button>
-            <button class="btn btn-secondary" id="btnTheme">
-              <span class="btn-emoji">🌓</span><span class="btn-label">تم</span>
-            </button>
-            <button class="btn btn-secondary" id="btnExport">
-              <span class="btn-emoji">⬇️</span><span class="btn-label">خروجی</span>
-            </button>
-            <button class="btn btn-secondary" id="btnImport">
-              <span class="btn-emoji">⬆️</span><span class="btn-label">ورود</span>
-            </button>
-            <button class="btn btn-danger" id="btnReset">
-              <span class="btn-emoji">⚠️</span><span class="btn-label">ریست</span>
-            </button>
+        <div class="more-drawer" id="moreDrawer">
+          <button class="btn btn-ghost more-toggle" id="moreToggle" aria-expanded="false" aria-controls="morePanel">
+            <span class="more-label">بیشتر</span>
+            <span class="more-chevron" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 9l6 6 6-6"></path>
+              </svg>
+            </span>
+          </button>
+          <div class="more-panel" id="morePanel" aria-hidden="true">
+            <div class="more-panel-title">کنترل‌ها</div>
+            <div class="side-actions secondary">
+              <button class="btn btn-secondary" id="btnLock">
+                <span class="btn-emoji">🔒</span><span class="btn-label">قفل</span>
+              </button>
+              <button class="btn btn-secondary" id="btnTheme">
+                <span class="btn-emoji">🌓</span><span class="btn-label">تم</span>
+              </button>
+              <button class="btn btn-secondary" id="btnExport">
+                <span class="btn-emoji">⬇️</span><span class="btn-label">خروجی</span>
+              </button>
+              <button class="btn btn-secondary" id="btnImport">
+                <span class="btn-emoji">⬆️</span><span class="btn-label">ورود</span>
+              </button>
+              <button class="btn btn-danger" id="btnReset">
+                <span class="btn-emoji">⚠️</span><span class="btn-label">ریست</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -3103,19 +3159,36 @@ canvas {
     showView(btn.dataset.view);
   });
 
-  const moreActionsBtn = $("#btnMoreActions");
-  const sideSecondaryActions = $("#sideSecondaryActions");
-  const secondaryGroup = sideSecondaryActions ? sideSecondaryActions.closest(".secondary-group") : null;
-  const setMoreActionsState = (open) => {
-    if (!moreActionsBtn || !sideSecondaryActions) return;
-    sideSecondaryActions.classList.toggle("is-open", open);
-    if (secondaryGroup) secondaryGroup.classList.toggle("is-open", open);
-    const label = moreActionsBtn.querySelector(".btn-label");
-    if (label) label.textContent = open ? "بستن" : "بیشتر";
+  const MORE_DRAWER_KEY = "planos_more_open";
+  const moreDrawer = $("#moreDrawer");
+  const moreToggle = $("#moreToggle");
+  const morePanel = $("#morePanel");
+  const setMoreDrawerState = (open, { focusToggle = false } = {}) => {
+    if (!moreDrawer || !moreToggle || !morePanel) return;
+    moreDrawer.classList.toggle("is-open", open);
+    moreToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    morePanel.setAttribute("aria-hidden", open ? "false" : "true");
+    localStorage.setItem(MORE_DRAWER_KEY, open ? "1" : "0");
+    if (!open && focusToggle) moreToggle.focus();
   };
-  if (moreActionsBtn && sideSecondaryActions) {
-    moreActionsBtn.addEventListener("click", () => {
-      setMoreActionsState(!sideSecondaryActions.classList.contains("is-open"));
+  if (moreDrawer && moreToggle && morePanel) {
+    const savedOpen = localStorage.getItem(MORE_DRAWER_KEY) === "1";
+    setMoreDrawerState(savedOpen);
+    moreToggle.addEventListener("click", () => {
+      setMoreDrawerState(!moreDrawer.classList.contains("is-open"));
+    });
+    document.addEventListener("click", (e) => {
+      if (!moreDrawer.classList.contains("is-open")) return;
+      if (!moreDrawer.contains(e.target)) {
+        setMoreDrawerState(false, { focusToggle: true });
+      }
+    });
+    document.addEventListener("keydown", (e) => {
+      if (e.key !== "Escape") return;
+      if (moreDrawer.classList.contains("is-open")) {
+        e.preventDefault();
+        setMoreDrawerState(false, { focusToggle: true });
+      }
     });
   }
 
