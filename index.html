@@ -152,6 +152,11 @@
         radial-gradient(950px 520px at 8% 10%, var(--primary-soft), transparent 60%),
         radial-gradient(980px 520px at 96% 26%, color-mix(in srgb, var(--success) 12%, transparent), transparent 55%),
         linear-gradient(180deg, var(--bg), var(--bg2));
+
+      --flip-bg: color-mix(in srgb, var(--surface-2) 70%, var(--surface) 30%);
+      --flip-border: color-mix(in srgb, var(--border) 70%, transparent);
+      --flip-highlight: color-mix(in srgb, #fff 10%, transparent);
+      --date-card-bg: color-mix(in srgb, var(--surface-2) 80%, transparent);
     }
 html, body {
   font-family: var(--font-sans);
@@ -186,6 +191,10 @@ canvas {
       --overlay-strong: rgba(0,0,0,.6);
       --border-strong: rgba(154,230,255,.32);
       --scrollbar-thumb: rgba(255,255,255,.16);
+      --flip-bg: color-mix(in srgb, rgba(0,0,0,.35) 40%, var(--surface-2) 60%);
+      --flip-border: color-mix(in srgb, rgba(255,255,255,.08) 70%, transparent);
+      --flip-highlight: color-mix(in srgb, rgba(255,255,255,.18) 60%, transparent);
+      --date-card-bg: color-mix(in srgb, rgba(255,255,255,.08) 60%, transparent);
     }
 
     *{ box-sizing:border-box; }
@@ -558,16 +567,24 @@ canvas {
       padding: var(--s-4);
       border-bottom: 1px solid var(--border);
       display:grid;
-      grid-template-columns: 1fr auto;
+      grid-template-columns: auto 1fr auto;
       gap: var(--s-3);
       align-items:center;
       background: linear-gradient(180deg, var(--surface-3), transparent);
+    }
+    .topbar-left,
+    .topbar-right{
+      display:flex;
+      align-items:center;
+      gap: 12px;
+      flex-wrap: wrap;
     }
     .topbar-main{
       display:flex;
       flex-direction:column;
       gap: 4px;
       min-width: 0;
+      text-align: center;
     }
     .topbar-title{
       font-size: var(--fs-5);
@@ -586,51 +603,126 @@ canvas {
       align-items:center;
       justify-content:flex-end;
     }
-    .topbar-meta{
+    .date-card{
       display:grid;
       gap: 6px;
-      padding: 8px 12px;
+      padding: 10px 12px;
+      min-width: 160px;
       border-radius: var(--r-3);
       border: 1px solid var(--border);
-      background: var(--surface-2);
-      box-shadow: 0 10px 22px rgba(15,23,42,.08);
+      background: var(--date-card-bg);
+      box-shadow: var(--shadow-1);
+      backdrop-filter: blur(8px);
+      position: relative;
+      overflow: hidden;
     }
-    .topbar-meta-label{
+    .date-card::after{
+      content:"";
+      position:absolute;
+      inset: 0;
+      background: linear-gradient(135deg, transparent, rgba(255,255,255,.08));
+      pointer-events:none;
+    }
+    .date-card-weekday{
       font-size: var(--fs-1);
       font-weight: 700;
       color: var(--muted);
     }
-    .topbar-chips{
+    .date-card-main{
       display:flex;
-      flex-wrap:wrap;
+      align-items:baseline;
       gap: 8px;
-      align-items:center;
+      font-weight: 800;
     }
-    .pill{
-      border: 1px solid var(--border);
-      background: var(--surface-2);
-      padding: 6px 12px;
-      border-radius: 999px;
-      font-size: var(--fs-2);
+    .date-card-day{
+      font-size: 26px;
+      line-height: 1;
+    }
+    .date-card-month{
+      font-size: var(--fs-3);
+      color: var(--text);
+    }
+    .date-card-year{
+      font-size: var(--fs-1);
       color: var(--muted);
-      display:inline-flex;
+    }
+    .flip-clock{
+      display:flex;
       align-items:center;
       gap: 6px;
-      white-space:nowrap;
-      box-shadow: 0 6px 14px rgba(15,23,42,.08);
+      direction: ltr;
     }
-    .pill.strong{
+    .flip-seg{
+      display:flex;
+      gap: 6px;
+    }
+    .flip-digit{
+      position: relative;
+      width: 32px;
+      height: 44px;
+      border-radius: 10px;
+      border: 1px solid var(--flip-border);
+      background: var(--flip-bg);
       color: var(--text);
-      border-color: color-mix(in srgb, var(--border) 60%, var(--primary) 40%);
-      background: color-mix(in srgb, var(--primary) 10%, var(--surface-2) 90%);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      font-weight: 800;
+      font-size: 20px;
+      box-shadow: inset 0 1px 0 var(--flip-highlight), 0 8px 16px rgba(15,23,42,.08);
+      overflow: hidden;
+    }
+    .flip-digit::before{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      top:50%;
+      height:1px;
+      background: color-mix(in srgb, var(--flip-border) 80%, transparent);
+      opacity: .7;
+    }
+    .flip-top,
+    .flip-bottom{
+      display:block;
+      line-height: 1;
+      height: 50%;
+      width: 100%;
+      text-align:center;
+    }
+    .flip-top{
+      padding-top: 8px;
+    }
+    .flip-bottom{
+      padding-bottom: 6px;
+      align-self: stretch;
+    }
+    .flip-digit.is-flipping{
+      animation: flipPulse .4s ease;
+    }
+    .flip-colon{
+      font-weight: 800;
+      color: var(--muted);
+      margin: 0 2px;
+      animation: blink 1s infinite;
+    }
+    @keyframes flipPulse{
+      0%{ transform: translateY(0); }
+      50%{ transform: translateY(-2px); }
+      100%{ transform: translateY(0); }
+    }
+    @keyframes blink{
+      0%, 40%{ opacity: 1; }
+      60%, 100%{ opacity: .4; }
     }
     .focus-btn{
       border: 1px solid var(--border);
       background: var(--surface-2);
       color: var(--text);
       border-radius: var(--r-3);
-      padding: 10px 12px;
-      min-height: 56px;
+      padding: 8px 12px;
+      min-height: 44px;
       display:flex;
       align-items:center;
       gap: 12px;
@@ -654,14 +746,14 @@ canvas {
       background: color-mix(in srgb, var(--primary) 12%, var(--surface-2) 88%);
     }
     .focus-icon{
-      width: 36px;
-      height: 36px;
-      border-radius: 14px;
+      width: 30px;
+      height: 30px;
+      border-radius: 12px;
       display:flex;
       align-items:center;
       justify-content:center;
       background: color-mix(in srgb, var(--primary) 14%, transparent);
-      font-size: 18px;
+      font-size: 16px;
     }
     .focus-text{
       display:flex;
@@ -1362,17 +1454,23 @@ canvas {
         grid-template-columns: 1fr;
         align-items:flex-start;
       }
-      .topbar-actions{
+      .topbar-main{
+        text-align: right;
+      }
+      .topbar-left,
+      .topbar-right{
         width: 100%;
-        justify-content:flex-start;
+        justify-content: space-between;
+      }
+      .topbar-right{
         flex-direction: column;
         align-items: stretch;
       }
-      .topbar-meta{
+      .date-card{
         width: 100%;
       }
-      .topbar-chips{
-        width: 100%;
+      .flip-clock{
+        justify-content: center;
       }
       .focus-btn{
         width: 100%;
@@ -1760,16 +1858,30 @@ canvas {
     <!-- CONTENT -->
     <section class="content glass">
       <header class="topbar">
+        <div class="topbar-left">
+          <div class="date-card" aria-label="تاریخ امروز">
+            <div class="date-card-weekday" id="todayWeekday">—</div>
+            <div class="date-card-main">
+              <div class="date-card-day" id="todayDay">—</div>
+              <div class="date-card-month" id="todayMonth">—</div>
+            </div>
+            <div class="date-card-year" id="todayYear">—</div>
+          </div>
+        </div>
         <div class="topbar-main">
           <div class="topbar-title" id="viewTitle">داشبورد</div>
           <div class="topbar-sub" id="viewSub">نمای کلی پیشرفت، درآمد، سرمایه و اهداف</div>
         </div>
-        <div class="topbar-actions">
-          <div class="topbar-meta">
-            <div class="topbar-meta-label">تقویم</div>
-            <div class="topbar-chips">
-              <span class="pill strong" id="todayBadge">—</span>
-              <span class="pill" id="monthBadge">—</span>
+        <div class="topbar-right">
+          <div class="flip-clock" id="flipClock" aria-label="زمان فعلی">
+            <div class="flip-seg">
+              <div class="flip-digit" data-digit="0"><span class="flip-top">0</span><span class="flip-bottom">0</span></div>
+              <div class="flip-digit" data-digit="0"><span class="flip-top">0</span><span class="flip-bottom">0</span></div>
+            </div>
+            <span class="flip-colon">:</span>
+            <div class="flip-seg">
+              <div class="flip-digit" data-digit="0"><span class="flip-top">0</span><span class="flip-bottom">0</span></div>
+              <div class="flip-digit" data-digit="0"><span class="flip-top">0</span><span class="flip-bottom">0</span></div>
             </div>
           </div>
           <button class="focus-btn" id="btnFocusMode" aria-pressed="false">
@@ -2921,6 +3033,7 @@ canvas {
     return (js + 1) % 7;
   };
   const faDow = ["شنبه","یکشنبه","دوشنبه","سه‌شنبه","چهارشنبه","پنجشنبه","جمعه"];
+  const USE_12H_CLOCK = false;
 
   // =========================
   // Navigation
@@ -2991,6 +3104,31 @@ canvas {
   // =========================
   // Header Render
   // =========================
+  const formatTimeParts = (date) => {
+    const opts = { hour: "2-digit", minute: "2-digit", hour12: USE_12H_CLOCK };
+    return date.toLocaleTimeString("fa-IR", opts).replace(/\u200f/g, "");
+  };
+  const updateFlipClock = () => {
+    const clock = $("#flipClock");
+    if (!clock) return;
+    const time = formatTimeParts(new Date());
+    const match = time.match(/([0-9۰-۹]+)\s*:\s*([0-9۰-۹]+)/);
+    if (!match) return;
+    const digits = (match[1] + match[2]).padStart(4, "۰").split("");
+    const nodes = clock.querySelectorAll(".flip-digit");
+    nodes.forEach((node, idx) => {
+      const next = digits[idx] || "۰";
+      if (node.dataset.digit === next) return;
+      node.dataset.digit = next;
+      node.classList.remove("is-flipping");
+      void node.offsetWidth;
+      node.classList.add("is-flipping");
+      node.querySelectorAll("span").forEach((span) => {
+        span.textContent = next;
+      });
+    });
+  };
+
   const renderHeader = () => {
     $("#pname").textContent = state.profile.name || "نام شما";
     $("#ptitle").textContent = state.profile.title || "عنوان شما";
@@ -3006,11 +3144,12 @@ canvas {
     }
 
     const tISO = todayISO();
-    const tJ = isoToJalaliStr(tISO);
     const j = isoToJalali(tISO);
 
-    $("#todayBadge").textContent = tJ;
-    $("#monthBadge").textContent = jalaliMonthLabel(j.jy, j.jm);
+    $("#todayWeekday").textContent = faDow[getFaWeekdayIndex(new Date())];
+    $("#todayDay").textContent = toFaDigits(j.jd);
+    $("#todayMonth").textContent = J_MONTHS[j.jm - 1];
+    $("#todayYear").textContent = toFaDigits(j.jy);
     document.documentElement.setAttribute("dir", state.settings.rtl ? "rtl" : "ltr");
     document.documentElement.setAttribute("data-theme", state.settings.theme || "light");
   };
@@ -4168,9 +4307,17 @@ canvas {
     renderNotes();
   };
 
+  let clockTimer = null;
+  const startClock = () => {
+    updateFlipClock();
+    if (clockTimer) clearInterval(clockTimer);
+    clockTimer = setInterval(updateFlipClock, 1000);
+  };
+
   // Init
   initLock();
   renderAll();
+  startClock();
   renderDashboardCharts();
 })();
 </script>
