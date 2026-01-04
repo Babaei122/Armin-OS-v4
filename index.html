@@ -231,6 +231,7 @@ canvas {
     .app{
       display:grid;
       grid-template-columns: var(--sidebar) 1fr;
+      align-items: start;
       gap: var(--gap);
       width: min(1360px, 100%);
       margin: 0 auto;
@@ -616,10 +617,6 @@ canvas {
       overflow:hidden;
       display:flex;
       flex-direction:column;
-      min-height: calc(100vh - (var(--s-4) * 2));
-    }
-    @media (max-width: 1120px){
-      .content{ min-height:auto; }
     }
 
     .topbar{
@@ -1756,7 +1753,6 @@ canvas {
             </span>
             PlanOS
           </h1>
-          <span class="badge">PWA • Jalali • PIN</span>
         </div>
         <div class="profile" id="profileButton" role="button" tabindex="0" aria-haspopup="dialog" aria-controls="dlgProfile">
           <div class="avatar" id="avatar">A</div>
