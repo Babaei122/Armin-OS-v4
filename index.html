@@ -2613,6 +2613,7 @@ canvas {
           <div class="full">
             <label>پین قفل (۴ رقم)</label>
             <input class="input" id="profilePin" type="password" inputmode="numeric" maxlength="4" placeholder="مثلاً ۱۲۳۴" />
+            <div class="muted2 small" style="margin-top:6px">PIN به صورت امن (هش) ذخیره می‌شود.</div>
           </div>
           <div class="full">
             <button class="btn btn-danger" id="btnRemoveAvatar">حذف آواتار</button>
@@ -2995,7 +2996,7 @@ canvas {
         savingsRateTarget: 0,
         currency: "تومان"
       },
-      settings: { theme: "light", rtl: true, focusMode: false, pin: "" },
+      settings: { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "" },
       notes: {
         daily: "",
         motivation: "",
@@ -3019,10 +3020,23 @@ canvas {
   };
   let state = loadState() || defaultState();
   state.profile.avatarData = state.profile.avatarData || "";
-  state.settings = { theme: "light", rtl: true, focusMode: false, pin: "", ...state.settings };
+  state.settings = { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "", ...state.settings };
   state.settings.focusMode = !!state.settings.focusMode;
   const normalizePin = (val) => String(val || "").replace(/\D/g, "").slice(0,4);
-  const getPinCode = () => normalizePin(state.settings.pin || "");
+  const hasWebCrypto = () => !!(window.crypto && window.crypto.subtle && window.crypto.getRandomValues);
+  const toHex = (buffer) => Array.from(new Uint8Array(buffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
+  const generateSalt = () => {
+    const bytes = new Uint8Array(16);
+    window.crypto.getRandomValues(bytes);
+    return toHex(bytes);
+  };
+  const hashPin = async (pin, salt) => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(`${salt}:${pin}`);
+    const digest = await window.crypto.subtle.digest("SHA-256", data);
+    return toHex(digest);
+  };
+  const hasPinSet = () => !!(state.settings.pinHash && state.settings.pinSalt);
   const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
   const toast = (msg) => {
@@ -3033,11 +3047,47 @@ canvas {
     el._t = setTimeout(() => el.style.display = "none", 2200);
   };
 
+  const migrateLegacyPin = async () => {
+    if (hasPinSet()) {
+      let didChange = false;
+      if ("pin" in state.settings) {
+        delete state.settings.pin;
+        didChange = true;
+      }
+      if (localStorage.getItem("pin")) localStorage.removeItem("pin");
+      if (didChange) saveState();
+      return;
+    }
+    const legacyPinRaw = state.settings.pin || localStorage.getItem("pin") || "";
+    const legacyPin = normalizePin(legacyPinRaw);
+    if (!legacyPin || legacyPin.length !== 4) {
+      let didChange = false;
+      if ("pin" in state.settings) {
+        delete state.settings.pin;
+        didChange = true;
+      }
+      if (localStorage.getItem("pin")) localStorage.removeItem("pin");
+      if (didChange) saveState();
+      return;
+    }
+    if (!hasWebCrypto()) {
+      toast("مرورگر از ذخیره امن پین پشتیبانی نمی‌کند.");
+      return;
+    }
+    const salt = generateSalt();
+    const hash = await hashPin(legacyPin, salt);
+    state.settings.pinSalt = salt;
+    state.settings.pinHash = hash;
+    if ("pin" in state.settings) delete state.settings.pin;
+    if (localStorage.getItem("pin")) localStorage.removeItem("pin");
+    saveState();
+  };
+
   // =========================
   // PIN Lock
   // =========================
   const updateLockAvailability = () => {
-    const hasPin = getPinCode().length === 4;
+    const hasPin = hasPinSet();
     const btnLock = $("#btnLock");
     if (btnLock) {
       btnLock.disabled = !hasPin;
@@ -3075,10 +3125,13 @@ canvas {
   const clearPinInputs = () => pinInputs().forEach(i => i.value = "");
   const getPinValue = () => pinInputs().map(i => i.value).join("");
 
-  const tryUnlock = () => {
-    const pinCode = getPinCode();
-    if (!pinCode) {
+  const tryUnlock = async () => {
+    if (!hasPinSet()) {
       $("#lockError").textContent = "پین هنوز تنظیم نشده است.";
+      return;
+    }
+    if (!hasWebCrypto()) {
+      $("#lockError").textContent = "مرورگر از رمزنگاری امن پشتیبانی نمی‌کند.";
       return;
     }
     const val = getPinValue();
@@ -3086,15 +3139,21 @@ canvas {
       $("#lockError").textContent = "پین باید ۴ رقم باشد.";
       return;
     }
-    if (val === pinCode) {
-      sessionStorage.setItem(LOCK_SESSION_KEY, "1");
-      hideLock();
-      toast("خوش اومدی ✅");
-    } else {
-      $("#lockError").textContent = "پین اشتباه است.";
-      clearPinInputs();
-      pinInputs()[0]?.focus();
+    try {
+      const hashed = await hashPin(val, state.settings.pinSalt);
+      if (hashed === state.settings.pinHash) {
+        sessionStorage.setItem(LOCK_SESSION_KEY, "1");
+        hideLock();
+        toast("خوش اومدی ✅");
+        return;
+      }
+    } catch {
+      $("#lockError").textContent = "خطا در بررسی پین.";
+      return;
     }
+    $("#lockError").textContent = "پین اشتباه است.";
+    clearPinInputs();
+    pinInputs()[0]?.focus();
   };
 
   const initLock = () => {
@@ -3106,7 +3165,7 @@ canvas {
         const v = (inp.value || "").replace(/\D/g, "");
         inp.value = v.slice(0,1);
         if (inp.value && idx < inputs.length - 1) inputs[idx+1].focus();
-        if (getPinValue().length === 4) tryUnlock();
+        if (getPinValue().length === 4) void tryUnlock();
       });
 
       inp.addEventListener("keydown", (e) => {
@@ -3115,7 +3174,7 @@ canvas {
         }
         if (e.key === "Enter") {
           e.preventDefault();
-          tryUnlock();
+          void tryUnlock();
         }
       });
 
@@ -3127,13 +3186,13 @@ canvas {
           e.preventDefault();
           clearPinInputs();
           digits.forEach((d, i) => { if (inputs[i]) inputs[i].value = d; });
-          if (digits.length === 4) tryUnlock();
+          if (digits.length === 4) void tryUnlock();
           else inputs[Math.min(digits.length, 3)].focus();
         }
       });
     });
 
-    $("#btnUnlock").addEventListener("click", tryUnlock);
+    $("#btnUnlock").addEventListener("click", () => void tryUnlock());
     $("#btnClearPin").addEventListener("click", () => { clearPinInputs(); $("#lockError").textContent = ""; pinInputs()[0]?.focus(); });
     $("#btnLock").addEventListener("click", () => {
       if (!updateLockAvailability()) {
@@ -4386,7 +4445,7 @@ canvas {
     $("#profileName").value = state.profile.name || "";
     $("#profileTitle").value = state.profile.title || "";
     $("#profileAvatar").value = "";
-    $("#profilePin").value = state.settings.pin || "";
+    $("#profilePin").value = "";
     pendingAvatarData = state.profile.avatarData || "";
     openDlg("dlgProfile");
   };
@@ -4416,7 +4475,7 @@ canvas {
     toast("آواتار حذف شد.");
   });
 
-  $("#btnProfileSave").addEventListener("click", () => {
+  $("#btnProfileSave").addEventListener("click", async () => {
     const nameValue = $("#profileName").value.trim();
     const titleValue = $("#profileTitle").value.trim();
     const pinValue = normalizePin($("#profilePin").value.trim());
@@ -4428,7 +4487,24 @@ canvas {
     state.profile.name = nameValue;
     state.profile.title = titleValue;
     state.profile.avatarData = pendingAvatarData || "";
-    state.settings.pin = pinValue;
+    if (pinValue) {
+      if (!hasWebCrypto()) {
+        toast("مرورگر از ذخیره امن پین پشتیبانی نمی‌کند.");
+        return;
+      }
+      try {
+        const salt = generateSalt();
+        state.settings.pinSalt = salt;
+        state.settings.pinHash = await hashPin(pinValue, salt);
+      } catch {
+        toast("خطا در ذخیره امن پین.");
+        return;
+      }
+    } else {
+      state.settings.pinSalt = "";
+      state.settings.pinHash = "";
+    }
+    if ("pin" in state.settings) delete state.settings.pin;
     if (!pinValue) {
       sessionStorage.removeItem(LOCK_SESSION_KEY);
       hideLock();
@@ -4475,13 +4551,14 @@ canvas {
     const data = safeParse(text);
     if(!data || !data.meta){ toast("فایل معتبر نیست."); return; }
     state = data;
-    state.settings = { theme: "light", rtl: true, focusMode: false, pin: "", ...state.settings };
+    state.settings = { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "", ...state.settings };
     state.settings.focusMode = !!state.settings.focusMode;
+    await migrateLegacyPin();
     saveState();
     closeDlg("dlgImport");
     renderAll();
     renderDashboardCharts();
-    if (getPinCode().length === 4 && sessionStorage.getItem(LOCK_SESSION_KEY) !== "1") {
+    if (hasPinSet() && sessionStorage.getItem(LOCK_SESSION_KEY) !== "1") {
       showLock();
     }
     toast("داده‌ها وارد شد ✅");
@@ -4534,10 +4611,14 @@ canvas {
   };
 
   // Init
-  initLock();
-  renderAll();
-  startClock();
-  renderDashboardCharts();
+  const boot = async () => {
+    await migrateLegacyPin();
+    initLock();
+    renderAll();
+    startClock();
+    renderDashboardCharts();
+  };
+  void boot();
 })();
 </script>
 </body>
