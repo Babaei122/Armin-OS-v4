@@ -258,7 +258,7 @@ canvas {
       top: var(--s-4);
       height: calc(100vh - (var(--s-4) * 2));
       border-radius: var(--r-4);
-      overflow: hidden;
+      overflow: auto;
       display:flex;
       flex-direction:column;
       min-height: 0;
@@ -314,7 +314,7 @@ canvas {
       font-weight:800;
       box-shadow: var(--shadow-1);
       flex: 0 0 auto;
-      overflow: hidden;
+      overflow: auto;
     }
     .avatar img{
       width:100%;
@@ -508,7 +508,7 @@ canvas {
       padding: 10px;
       display:grid;
       gap: 8px;
-      overflow: hidden;
+      overflow: auto;
       max-height: 0;
       opacity: 0;
       transform: translateY(-6px);
@@ -1309,36 +1309,57 @@ canvas {
 
     /* Dialog */
     dialog{
-      border: 1px solid var(--border);
-      border-radius: 26px;
-      background: color-mix(in srgb, var(--surface-3) 85%, transparent);
-      color: var(--text);
-      box-shadow: var(--shadow-2);
-      width: min(760px, 92vw);
-      max-height: calc(100vh - 24px);
+      border: none;
       padding: 0;
-      overflow:hidden;
-      display: flex;
-      flex-direction: column;
-      position: fixed;
-      inset: 0;
-      margin: auto;
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-    }
-    @supports (height: 100dvh){
-      dialog{ max-height: calc(100dvh - 24px); }
+      background: transparent;
+      color: var(--text);
+      overflow: visible;
+      width: auto;
+      max-height: none;
     }
     dialog::backdrop{
+      background: transparent;
+    }
+    .modal-overlay{
       position: fixed;
       inset: 0;
       width: 100vw;
       height: 100vh;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: calc(16px + env(safe-area-inset-top, 0px))
+        calc(16px + env(safe-area-inset-right, 0px))
+        calc(16px + env(safe-area-inset-bottom, 0px))
+        calc(16px + env(safe-area-inset-left, 0px));
       background: var(--overlay);
       backdrop-filter: blur(10px);
+      z-index: 9999;
+    }
+    dialog[open].modal-overlay{
+      display: flex;
     }
     @supports (height: 100dvh){
-      dialog::backdrop{ height: 100dvh; }
+      .modal-overlay{ height: 100dvh; }
+    }
+    .modal-card{
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      background: color-mix(in srgb, var(--surface-3) 85%, transparent);
+      box-shadow: var(--shadow-2);
+      width: min(760px, 92vw);
+      max-height: calc(100vh - 32px);
+      padding: 0;
+      overflow: auto;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    @supports (height: 100dvh){
+      .modal-card{ max-height: calc(100dvh - 32px); }
     }
     .dlg-head{
       padding: 14px 14px 12px;
@@ -1356,10 +1377,8 @@ canvas {
     .dlg-sub{ font-size: var(--fs-1); color: var(--muted); margin-top:4px; }
     .dlg-body{
       padding: 14px;
-      overflow-y: auto;
+      overflow-y: visible;
       flex: 1 1 auto;
-      -webkit-overflow-scrolling: touch;
-      overscroll-behavior: contain;
     }
     .dlg-foot{
       padding: 12px 14px 14px;
@@ -1381,7 +1400,7 @@ canvas {
       overscroll-behavior: contain;
     }
     @media (max-width: 480px){
-      dialog{
+      .modal-card{
         width: calc(100% - 24px);
         margin: auto;
       }
@@ -2493,276 +2512,290 @@ canvas {
     </section>
   </div>
 
+  <div class="toast" id="toast"></div>
+
   <!-- DIALOGS -->
-  <dialog id="dlgTask">
-    <div class="dlg-head">
-      <div>
-        <div class="dlg-title" id="dlgTaskTitle">افزودن تسک</div>
-        <div class="dlg-sub">تسک، تاریخ، اولویت و تایم‌بلاک را مشخص کن.</div>
+  <div id="modalRoot">
+  <dialog id="dlgTask" class="modal-overlay">
+    <div class="modal-card">
+      <div class="dlg-head">
+        <div>
+          <div class="dlg-title" id="dlgTaskTitle">افزودن تسک</div>
+          <div class="dlg-sub">تسک، تاریخ، اولویت و تایم‌بلاک را مشخص کن.</div>
+        </div>
+        <button class="btn btn-icon" data-close="dlgTask" title="بستن">✕</button>
       </div>
-      <button class="btn btn-icon" data-close="dlgTask" title="بستن">✕</button>
-    </div>
-    <div class="dlg-body">
-      <div class="form-grid">
-        <div class="full">
-          <label>عنوان</label>
-          <input class="input" id="taskTitle" placeholder="مثلاً: ۴۵ دقیقه تمرین UI" />
-        </div>
+      <div class="dlg-body">
+        <div class="form-grid">
+          <div class="full">
+            <label>عنوان</label>
+            <input class="input" id="taskTitle" placeholder="مثلاً: ۴۵ دقیقه تمرین UI" />
+          </div>
 
-        <div>
-          <label>تاریخ (میلادی - برای ذخیره)</label>
-          <input class="input" type="date" id="taskDate" />
-          <div class="muted2 small" id="taskDateJ" style="margin-top:6px">—</div>
-        </div>
+          <div>
+            <label>تاریخ (میلادی - برای ذخیره)</label>
+            <input class="input" type="date" id="taskDate" />
+            <div class="muted2 small" id="taskDateJ" style="margin-top:6px">—</div>
+          </div>
 
-        <div>
-          <label>اولویت</label>
-          <select class="input" id="taskPriority">
-            <option value="low">کم</option>
-            <option value="medium" selected>متوسط</option>
-            <option value="high">زیاد</option>
-          </select>
-        </div>
+          <div>
+            <label>اولویت</label>
+            <select class="input" id="taskPriority">
+              <option value="low">کم</option>
+              <option value="medium" selected>متوسط</option>
+              <option value="high">زیاد</option>
+            </select>
+          </div>
 
-        <div>
-          <label>دسته‌بندی</label>
-          <input class="input" id="taskCategory" placeholder="کار / درس / مهارت / سلامتی ..." />
-        </div>
+          <div>
+            <label>دسته‌بندی</label>
+            <input class="input" id="taskCategory" placeholder="کار / درس / مهارت / سلامتی ..." />
+          </div>
 
-        <div>
-          <label>تایم‌بلاک</label>
-          <select class="input" id="taskTimeBlock">
-            <option value="صبح">صبح</option>
-            <option value="ظهر">ظهر</option>
-            <option value="عصر">عصر</option>
-            <option value="شب">شب</option>
-          </select>
-        </div>
+          <div>
+            <label>تایم‌بلاک</label>
+            <select class="input" id="taskTimeBlock">
+              <option value="صبح">صبح</option>
+              <option value="ظهر">ظهر</option>
+              <option value="عصر">عصر</option>
+              <option value="شب">شب</option>
+            </select>
+          </div>
 
-        <div class="full">
-          <label>تخمین زمان (دقیقه)</label>
-          <input class="input" type="number" id="taskEstimate" min="0" step="5" value="30" />
-        </div>
+          <div class="full">
+            <label>تخمین زمان (دقیقه)</label>
+            <input class="input" type="number" id="taskEstimate" min="0" step="5" value="30" />
+          </div>
 
-        <div class="full">
-          <label>
-            <input type="checkbox" id="taskDone" />
-            انجام شده
-          </label>
+          <div class="full">
+            <label>
+              <input type="checkbox" id="taskDone" />
+              انجام شده
+            </label>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="dlg-foot">
-      <button class="btn btn-danger" id="btnTaskDelete" style="visibility:hidden">حذف</button>
-      <div class="btn-row">
-        <button class="btn btn-secondary" data-close="dlgTask">انصراف</button>
-        <button class="btn btn-primary" id="btnTaskSave">ذخیره</button>
+      <div class="dlg-foot">
+        <button class="btn btn-danger" id="btnTaskDelete" style="visibility:hidden">حذف</button>
+        <div class="btn-row">
+          <button class="btn btn-secondary" data-close="dlgTask">انصراف</button>
+          <button class="btn btn-primary" id="btnTaskSave">ذخیره</button>
+        </div>
       </div>
     </div>
   </dialog>
 
-  <dialog id="dlgProfile">
-    <div class="dlg-head">
-      <div>
-        <div class="dlg-title">ویرایش پروفایل</div>
-        <div class="dlg-sub">نام، عنوان و آواتار را تغییر بده.</div>
+  <dialog id="dlgProfile" class="modal-overlay">
+    <div class="modal-card">
+      <div class="dlg-head">
+        <div>
+          <div class="dlg-title">ویرایش پروفایل</div>
+          <div class="dlg-sub">نام، عنوان و آواتار را تغییر بده.</div>
+        </div>
+        <button class="btn btn-icon" data-close="dlgProfile" title="بستن">✕</button>
       </div>
-      <button class="btn btn-icon" data-close="dlgProfile" title="بستن">✕</button>
-    </div>
-    <div class="dlg-body">
-      <div class="form-grid">
-        <div class="full">
-          <label>نام</label>
-          <input class="input" id="profileName" placeholder="نام شما" />
-        </div>
-        <div class="full">
-          <label>عنوان/شغل</label>
-          <input class="input" id="profileTitle" placeholder="عنوان شما" />
-        </div>
-        <div class="full">
-          <label>آپلود آواتار</label>
-          <input class="input" type="file" id="profileAvatar" accept="image/*" />
-        </div>
-        <div class="full">
-          <label>پین قفل (۴ رقم)</label>
-          <input class="input" id="profilePin" type="password" inputmode="numeric" maxlength="4" placeholder="مثلاً ۱۲۳۴" />
-        </div>
-        <div class="full">
-          <button class="btn btn-danger" id="btnRemoveAvatar">حذف آواتار</button>
-        </div>
-      </div>
-    </div>
-    <div class="dlg-foot">
-      <div></div>
-      <div class="btn-row">
-        <button class="btn btn-secondary" data-close="dlgProfile">انصراف</button>
-        <button class="btn btn-primary" id="btnProfileSave">ذخیره</button>
-      </div>
-    </div>
-  </dialog>
-
-  <dialog id="dlgProject">
-    <div class="dlg-head">
-      <div>
-        <div class="dlg-title" id="dlgProjectTitle">افزودن پروژه</div>
-        <div class="dlg-sub">ثبت پروژه‌ها باعث میشه درآمد و رشد واقعی‌ت مشخص بشه.</div>
-      </div>
-      <button class="btn btn-icon" data-close="dlgProject" title="بستن">✕</button>
-    </div>
-    <div class="dlg-body">
-      <div class="form-grid">
-        <div class="full">
-          <label>عنوان پروژه</label>
-          <input class="input" id="projName" placeholder="مثلاً: طراحی لوگو / UI سایت ..." />
-        </div>
-        <div>
-          <label>مشتری</label>
-          <input class="input" id="projClient" placeholder="نام مشتری/برند" />
-        </div>
-        <div>
-          <label>مبلغ</label>
-          <input class="input" type="number" id="projAmount" placeholder="مثلاً 6500000" />
-        </div>
-        <div>
-          <label>تاریخ (میلادی - برای ذخیره)</label>
-          <input class="input" type="date" id="projDate" />
-          <div class="muted2 small" id="projDateJ" style="margin-top:6px">—</div>
-        </div>
-        <div>
-          <label>وضعیت</label>
-          <select class="input" id="projStatus">
-            <option value="todo">در انتظار</option>
-            <option value="doing">در حال انجام</option>
-            <option value="done">انجام‌شده</option>
-          </select>
-        </div>
-        <div>
-          <label>تگ‌ها (با کاما جدا کن)</label>
-          <input class="input" id="projTags" placeholder="مثلاً: برندینگ, UI, لوگو" />
-        </div>
-        <div class="full">
-          <label>یادداشت</label>
-          <textarea id="projNotes" placeholder="نکات تحویل، فیدبک مشتری، لینک‌ها..."></textarea>
+      <div class="dlg-body">
+        <div class="form-grid">
+          <div class="full">
+            <label>نام</label>
+            <input class="input" id="profileName" placeholder="نام شما" />
+          </div>
+          <div class="full">
+            <label>عنوان/شغل</label>
+            <input class="input" id="profileTitle" placeholder="عنوان شما" />
+          </div>
+          <div class="full">
+            <label>آپلود آواتار</label>
+            <input class="input" type="file" id="profileAvatar" accept="image/*" />
+          </div>
+          <div class="full">
+            <label>پین قفل (۴ رقم)</label>
+            <input class="input" id="profilePin" type="password" inputmode="numeric" maxlength="4" placeholder="مثلاً ۱۲۳۴" />
+          </div>
+          <div class="full">
+            <button class="btn btn-danger" id="btnRemoveAvatar">حذف آواتار</button>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="dlg-foot">
-      <button class="btn btn-danger" id="btnProjectDelete" style="visibility:hidden">حذف</button>
-      <div class="btn-row">
-        <button class="btn btn-secondary" data-close="dlgProject">انصراف</button>
-        <button class="btn btn-primary" id="btnProjectSave">ذخیره</button>
+      <div class="dlg-foot">
+        <div></div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" data-close="dlgProfile">انصراف</button>
+          <button class="btn btn-primary" id="btnProfileSave">ذخیره</button>
+        </div>
       </div>
     </div>
   </dialog>
 
-  <dialog id="dlgGoal">
-    <div class="dlg-head">
-      <div>
-        <div class="dlg-title" id="dlgGoalTitle">افزودن هدف</div>
-        <div class="dlg-sub">هدف بزرگ = مسیر روشن. مایلستون‌ها = حرکت واقعی.</div>
+  <dialog id="dlgProject" class="modal-overlay">
+    <div class="modal-card">
+      <div class="dlg-head">
+        <div>
+          <div class="dlg-title" id="dlgProjectTitle">افزودن پروژه</div>
+          <div class="dlg-sub">ثبت پروژه‌ها باعث میشه درآمد و رشد واقعی‌ت مشخص بشه.</div>
+        </div>
+        <button class="btn btn-icon" data-close="dlgProject" title="بستن">✕</button>
       </div>
-      <button class="btn btn-icon" data-close="dlgGoal" title="بستن">✕</button>
+      <div class="dlg-body">
+        <div class="form-grid">
+          <div class="full">
+            <label>عنوان پروژه</label>
+            <input class="input" id="projName" placeholder="مثلاً: طراحی لوگو / UI سایت ..." />
+          </div>
+          <div>
+            <label>مشتری</label>
+            <input class="input" id="projClient" placeholder="نام مشتری/برند" />
+          </div>
+          <div>
+            <label>مبلغ</label>
+            <input class="input" type="number" id="projAmount" placeholder="مثلاً 6500000" />
+          </div>
+          <div>
+            <label>تاریخ (میلادی - برای ذخیره)</label>
+            <input class="input" type="date" id="projDate" />
+            <div class="muted2 small" id="projDateJ" style="margin-top:6px">—</div>
+          </div>
+          <div>
+            <label>وضعیت</label>
+            <select class="input" id="projStatus">
+              <option value="todo">در انتظار</option>
+              <option value="doing">در حال انجام</option>
+              <option value="done">انجام‌شده</option>
+            </select>
+          </div>
+          <div>
+            <label>تگ‌ها (با کاما جدا کن)</label>
+            <input class="input" id="projTags" placeholder="مثلاً: برندینگ, UI, لوگو" />
+          </div>
+          <div class="full">
+            <label>یادداشت</label>
+            <textarea id="projNotes" placeholder="نکات تحویل، فیدبک مشتری، لینک‌ها..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="dlg-foot">
+        <button class="btn btn-danger" id="btnProjectDelete" style="visibility:hidden">حذف</button>
+        <div class="btn-row">
+          <button class="btn btn-secondary" data-close="dlgProject">انصراف</button>
+          <button class="btn btn-primary" id="btnProjectSave">ذخیره</button>
+        </div>
+      </div>
     </div>
-    <div class="dlg-body">
-      <div class="form-grid">
-        <div class="full">
-          <label>عنوان هدف</label>
-          <input class="input" id="goalTitle" placeholder="مثلاً: رسیدن به ۴۰ میلیون درآمد ماهانه" />
-        </div>
+  </dialog>
+
+  <dialog id="dlgGoal" class="modal-overlay">
+    <div class="modal-card">
+      <div class="dlg-head">
         <div>
-          <label>افق زمانی</label>
-          <input class="input" id="goalHorizon" placeholder="مثلاً: ۳ ماه / ۶ ماه" />
+          <div class="dlg-title" id="dlgGoalTitle">افزودن هدف</div>
+          <div class="dlg-sub">هدف بزرگ = مسیر روشن. مایلستون‌ها = حرکت واقعی.</div>
         </div>
-        <div>
-          <label>متریک</label>
-          <input class="input" id="goalMetric" placeholder="مثلاً: درآمد / وزن / ساعت مطالعه ..." />
-        </div>
-        <div>
-          <label>هدف (Target)</label>
-          <input class="input" type="number" id="goalTarget" />
-        </div>
-        <div>
-          <label>مقدار فعلی (Current)</label>
-          <input class="input" type="number" id="goalCurrent" />
-        </div>
-        <div class="full">
-          <label>مایلستون‌ها (هر خط یک مورد)</label>
-          <textarea id="goalMilestones" placeholder="مثلاً:
+        <button class="btn btn-icon" data-close="dlgGoal" title="بستن">✕</button>
+      </div>
+      <div class="dlg-body">
+        <div class="form-grid">
+          <div class="full">
+            <label>عنوان هدف</label>
+            <input class="input" id="goalTitle" placeholder="مثلاً: رسیدن به ۴۰ میلیون درآمد ماهانه" />
+          </div>
+          <div>
+            <label>افق زمانی</label>
+            <input class="input" id="goalHorizon" placeholder="مثلاً: ۳ ماه / ۶ ماه" />
+          </div>
+          <div>
+            <label>متریک</label>
+            <input class="input" id="goalMetric" placeholder="مثلاً: درآمد / وزن / ساعت مطالعه ..." />
+          </div>
+          <div>
+            <label>هدف (Target)</label>
+            <input class="input" type="number" id="goalTarget" />
+          </div>
+          <div>
+            <label>مقدار فعلی (Current)</label>
+            <input class="input" type="number" id="goalCurrent" />
+          </div>
+          <div class="full">
+            <label>مایلستون‌ها (هر خط یک مورد)</label>
+            <textarea id="goalMilestones" placeholder="مثلاً:
 پورتفولیو جدید
 ۳ کیس‌استادی کامل
 افزایش قیمت‌گذاری"></textarea>
-        </div>
-        <div class="full">
-          <label>یادداشت</label>
-          <textarea id="goalNotes" placeholder="توضیح مسیر، برنامه، دلیل، منابع..."></textarea>
+          </div>
+          <div class="full">
+            <label>یادداشت</label>
+            <textarea id="goalNotes" placeholder="توضیح مسیر، برنامه، دلیل، منابع..."></textarea>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="dlg-foot">
-      <button class="btn btn-danger" id="btnGoalDelete" style="visibility:hidden">حذف</button>
-      <div class="btn-row">
-        <button class="btn btn-secondary" data-close="dlgGoal">انصراف</button>
-        <button class="btn btn-primary" id="btnGoalSave">ذخیره</button>
+      <div class="dlg-foot">
+        <button class="btn btn-danger" id="btnGoalDelete" style="visibility:hidden">حذف</button>
+        <div class="btn-row">
+          <button class="btn btn-secondary" data-close="dlgGoal">انصراف</button>
+          <button class="btn btn-primary" id="btnGoalSave">ذخیره</button>
+        </div>
       </div>
     </div>
   </dialog>
 
-  <dialog id="dlgHolding">
-    <div class="dlg-head">
-      <div>
-        <div class="dlg-title" id="dlgHoldingTitle">افزودن دارایی</div>
-        <div class="dlg-sub">دارایی‌ها رو دقیق ثبت کن تا پرتفوی معنی‌دار بشه.</div>
-      </div>
-      <button class="btn btn-icon" data-close="dlgHolding" title="بستن">✕</button>
-    </div>
-    <div class="dlg-body">
-      <div class="form-grid">
+  <dialog id="dlgHolding" class="modal-overlay">
+    <div class="modal-card">
+      <div class="dlg-head">
         <div>
-          <label>نوع</label>
-          <input class="input" id="holdType" placeholder="طلا / نقره / XRP / ETH ..." />
+          <div class="dlg-title" id="dlgHoldingTitle">افزودن دارایی</div>
+          <div class="dlg-sub">دارایی‌ها رو دقیق ثبت کن تا پرتفوی معنی‌دار بشه.</div>
         </div>
+        <button class="btn btn-icon" data-close="dlgHolding" title="بستن">✕</button>
+      </div>
+      <div class="dlg-body">
+        <div class="form-grid">
+          <div>
+            <label>نوع</label>
+            <input class="input" id="holdType" placeholder="طلا / نقره / XRP / ETH ..." />
+          </div>
+          <div>
+            <label>واحد</label>
+            <input class="input" id="holdUnit" placeholder="تومان / گرم / USDT / USD ..." />
+          </div>
+          <div class="full">
+            <label>مقدار</label>
+            <input class="input" type="number" id="holdAmount" />
+          </div>
+        </div>
+      </div>
+      <div class="dlg-foot">
+        <button class="btn btn-danger" id="btnHoldingDelete" style="visibility:hidden">حذف</button>
+        <div class="btn-row">
+          <button class="btn btn-secondary" data-close="dlgHolding">انصراف</button>
+          <button class="btn btn-primary" id="btnHoldingSave">ذخیره</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="dlgImport" class="modal-overlay">
+    <div class="modal-card">
+      <div class="dlg-head">
         <div>
-          <label>واحد</label>
-          <input class="input" id="holdUnit" placeholder="تومان / گرم / USDT / USD ..." />
+          <div class="dlg-title">ورود داده (Import)</div>
+          <div class="dlg-sub">فایل JSON خروجی رو وارد کن.</div>
         </div>
-        <div class="full">
-          <label>مقدار</label>
-          <input class="input" type="number" id="holdAmount" />
+        <button class="btn btn-icon" data-close="dlgImport" title="بستن">✕</button>
+      </div>
+      <div class="dlg-body">
+        <label>فایل خروجی (JSON)</label>
+        <input class="input" type="file" id="importFile" accept=".json,application/json" />
+        <div class="sep"></div>
+        <div class="muted small">
+          هشدار: Import داده‌های فعلی را جایگزین می‌کند. قبلش Export بگیر.
         </div>
       </div>
-    </div>
-    <div class="dlg-foot">
-      <button class="btn btn-danger" id="btnHoldingDelete" style="visibility:hidden">حذف</button>
-      <div class="btn-row">
-        <button class="btn btn-secondary" data-close="dlgHolding">انصراف</button>
-        <button class="btn btn-primary" id="btnHoldingSave">ذخیره</button>
+      <div class="dlg-foot">
+        <button class="btn btn-secondary" data-close="dlgImport">انصراف</button>
+        <button class="btn btn-primary" id="btnImportDo">وارد کردن</button>
       </div>
     </div>
   </dialog>
-
-  <dialog id="dlgImport">
-    <div class="dlg-head">
-      <div>
-        <div class="dlg-title">ورود داده (Import)</div>
-        <div class="dlg-sub">فایل JSON خروجی رو وارد کن.</div>
-      </div>
-      <button class="btn btn-icon" data-close="dlgImport" title="بستن">✕</button>
-    </div>
-    <div class="dlg-body">
-      <label>فایل خروجی (JSON)</label>
-      <input class="input" type="file" id="importFile" accept=".json,application/json" />
-      <div class="sep"></div>
-      <div class="muted small">
-        هشدار: Import داده‌های فعلی را جایگزین می‌کند. قبلش Export بگیر.
-      </div>
-    </div>
-    <div class="dlg-foot">
-      <button class="btn btn-secondary" data-close="dlgImport">انصراف</button>
-      <button class="btn btn-primary" id="btnImportDo">وارد کردن</button>
-    </div>
-  </dialog>
-
-  <div class="toast" id="toast"></div>
+  </div>
 
 <script>
 (() => {
@@ -3202,22 +3235,68 @@ canvas {
   }
 
   // Dialog helpers
+  const modalRoot = $("#modalRoot");
+  if (modalRoot) {
+    $$("dialog").forEach((dlg) => {
+      if (dlg.parentElement !== modalRoot) {
+        modalRoot.appendChild(dlg);
+      }
+    });
+  }
+
+  let lockedScrollY = 0;
   const syncModalState = () => {
     const hasOpenDialog = !!document.querySelector("dialog[open]");
     document.body.classList.toggle("modal-open", hasOpenDialog);
     document.documentElement.classList.toggle("modal-open", hasOpenDialog);
+    if (hasOpenDialog) {
+      if (!document.body.dataset.scrollLocked) {
+        lockedScrollY = window.scrollY || 0;
+        document.body.dataset.scrollLocked = "true";
+        document.body.style.position = "fixed";
+        document.body.style.top = `-${lockedScrollY}px`;
+        document.body.style.width = "100%";
+      }
+    } else {
+      delete document.body.dataset.scrollLocked;
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      window.scrollTo(0, lockedScrollY);
+    }
   };
   const openDlg = (id) => {
     const d = $("#"+id);
     if (d) {
+      const openDialog = document.querySelector("dialog[open]");
+      if (openDialog && openDialog !== d) {
+        openDialog.close();
+      }
+      if (modalRoot && d.parentElement !== modalRoot) {
+        modalRoot.appendChild(d);
+      }
       d.showModal();
       syncModalState();
     }
   };
-  const closeDlg = (id) => { const d = $("#"+id); if (d) d.close(); };
+  const closeDlg = (id) => {
+    const d = $("#"+id);
+    if (d && d.open) {
+      d.close();
+    }
+    syncModalState();
+  };
   $$("dialog").forEach((dlg) => {
     dlg.addEventListener("close", syncModalState);
-    dlg.addEventListener("cancel", syncModalState);
+    dlg.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      closeDlg(dlg.id);
+    });
+    dlg.addEventListener("click", (event) => {
+      if (event.target === dlg) {
+        closeDlg(dlg.id);
+      }
+    });
   });
   document.addEventListener("click", (e) => {
     const c = e.target.closest("[data-close]");
