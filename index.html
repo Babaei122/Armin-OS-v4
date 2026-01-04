@@ -160,7 +160,6 @@
     }
 html, body {
   font-family: var(--font-sans);
-  font-variant-numeric: tabular-nums;
 }
 
 button, input, textarea, select {
@@ -444,7 +443,6 @@ canvas {
       padding: 8px 12px;
       border-radius: 16px;
       gap: 10px;
-      min-width: 0;
     }
     .side-actions.primary .btn{
       border-color: color-mix(in srgb, var(--primary) 28%, var(--border));
@@ -463,14 +461,6 @@ canvas {
       font-weight: 700;
       font-size: var(--fs-2);
       white-space: nowrap;
-    }
-    #btnRestoreDaily{
-      align-items: flex-start;
-    }
-    #btnRestoreDaily .btn-label{
-      white-space: normal;
-      line-height: 1.4;
-      overflow-wrap: anywhere;
     }
     .more-drawer{
       display:grid;
@@ -1762,7 +1752,7 @@ canvas {
   <div class="lock-screen" id="lockScreen" aria-hidden="true">
     <div class="lock-card">
       <div class="lock-title">PlanOS</div>
-      <div class="lock-sub" id="lockSub">برای ورود، پین 4 رقمی را وارد کن</div>
+      <div class="lock-sub" id="lockSub">برای ورود، پین ۴ رقمی را وارد کن</div>
 
       <div class="pin-row" id="pinRow">
         <input class="pin" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-idx="0" />
@@ -1969,11 +1959,7 @@ canvas {
               <button class="btn btn-secondary" id="btnImport">
                 <span class="btn-emoji">⬆️</span><span class="btn-label">ورود</span>
               </button>
- codex/add-daily-backup-to-indexeddb-an0epd
-              <button class="btn btn-secondary" id="btnRestoreDaily" title="بازیابی از بکاپ روزانه">
-
               <button class="btn btn-secondary" id="btnRestoreDaily">
- main
                 <span class="btn-emoji">🗓️</span><span class="btn-label">بازیابی از بکاپ روزانه</span>
               </button>
               <button class="btn btn-danger" id="btnReset">
@@ -2086,7 +2072,7 @@ canvas {
               <div class="card-header">
                 <div class="card-title-group">
                   <span class="card-icon">📊</span>
-                  <h3 class="card-title">نمودار 7 روز اخیر (نرخ انجام تسک)</h3>
+                  <h3 class="card-title">نمودار ۷ روز اخیر (نرخ انجام تسک)</h3>
                 </div>
                 <span class="badge">Tasks %</span>
               </div>
@@ -2126,7 +2112,7 @@ canvas {
               <div class="card-header">
                 <div class="card-title-group">
                   <span class="card-icon">📈</span>
-                  <h3 class="card-title">درآمد 6 ماه اخیر (شمسی)</h3>
+                  <h3 class="card-title">درآمد ۶ ماه اخیر (شمسی)</h3>
                 </div>
                 <span class="badge">Income</span>
               </div>
@@ -2200,7 +2186,7 @@ canvas {
                   <div class="full">
                     <label>افزودن سریع</label>
                     <div class="row" style="gap:10px; align-items:stretch">
-                      <input class="input" id="quickTaskTitle" placeholder="مثلاً: 45 دقیقه تمرین طراحی / پیام به مشتری / مطالعه..." />
+                      <input class="input" id="quickTaskTitle" placeholder="مثلاً: ۴۵ دقیقه تمرین طراحی / پیام به مشتری / مطالعه..." />
                       <button class="btn btn-secondary nowrap" id="btnQuickAdd">افزودن</button>
                     </div>
                     <div class="row" style="margin-top:10px">
@@ -2483,7 +2469,7 @@ canvas {
               </div>
               <div class="card-body">
                 <label>چی امروز مهمه؟</label>
-                <textarea id="noteDaily" placeholder="امروز 2 کار اصلی..."></textarea>
+                <textarea id="noteDaily" placeholder="امروز ۲ کار اصلی..."></textarea>
               </div>
             </div>
 
@@ -2548,7 +2534,7 @@ canvas {
         <div class="form-grid">
           <div class="full">
             <label>عنوان</label>
-            <input class="input" id="taskTitle" placeholder="مثلاً: 45 دقیقه تمرین UI" />
+            <input class="input" id="taskTitle" placeholder="مثلاً: ۴۵ دقیقه تمرین UI" />
           </div>
 
           <div>
@@ -2628,9 +2614,9 @@ canvas {
             <input class="input" type="file" id="profileAvatar" accept="image/*" />
           </div>
           <div class="full">
-            <label>پین قفل (4 رقم)</label>
-            <input class="input" id="profilePin" type="password" inputmode="numeric" maxlength="4" placeholder="مثلاً 1234" />
-            <!-- PIN stored securely (hashed). -->
+            <label>پین قفل (۴ رقم)</label>
+            <input class="input" id="profilePin" type="password" inputmode="numeric" maxlength="4" placeholder="مثلاً ۱۲۳۴" />
+            <div class="muted2 small" style="margin-top:6px">PIN به صورت امن (هش) ذخیره می‌شود.</div>
           </div>
           <div class="full">
             <button class="btn btn-danger" id="btnRemoveAvatar">حذف آواتار</button>
@@ -2716,11 +2702,11 @@ canvas {
         <div class="form-grid">
           <div class="full">
             <label>عنوان هدف</label>
-            <input class="input" id="goalTitle" placeholder="مثلاً: رسیدن به 40 میلیون درآمد ماهانه" />
+            <input class="input" id="goalTitle" placeholder="مثلاً: رسیدن به ۴۰ میلیون درآمد ماهانه" />
           </div>
           <div>
             <label>افق زمانی</label>
-            <input class="input" id="goalHorizon" placeholder="مثلاً: 3 ماه / 6 ماه" />
+            <input class="input" id="goalHorizon" placeholder="مثلاً: ۳ ماه / ۶ ماه" />
           </div>
           <div>
             <label>متریک</label>
@@ -2738,7 +2724,7 @@ canvas {
             <label>مایلستون‌ها (هر خط یک مورد)</label>
             <textarea id="goalMilestones" placeholder="مثلاً:
 پورتفولیو جدید
-3 کیس‌استادی کامل
+۳ کیس‌استادی کامل
 افزایش قیمت‌گذاری"></textarea>
           </div>
           <div class="full">
@@ -2947,10 +2933,8 @@ canvas {
   function toGregorian(jy, jm, jd) { return d2g(j2d(jy, jm, jd)); }
 
   const J_MONTHS = ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
-  const EN_DIGITS = ["0","1","2","3","4","5","6","7","8","9"];
-  const toEnglishDigits = (input) => String(input)
-    .replace(/[۰-۹]/g, (d) => EN_DIGITS["۰۱۲۳۴۵۶۷۸۹".indexOf(d)])
-    .replace(/[٠-٩]/g, (d) => EN_DIGITS["٠١٢٣٤٥٦٧٨٩".indexOf(d)]);
+  const FA_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
+  const toFaDigits = (s) => String(s).replace(/\d/g, d => FA_DIGITS[d]);
   const pad2 = (n) => (n < 10 ? "0" + n : "" + n);
   const isoToParts = (iso) => {
     const [y,m,d] = String(iso).split("-").map(Number);
@@ -2964,12 +2948,12 @@ canvas {
     const g = toGregorian(jy, jm, jd);
     return `${g.gy}-${pad2(g.gm)}-${pad2(g.gd)}`;
   };
-  const jalaliDateStr = (jy, jm, jd) => toEnglishDigits(`${jy}/${pad2(jm)}/${pad2(jd)}`);
+  const jalaliDateStr = (jy, jm, jd) => toFaDigits(`${jy}/${pad2(jm)}/${pad2(jd)}`);
   const isoToJalaliStr = (iso) => {
     const j = isoToJalali(iso);
     return jalaliDateStr(j.jy, j.jm, j.jd);
   };
-  const jalaliMonthLabel = (jy, jm) => `${J_MONTHS[jm-1]} ${toEnglishDigits(jy)}`;
+  const jalaliMonthLabel = (jy, jm) => `${J_MONTHS[jm-1]} ${toFaDigits(jy)}`;
 
   const shiftJalaliMonth = (jy, jm, delta) => {
     let y = jy, m = jm + delta;
@@ -3001,18 +2985,8 @@ canvas {
     const d = new Date();
     return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate());
   };
-  const moneyFA = (n) => toEnglishDigits(Number(n||0).toLocaleString("fa-IR"));
+  const moneyFA = (n) => Number(n||0).toLocaleString("fa-IR");
   const safeParse = (raw) => { try { return JSON.parse(raw); } catch { return null; } };
-  const applyEnglishDigits = (root=document.body) => {
-    if (!root) return;
-    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-    const nodes = [];
-    while (walker.nextNode()) nodes.push(walker.currentNode);
-    nodes.forEach((node) => {
-      const next = toEnglishDigits(node.nodeValue);
-      if (next !== node.nodeValue) node.nodeValue = next;
-    });
-  };
 
   const defaultState = () => {
     return {
@@ -3222,8 +3196,8 @@ canvas {
     const lockSub = $("#lockSub");
     if (lockSub) {
       lockSub.textContent = hasPin
-        ? "برای ورود، پین 4 رقمی را وارد کن"
-        : "برای فعال‌سازی قفل، پین 4 رقمی را در پروفایل تنظیم کن.";
+        ? "برای ورود، پین ۴ رقمی را وارد کن"
+        : "برای فعال‌سازی قفل، پین ۴ رقمی را در پروفایل تنظیم کن.";
     }
     return hasPin;
   };
@@ -3261,7 +3235,7 @@ canvas {
     }
     const val = getPinValue();
     if (val.length < 4) {
-      $("#lockError").textContent = "پین باید 4 رقم باشد.";
+      $("#lockError").textContent = "پین باید ۴ رقم باشد.";
       return;
     }
     try {
@@ -3505,7 +3479,7 @@ canvas {
   // =========================
   const formatTimeParts = (date) => {
     const opts = { hour: "2-digit", minute: "2-digit", hour12: USE_12H_CLOCK };
-    return toEnglishDigits(date.toLocaleTimeString("en-GB", opts).replace(/\u200f/g, ""));
+    return date.toLocaleTimeString("en-GB", opts).replace(/\u200f/g, "");
   };
   const updateFlipClock = () => {
     const clock = $("#flipClock");
@@ -3545,9 +3519,9 @@ canvas {
     const j = isoToJalali(tISO);
 
     $("#todayWeekday").textContent = faDow[getFaWeekdayIndex(new Date())];
-    $("#todayDay").textContent = toEnglishDigits(j.jd);
+    $("#todayDay").textContent = toFaDigits(j.jd);
     $("#todayMonth").textContent = J_MONTHS[j.jm - 1];
-    $("#todayYear").textContent = toEnglishDigits(j.jy);
+    $("#todayYear").textContent = toFaDigits(j.jy);
     document.documentElement.setAttribute("dir", state.settings.rtl ? "rtl" : "ltr");
     document.documentElement.setAttribute("data-theme", state.settings.theme || "light");
     const activeView = document.querySelector("#nav button.active")?.dataset.view || "dashboard";
@@ -3555,7 +3529,6 @@ canvas {
     if (titleText && viewMeta[activeView]) titleText.textContent = viewMeta[activeView].title;
     if (viewMeta[activeView]) $("#viewSub").textContent = viewMeta[activeView].sub;
     updateViewIcon(activeView);
-    applyEnglishDigits();
   };
 
   const applyFocusMode = () => {
@@ -3624,7 +3597,6 @@ canvas {
     $("#dashSaveRate").textContent = Math.round((Number(state.profile.savingsRateTarget||0))*100) + "%";
 
     $("#dashMotivation").textContent = state.notes.motivation || "—";
-    applyEnglishDigits();
   };
 
   const renderDashboardCharts = () => {
@@ -3656,16 +3628,6 @@ canvas {
     const chartSuccess = rootStyles.getPropertyValue("--success").trim() || "#7bffb5";
     const chartWarning = rootStyles.getPropertyValue("--warning").trim() || "#ffd97b";
     const chartDanger = rootStyles.getPropertyValue("--danger").trim() || "#ff7b7b";
-    const chartTooltip = {
-      callbacks: {
-        title: (items) => toEnglishDigits(items[0]?.label || ""),
-        label: (ctx) => {
-          const label = ctx.label || ctx.dataset?.label || "";
-          const prefix = label ? `${label}: ` : "";
-          return toEnglishDigits(`${prefix}${ctx.formattedValue}`);
-        }
-      }
-    };
     Chart.defaults.font.family = chartFont;
     Chart.defaults.font.size = chartFontSize;
     Chart.defaults.color = chartText;
@@ -3709,11 +3671,10 @@ canvas {
         options: {
           responsive:true,
           maintainAspectRatio:false,
-          plugins:{ legend:{ display:false }, tooltip: chartTooltip },
+          plugins:{ legend:{ display:false } },
           scales:{
             x:{
               ticks:{
-                callback: (v, i) => toEnglishDigits(labels[i] ?? v),
                 color: chartMuted,
                 font:{ family: chartFont, size: chartFontSize },
                 maxRotation: isSmallScreen ? 0 : 25,
@@ -3726,7 +3687,7 @@ canvas {
               min:0,
               max:100,
               ticks:{
-                callback:(v)=> toEnglishDigits(v+"%"),
+                callback:(v)=> v+"%",
                 color: chartMuted,
                 font:{ family: chartFont, size: chartFontSize },
                 padding: chartTickPadding
@@ -3770,11 +3731,10 @@ canvas {
         options: {
           responsive:true,
           maintainAspectRatio:false,
-          plugins:{ legend:{ display:false }, tooltip: chartTooltip },
+          plugins:{ legend:{ display:false } },
           scales:{
             x:{
               ticks:{
-                callback: (v, i) => toEnglishDigits(incLabels[i] ?? v),
                 color: chartMuted,
                 font:{ family: chartFont, size: chartFontSize },
                 maxRotation: isSmallScreen ? 0 : 25,
@@ -3785,7 +3745,7 @@ canvas {
             },
             y:{
               ticks:{
-                callback:(v)=> toEnglishDigits(moneyFA(v)),
+                callback:(v)=> moneyFA(v),
                 color: chartMuted,
                 font:{ family: chartFont, size: chartFontSize },
                 padding: chartTickPadding
@@ -3830,13 +3790,11 @@ canvas {
                 padding: chartLegendPadding,
                 boxWidth: isSmallScreen ? 10 : 12
               }
-            },
-            tooltip: chartTooltip
+            }
           }
         }
       });
     }
-    applyEnglishDigits();
   };
 
   // =========================
@@ -3890,7 +3848,6 @@ canvas {
       `;
       list.appendChild(item);
     });
-    applyEnglishDigits();
   };
 
   const openTaskDialog = (task=null) => {
@@ -4054,19 +4011,18 @@ canvas {
       cell.dataset.iso = iso;
       cell.innerHTML = `
         <div class="cal-top">
-          <span class="cal-num">${toEnglishDigits(jd)}</span>
+          <span class="cal-num">${toFaDigits(jd)}</span>
           <span class="mini">${isoToJalaliStr(iso)}</span>
         </div>
         <div class="cal-badges">
-          <span class="mini acc">تسک: ${toEnglishDigits(dayTasks.length)}</span>
-          <span class="mini ok">انجام: ${toEnglishDigits(done)}</span>
-          <span class="mini">پروژه: ${toEnglishDigits(dayProjects.length)}</span>
+          <span class="mini acc">تسک: ${toFaDigits(dayTasks.length)}</span>
+          <span class="mini ok">انجام: ${toFaDigits(done)}</span>
+          <span class="mini">پروژه: ${toFaDigits(dayProjects.length)}</span>
           ${inc ? `<span class="mini acc">درآمد: ${moneyFA(inc)}</span>` : ""}
         </div>
       `;
       grid.appendChild(cell);
     }
-    applyEnglishDigits();
   };
 
   $("#btnPrevMonth").addEventListener("click", () => {
@@ -4124,7 +4080,7 @@ canvas {
     const { jy, jm } = currentJalaliYM();
     const nowRange = jalaliMonthRangeISO(jy, jm);
     const monthProjects = projectsInRange(nowRange.s, nowRange.e);
-    $("#projMonthCount").textContent = toEnglishDigits(monthProjects.length);
+    $("#projMonthCount").textContent = toFaDigits(monthProjects.length);
     $("#projMonthIncome").textContent = moneyFA(calcIncome(monthProjects)) + " " + state.profile.currency;
 
     const list = (filter==="all") ? state.projects : state.projects.filter(p => p.status === filter);
@@ -4146,7 +4102,6 @@ canvas {
       `;
       tbody.appendChild(tr);
     });
-    applyEnglishDigits();
   };
 
   $("#projectFilter").addEventListener("change", renderProjects);
@@ -4227,7 +4182,7 @@ canvas {
     $("#btnGoalDelete").style.visibility = goal ? "visible" : "hidden";
 
     $("#goalTitle").value = goal ? goal.title : "";
-    $("#goalHorizon").value = goal ? goal.horizon : "3 ماه";
+    $("#goalHorizon").value = goal ? goal.horizon : "۳ ماه";
     $("#goalMetric").value = goal ? goal.metric : "عادت";
     $("#goalTarget").value = goal ? Number(goal.target||0) : 100;
     $("#goalCurrent").value = goal ? Number(goal.current||0) : 0;
@@ -4300,7 +4255,6 @@ canvas {
       `;
       list.appendChild(card);
     });
-    applyEnglishDigits();
   };
 
   $("#btnAddGoal").addEventListener("click", () => { showView("goals"); openGoalDialog(null); });
@@ -4425,7 +4379,6 @@ canvas {
       `;
       tbody.appendChild(tr);
     });
-    applyEnglishDigits();
   };
 
   const renderFinancePlan = () => {
@@ -4458,10 +4411,9 @@ canvas {
       el.innerHTML = `${s.label}: <b>${moneyFA(Math.round(s.val))}</b> ${state.profile.currency} <span class="muted2">(${s.pct}%)</span>`;
       box.appendChild(el);
     });
-    applyEnglishDigits();
   };
 
-  const renderFinance = () => { renderHoldings(); renderFinancePlan(); applyEnglishDigits(); };
+  const renderFinance = () => { renderHoldings(); renderFinancePlan(); };
 
   $("#btnAddHolding").addEventListener("click", () => { showView("finance"); openHoldingDialog(null); });
   $("#btnAddHolding2").addEventListener("click", () => openHoldingDialog(null));
@@ -4556,7 +4508,6 @@ canvas {
     $("#noteJournal").value = state.notes.journal || "";
     $("#noteIdeas").value = state.notes.ideas || "";
     updateNotesEmpty();
-    applyEnglishDigits();
   };
 
   const bindNote = (id, key) => {
@@ -4628,7 +4579,7 @@ canvas {
     const titleValue = $("#profileTitle").value.trim();
     const pinValue = normalizePin($("#profilePin").value.trim());
     if (pinValue && pinValue.length !== 4) {
-      toast("پین باید 4 رقم باشد.");
+      toast("پین باید ۴ رقم باشد.");
       return;
     }
 
@@ -4707,15 +4658,9 @@ canvas {
       const list = backups.map((item) => {
         const createdAt = item.createdAt ? new Date(item.createdAt) : null;
         const timeLabel = createdAt && !Number.isNaN(createdAt.valueOf())
-codex/add-daily-backup-to-indexeddb-an0epd
-          ? toEnglishDigits(createdAt.toLocaleString("fa-IR"))
-          : item.dateKey;
-        return `${toEnglishDigits(item.dateKey)} • ${timeLabel}`;
-
           ? createdAt.toLocaleString("fa-IR")
           : item.dateKey;
         return `${item.dateKey} • ${timeLabel}`;
- main
       }).join("\n");
       const latest = backups[0];
       const ok = confirm(`بکاپ‌های موجود:\n${list}\n\nبازگردانی آخرین بکاپ انجام شود؟`);
@@ -4797,7 +4742,6 @@ codex/add-daily-backup-to-indexeddb-an0epd
     renderGoals();
     renderFinance();
     renderNotes();
-    applyEnglishDigits();
   };
 
   let clockTimer = null;
