@@ -1316,9 +1316,18 @@ canvas {
       overflow: visible;
       width: auto;
       max-height: none;
+      z-index: 9999;
+    }
+    dialog:not([open]){
+      display: none;
     }
     dialog::backdrop{
-      background: transparent;
+      background: var(--overlay);
+      position: fixed;
+      inset: 0;
+      z-index: 9998;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
     }
     .modal-overlay{
       position: fixed;
@@ -1332,8 +1341,6 @@ canvas {
         calc(16px + env(safe-area-inset-right, 0px))
         calc(16px + env(safe-area-inset-bottom, 0px))
         calc(16px + env(safe-area-inset-left, 0px));
-      background: var(--overlay);
-      backdrop-filter: blur(10px);
       z-index: 9999;
     }
     @supports (height: 100dvh){
@@ -3240,19 +3247,10 @@ canvas {
   }
 
   let lockedScrollY = 0;
-  const syncModalState = () => {
-    const hasOpenDialog = !!document.querySelector("dialog[open]");
-    document.body.classList.toggle("modal-open", hasOpenDialog);
-    document.documentElement.classList.toggle("modal-open", hasOpenDialog);
-    if (hasOpenDialog) {
-      if (!document.body.dataset.scrollLocked) {
-        lockedScrollY = window.scrollY || 0;
-        document.body.dataset.scrollLocked = "true";
-        document.body.style.position = "fixed";
-        document.body.style.top = `-${lockedScrollY}px`;
-        document.body.style.width = "100%";
-      }
-    } else if (document.body.dataset.scrollLocked) {
+  const clearModalLock = () => {
+    document.body.classList.remove("modal-open");
+    document.documentElement.classList.remove("modal-open");
+    if (document.body.dataset.scrollLocked) {
       delete document.body.dataset.scrollLocked;
       document.body.style.position = "";
       document.body.style.top = "";
@@ -3260,24 +3258,57 @@ canvas {
       window.scrollTo(0, lockedScrollY);
     }
   };
+  const syncModalState = () => {
+    const hasOpenDialog = !!document.querySelector("dialog[open]");
+    if (hasOpenDialog) {
+      document.body.classList.add("modal-open");
+      document.documentElement.classList.add("modal-open");
+      if (!document.body.dataset.scrollLocked) {
+        lockedScrollY = window.scrollY || 0;
+        document.body.dataset.scrollLocked = "true";
+        document.body.style.position = "fixed";
+        document.body.style.top = `-${lockedScrollY}px`;
+        document.body.style.width = "100%";
+      }
+    } else {
+      clearModalLock();
+    }
+  };
+  const closeOpenDialogs = (exceptId) => {
+    $$("dialog[open]").forEach((dlg) => {
+      if (exceptId && dlg.id === exceptId) return;
+      dlg.close();
+    });
+  };
   const openDlg = (id) => {
     const d = $("#"+id);
     if (d) {
-      const openDialog = document.querySelector("dialog[open]");
-      if (openDialog && openDialog !== d) {
-        openDialog.close();
-      }
+      closeOpenDialogs(id);
       if (modalRoot && d.parentElement !== modalRoot) {
         modalRoot.appendChild(d);
       }
-      d.showModal();
+      if (!d.open) d.showModal();
       syncModalState();
     }
   };
-  const closeDlg = (id) => { const d = $("#"+id); if (d) d.close(); };
+  const closeDlg = (id) => {
+    const d = $("#"+id);
+    if (d && d.open) d.close();
+    syncModalState();
+  };
   $$("dialog").forEach((dlg) => {
     dlg.addEventListener("close", syncModalState);
-    dlg.addEventListener("cancel", syncModalState);
+    dlg.addEventListener("cancel", (e) => {
+      e.preventDefault();
+      dlg.close();
+      syncModalState();
+    });
+    dlg.addEventListener("click", (e) => {
+      if (e.target === dlg) {
+        dlg.close();
+        syncModalState();
+      }
+    });
   });
   document.addEventListener("click", (e) => {
     const c = e.target.closest("[data-close]");
