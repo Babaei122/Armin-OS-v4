@@ -1959,6 +1959,9 @@ canvas {
               <button class="btn btn-secondary" id="btnImport">
                 <span class="btn-emoji">⬆️</span><span class="btn-label">ورود</span>
               </button>
+              <button class="btn btn-secondary" id="btnRestoreDaily">
+                <span class="btn-emoji">🗓️</span><span class="btn-label">بازیابی از بکاپ روزانه</span>
+              </button>
               <button class="btn btn-danger" id="btnReset">
                 <span class="btn-emoji">⚠️</span><span class="btn-label">ریست</span>
               </button>
@@ -3018,6 +3021,99 @@ canvas {
     const parsed = raw ? safeParse(raw) : null;
     return parsed && parsed.meta ? parsed : null;
   };
+  const BACKUP_DB_NAME = "planos_backup_db";
+  const BACKUP_STORE = "backups";
+  const BACKUP_RETENTION = 7;
+  const BACKUP_DEBOUNCE_MS = 30000;
+  let backupTimer = null;
+
+  const openBackupDB = () => new Promise((resolve, reject) => {
+    const request = indexedDB.open(BACKUP_DB_NAME, 1);
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(BACKUP_STORE)) {
+        db.createObjectStore(BACKUP_STORE, { keyPath: "dateKey" });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+
+  const buildDateKey = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
+  };
+
+  const saveDailyBackup = async (stateObject) => {
+    const db = await openBackupDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(BACKUP_STORE, "readwrite");
+      const store = tx.objectStore(BACKUP_STORE);
+      const dateKey = buildDateKey();
+      store.put({ dateKey, createdAt: new Date().toISOString(), data: stateObject });
+      const getAllReq = store.getAll();
+      getAllReq.onsuccess = () => {
+        const items = getAllReq.result || [];
+        if (items.length > BACKUP_RETENTION) {
+          items.sort((a, b) => String(b.dateKey).localeCompare(String(a.dateKey)));
+          const stale = items.slice(BACKUP_RETENTION);
+          stale.forEach((item) => store.delete(item.dateKey));
+        }
+      };
+      tx.oncomplete = () => {
+        db.close();
+        resolve();
+      };
+      tx.onerror = () => {
+        db.close();
+        reject(tx.error);
+      };
+      tx.onabort = () => {
+        db.close();
+        reject(tx.error);
+      };
+    });
+  };
+
+  const scheduleDailyBackup = (stateObject) => {
+    if (!("indexedDB" in window)) return;
+    if (backupTimer) clearTimeout(backupTimer);
+    backupTimer = setTimeout(async () => {
+      backupTimer = null;
+      try {
+        await saveDailyBackup(stateObject);
+      } catch {
+        // ignore backup failures (fallback storage)
+      }
+    }, BACKUP_DEBOUNCE_MS);
+  };
+
+  const listDailyBackups = async () => {
+    const db = await openBackupDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(BACKUP_STORE, "readonly");
+      const store = tx.objectStore(BACKUP_STORE);
+      const req = store.getAll();
+      req.onsuccess = () => resolve(req.result || []);
+      req.onerror = () => reject(req.error);
+      tx.oncomplete = () => db.close();
+      tx.onerror = () => {
+        db.close();
+        reject(tx.error);
+      };
+    });
+  };
+
+  const isValidBackupState = (data) => {
+    if (!data || typeof data !== "object") return false;
+    const requiredKeys = ["meta", "profile", "settings", "notes", "tasks", "projects", "goals", "assets"];
+    if (!requiredKeys.every((key) => key in data)) return false;
+    if (!Array.isArray(data.tasks) || !Array.isArray(data.projects) || !Array.isArray(data.goals)) return false;
+    if (typeof data.meta !== "object" || typeof data.profile !== "object") return false;
+    if (typeof data.settings !== "object" || typeof data.notes !== "object") return false;
+    if (typeof data.assets !== "object") return false;
+    return true;
+  };
   let state = loadState() || defaultState();
   state.profile.avatarData = state.profile.avatarData || "";
   state.settings = { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "", ...state.settings };
@@ -3037,7 +3133,10 @@ canvas {
     return toHex(digest);
   };
   const hasPinSet = () => !!(state.settings.pinHash && state.settings.pinSalt);
-  const saveState = () => localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  const saveState = () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    scheduleDailyBackup(state);
+  };
 
   const toast = (msg) => {
     const el = $("#toast");
@@ -4542,6 +4641,48 @@ canvas {
   $("#btnImport").addEventListener("click", () => {
     $("#importFile").value = "";
     openDlg("dlgImport");
+  });
+
+  $("#btnRestoreDaily").addEventListener("click", async () => {
+    if (!("indexedDB" in window)) {
+      toast("مرورگر از بکاپ روزانه پشتیبانی نمی‌کند.");
+      return;
+    }
+    try {
+      const backups = await listDailyBackups();
+      if (!backups.length) {
+        toast("بکاپ روزانه‌ای پیدا نشد.");
+        return;
+      }
+      backups.sort((a, b) => String(b.createdAt || b.dateKey).localeCompare(String(a.createdAt || a.dateKey)));
+      const list = backups.map((item) => {
+        const createdAt = item.createdAt ? new Date(item.createdAt) : null;
+        const timeLabel = createdAt && !Number.isNaN(createdAt.valueOf())
+          ? createdAt.toLocaleString("fa-IR")
+          : item.dateKey;
+        return `${item.dateKey} • ${timeLabel}`;
+      }).join("\n");
+      const latest = backups[0];
+      const ok = confirm(`بکاپ‌های موجود:\n${list}\n\nبازگردانی آخرین بکاپ انجام شود؟`);
+      if (!ok) return;
+      if (!latest || !isValidBackupState(latest.data)) {
+        toast("بکاپ معتبر نیست.");
+        return;
+      }
+      state = latest.data;
+      state.settings = { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "", ...state.settings };
+      state.settings.focusMode = !!state.settings.focusMode;
+      await migrateLegacyPin();
+      saveState();
+      renderAll();
+      renderDashboardCharts();
+      if (hasPinSet() && sessionStorage.getItem(LOCK_SESSION_KEY) !== "1") {
+        showLock();
+      }
+      toast("بکاپ روزانه بازیابی شد ✅");
+    } catch {
+      toast("بازیابی بکاپ با خطا مواجه شد.");
+    }
   });
 
   $("#btnImportDo").addEventListener("click", async () => {
