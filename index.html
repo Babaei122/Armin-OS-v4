@@ -1320,6 +1320,9 @@ canvas {
       overflow:hidden;
       display: flex;
       flex-direction: column;
+      position: fixed;
+      inset: 0;
+      margin: auto;
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
     }
@@ -1327,8 +1330,15 @@ canvas {
       dialog{ max-height: calc(100dvh - 24px); }
     }
     dialog::backdrop{
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
       background: var(--overlay);
       backdrop-filter: blur(10px);
+    }
+    @supports (height: 100dvh){
+      dialog::backdrop{ height: 100dvh; }
     }
     .dlg-head{
       padding: 14px 14px 12px;
@@ -1363,9 +1373,12 @@ canvas {
       bottom: 0;
       z-index: 2;
     }
+    html.modal-open,
     body.modal-open{
       overflow: hidden;
+      height: 100%;
       touch-action: none;
+      overscroll-behavior: contain;
     }
     @media (max-width: 480px){
       dialog{
@@ -3190,7 +3203,9 @@ canvas {
 
   // Dialog helpers
   const syncModalState = () => {
-    document.body.classList.toggle("modal-open", !!document.querySelector("dialog[open]"));
+    const hasOpenDialog = !!document.querySelector("dialog[open]");
+    document.body.classList.toggle("modal-open", hasOpenDialog);
+    document.documentElement.classList.toggle("modal-open", hasOpenDialog);
   };
   const openDlg = (id) => {
     const d = $("#"+id);
