@@ -1969,7 +1969,11 @@ canvas {
               <button class="btn btn-secondary" id="btnImport">
                 <span class="btn-emoji">⬆️</span><span class="btn-label">ورود</span>
               </button>
+ codex/add-daily-backup-to-indexeddb-an0epd
               <button class="btn btn-secondary" id="btnRestoreDaily" title="بازیابی از بکاپ روزانه">
+
+              <button class="btn btn-secondary" id="btnRestoreDaily">
+ main
                 <span class="btn-emoji">🗓️</span><span class="btn-label">بازیابی از بکاپ روزانه</span>
               </button>
               <button class="btn btn-danger" id="btnReset">
@@ -4703,9 +4707,15 @@ canvas {
       const list = backups.map((item) => {
         const createdAt = item.createdAt ? new Date(item.createdAt) : null;
         const timeLabel = createdAt && !Number.isNaN(createdAt.valueOf())
+codex/add-daily-backup-to-indexeddb-an0epd
           ? toEnglishDigits(createdAt.toLocaleString("fa-IR"))
           : item.dateKey;
         return `${toEnglishDigits(item.dateKey)} • ${timeLabel}`;
+
+          ? createdAt.toLocaleString("fa-IR")
+          : item.dateKey;
+        return `${item.dateKey} • ${timeLabel}`;
+ main
       }).join("\n");
       const latest = backups[0];
       const ok = confirm(`بکاپ‌های موجود:\n${list}\n\nبازگردانی آخرین بکاپ انجام شود؟`);
