@@ -463,6 +463,16 @@ canvas {
       font-size: var(--fs-2);
       white-space: nowrap;
     }
+    .side-actions .btn-label{
+      flex: 1;
+      min-width: 0;
+      white-space: normal;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
     .more-drawer{
       display:grid;
       gap: 10px;
@@ -1768,9 +1778,7 @@ canvas {
       </div>
 
       <div class="lock-error" id="lockError"></div>
-      <div class="small muted2" style="margin-top:10px">
-        نکته: این قفل «کلاینتی» است (برای استفاده شخصی عالیه، اما امنیت سازمانی نیست).
-      </div>
+      <!-- نکته: این قفل «کلاینتی» است (برای استفاده شخصی عالیه، اما امنیت سازمانی نیست). -->
     </div>
   </div>
 
@@ -2617,7 +2625,7 @@ canvas {
           <div class="full">
             <label>پین قفل (4 رقم)</label>
             <input class="input" id="profilePin" type="password" inputmode="numeric" maxlength="4" placeholder="مثلاً 1234" />
-            <div class="muted2 small" style="margin-top:6px">PIN به صورت امن (هش) ذخیره می‌شود.</div>
+            <!-- PIN به صورت امن (هش) ذخیره می‌شود. -->
           </div>
           <div class="full">
             <button class="btn btn-danger" id="btnRemoveAvatar">حذف آواتار</button>
