@@ -1102,10 +1102,32 @@ canvas {
       min-width: 0;
       text-align: start;
     }
+    .insight-title-row{
+      display:flex;
+      align-items:center;
+      gap: var(--s-2);
+    }
     .insight-title{
       font-size: var(--fs-1);
       color: var(--muted);
       letter-spacing: .2px;
+    }
+    .insight-refresh{
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1;
+      padding: 0;
+      cursor: pointer;
+      transition: color .2s ease;
+    }
+    .insight-refresh:hover{
+      color: var(--primary);
+    }
+    .insight-refresh:focus-visible{
+      box-shadow: var(--ring);
+      border-radius: 8px;
     }
     .insight-text{
       font-size: var(--fs-3);
@@ -2082,7 +2104,10 @@ canvas {
               <div class="insight-row">
                 <div class="insight-icon" aria-hidden="true">✨</div>
                 <div class="insight-content">
-                  <div class="insight-title">Daily Insight</div>
+                  <div class="insight-title-row">
+                    <div class="insight-title">بینش روزانه</div>
+                    <button class="insight-refresh" id="btnInsightRefresh" type="button" aria-label="بازسازی بینش روزانه" title="بازسازی">↻</button>
+                  </div>
                   <div class="insight-text" id="dashInsightText">—</div>
                 </div>
               </div>
@@ -3426,7 +3451,10 @@ canvas {
     if (titleText) titleText.textContent = viewMeta[name].title;
     $("#viewSub").textContent = viewMeta[name].sub;
     updateViewIcon(name);
-    if (name === "dashboard") renderDashboardCharts();
+    if (name === "dashboard") {
+      renderDashboard();
+      renderDashboardCharts();
+    }
   };
 
   $("#nav").addEventListener("click", (e) => {
@@ -3629,7 +3657,20 @@ canvas {
     return { total:tasks.length, done, rate: Math.round(done/tasks.length*100) };
   };
   const calcIncome = (projects) => projects.reduce((sum,p)=>sum + Number(p.amount||0), 0);
-  const DAILY_INSIGHT_KEY = "planos_daily_insight_v1";
+  const DAILY_INSIGHT_KEY = "planos_daily_insight_v2";
+  const INSIGHT_I18N = {
+    fa: {
+      unfinished: "امروز {count} تسک نیمه‌کاره داری.",
+      allDone: "تمام تسک‌های امروز انجام شد 🎯",
+      staleProject: "پروژه «{name}» چند روزه بی‌خبره.",
+      weekRate: "نرخ انجام تسک‌های این هفته {rate}% بوده.",
+      fallback: "قدم‌های کوچیک هر روز نتیجه می‌ده."
+    }
+  };
+  const tInsight = (key, vars = {}) => {
+    const template = INSIGHT_I18N.fa[key] || "";
+    return Object.entries(vars).reduce((acc, [k, v]) => acc.replaceAll(`{${k}}`, v), template);
+  };
   const daysBetweenISO = (fromIso, toIso) => {
     if (!fromIso || !toIso) return NaN;
     const from = new Date(`${fromIso}T00:00:00`);
@@ -3637,45 +3678,76 @@ canvas {
     if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return NaN;
     return Math.floor((to - from) / 86400000);
   };
-  const getDailyInsight = () => {
+  const getDailyInsightStats = () => {
     const today = todayISO();
-    const cached = safeParse(localStorage.getItem(DAILY_INSIGHT_KEY) || "");
-    if (cached && cached.date === today && cached.text) return cached.text;
-
     const todayTasks = tasksByDate(today);
     const todayStats = calcTaskRate(todayTasks);
     const unfinished = todayStats.total - todayStats.done;
-    let text = "";
+    const weekStart = new Date();
+    weekStart.setDate(weekStart.getDate() - 6);
+    const weekStartIso = `${weekStart.getFullYear()}-${pad2(weekStart.getMonth()+1)}-${pad2(weekStart.getDate())}`;
+    const weekTasks = state.tasks.filter(task => task.date >= weekStartIso && task.date <= today);
+    const weekStats = calcTaskRate(weekTasks);
+    const staleProject = state.projects
+      .map((project) => ({ ...project, idleDays: daysBetweenISO(project.date, today) }))
+      .filter((project) => Number.isFinite(project.idleDays) && project.idleDays >= 3)
+      .sort((a, b) => b.idleDays - a.idleDays)[0];
 
-    if (todayStats.total > 0 && unfinished > 0) {
-      text = `You have ${toEnglishDigits(unfinished)} unfinished tasks today.`;
-    } else if (todayStats.total > 0 && unfinished === 0) {
-      text = "You completed all planned tasks today 🎯";
-    } else {
-      const staleProject = state.projects
-        .map((project) => ({ ...project, idleDays: daysBetweenISO(project.date, today) }))
-        .filter((project) => Number.isFinite(project.idleDays) && project.idleDays >= 3)
-        .sort((a, b) => b.idleDays - a.idleDays)[0];
-
-      if (staleProject) {
-        const title = (staleProject.title || "Untitled").trim() || "Untitled";
-        text = `Project '${title}' has been inactive for 3+ days.`;
-      } else {
-        const weekStart = new Date();
-        weekStart.setDate(weekStart.getDate() - 6);
-        const weekStartIso = `${weekStart.getFullYear()}-${pad2(weekStart.getMonth()+1)}-${pad2(weekStart.getDate())}`;
-        const weekTasks = state.tasks.filter(task => task.date >= weekStartIso && task.date <= today);
-        const weekStats = calcTaskRate(weekTasks);
-        if (weekStats.total > 0) {
-          text = `Your task completion rate this week is ${toEnglishDigits(weekStats.rate)}%.`;
-        } else {
-          text = "Small progress every day beats perfection.";
-        }
-      }
+    return {
+      today,
+      totalTasks: state.tasks.length,
+      todayTasks,
+      todayStats,
+      unfinished,
+      weekStats,
+      staleProject
+    };
+  };
+  const buildDailyInsight = (stats) => {
+    if (stats.todayStats.total > 0 && stats.unfinished > 0) {
+      return {
+        key: "unfinished",
+        text: tInsight("unfinished", { count: toEnglishDigits(stats.unfinished) })
+      };
     }
-
-    localStorage.setItem(DAILY_INSIGHT_KEY, JSON.stringify({ date: today, text }));
-    return text;
+    if (stats.todayStats.total > 0 && stats.unfinished === 0) {
+      return { key: "allDone", text: tInsight("allDone") };
+    }
+    if (stats.staleProject) {
+      const name = (stats.staleProject.name || "بدون عنوان").trim() || "بدون عنوان";
+      return { key: "staleProject", text: tInsight("staleProject", { name }) };
+    }
+    if (stats.weekStats.total > 0) {
+      return {
+        key: "weekRate",
+        text: tInsight("weekRate", { rate: toEnglishDigits(stats.weekStats.rate) })
+      };
+    }
+    return { key: "fallback", text: tInsight("fallback") };
+  };
+  const getDailyInsight = ({ force = false } = {}) => {
+    const stats = getDailyInsightStats();
+    const cached = safeParse(localStorage.getItem(DAILY_INSIGHT_KEY) || "");
+    const canUseCache = cached && cached.date === stats.today && cached.text && cached.key;
+    if (canUseCache && !force) {
+      return { text: cached.text, key: cached.key, usedCache: true, stats };
+    }
+    const fresh = buildDailyInsight(stats);
+    localStorage.setItem(DAILY_INSIGHT_KEY, JSON.stringify({ date: stats.today, text: fresh.text, key: fresh.key }));
+    return { ...fresh, usedCache: false, stats };
+  };
+  const refreshDailyInsight = ({ force = false } = {}) => {
+    const data = getDailyInsight({ force });
+    const insightEl = $("#dashInsightText");
+    if (insightEl) insightEl.textContent = data.text || "—";
+    return data;
+  };
+  const bindInsightRefresh = () => {
+    const btn = $("#btnInsightRefresh");
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      refreshDailyInsight({ force: true });
+    });
   };
 
   const currentJalaliYM = () => {
@@ -3688,7 +3760,7 @@ canvas {
   // =========================
   let chartWeek = null, chartIncome = null, chartPortfolio = null;
 
-  const renderDashboard = () => {
+  const renderDashboard = ({ forceInsight = false } = {}) => {
     const t = todayISO();
     const todayTasks = tasksByDate(t);
     const todayStats = calcTaskRate(todayTasks);
@@ -3720,7 +3792,7 @@ canvas {
     $("#dashSaveRate").textContent = Math.round((Number(state.profile.savingsRateTarget||0))*100) + "%";
 
     $("#dashMotivation").textContent = state.notes.motivation || "—";
-    $("#dashInsightText").textContent = getDailyInsight();
+    refreshDailyInsight({ force: forceInsight });
     applyEnglishDigits();
   };
 
@@ -4041,7 +4113,7 @@ canvas {
     if(!title){ toast("عنوان تسک رو بنویس."); return; }
     state.tasks.unshift({ id: uid(), title, date: plannerDate, done:false, priority:"medium", category:"کار", timeBlock:"صبح", estimateMin:30 });
     $("#quickTaskTitle").value = "";
-    saveState(); renderPlanner(); renderDashboard(); renderDashboardCharts();
+    saveState(); renderPlanner(); renderDashboard({ forceInsight: true }); renderDashboardCharts();
     toast("تسک اضافه شد ✅");
   });
 
@@ -4064,7 +4136,7 @@ canvas {
       }
       task.done = nextDone;
       saveState();
-      const update = () => { renderPlanner(); renderDashboard(); renderDashboardCharts(); };
+      const update = () => { renderPlanner(); renderDashboard({ forceInsight: true }); renderDashboardCharts(); };
       if(prefersReducedMotion.matches){ update(); }
       else { setTimeout(update, 160); }
       return;
@@ -4072,7 +4144,7 @@ canvas {
     if(act==="edit"){ openTaskDialog(task); return; }
     if(act==="del"){
       state.tasks = state.tasks.filter(t => t.id !== id);
-      saveState(); renderPlanner(); renderDashboard(); renderDashboardCharts();
+      saveState(); renderPlanner(); renderDashboard({ forceInsight: true }); renderDashboardCharts();
       toast("حذف شد.");
       return;
     }
@@ -4105,7 +4177,7 @@ canvas {
     plannerDate = date;
     saveState();
     closeDlg("dlgTask");
-    renderAll();
+    renderAll({ forceInsight: true });
     renderDashboardCharts();
   });
 
@@ -4114,7 +4186,7 @@ canvas {
     state.tasks = state.tasks.filter(t => t.id !== editingTaskId);
     saveState();
     closeDlg("dlgTask");
-    renderAll();
+    renderAll({ forceInsight: true });
     renderDashboardCharts();
     toast("تسک حذف شد.");
   });
@@ -4902,11 +4974,11 @@ canvas {
   // =========================
   // Render All
   // =========================
-  const renderAll = () => {
+  const renderAll = ({ forceInsight = false } = {}) => {
     renderHeader();
     applyFocusMode();
     updateLockAvailability();
-    renderDashboard();
+    renderDashboard({ forceInsight });
     renderPlanner();
     renderCalendar();
     renderProjects();
@@ -4914,6 +4986,22 @@ canvas {
     renderFinance();
     renderNotes();
     applyEnglishDigits();
+  };
+  window.__debugInsight = () => {
+    const data = getDailyInsight({ force: false });
+    const ratio = data.stats.todayStats.total
+      ? `${data.stats.todayStats.done}/${data.stats.todayStats.total} (${data.stats.todayStats.rate}%)`
+      : "0/0 (0%)";
+    const output = {
+      totalTasks: data.stats.totalTasks,
+      todayTasks: data.stats.todayTasks.length,
+      completionRatio: ratio,
+      usedCache: data.usedCache,
+      insightKey: data.key,
+      message: data.text
+    };
+    console.log("Insight Debug:", output);
+    return output;
   };
 
   let clockTimer = null;
@@ -4927,6 +5015,7 @@ canvas {
   const boot = async () => {
     await migrateLegacyPin();
     initLock();
+    bindInsightRefresh();
     renderAll();
     startClock();
     renderDashboardCharts();
