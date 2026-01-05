@@ -949,6 +949,13 @@ canvas {
       flex-direction:column;
       gap: var(--s-3);
     }
+    .card.is-clickable{
+      cursor: pointer;
+    }
+    .card.is-clickable:focus-visible{
+      outline: none;
+      box-shadow: var(--ring);
+    }
 
     .empty-state{
       border: 1px dashed color-mix(in srgb, var(--border) 70%, var(--primary) 30%);
@@ -2342,6 +2349,37 @@ canvas {
               </div>
             </div>
 
+            <div class="card secondary col-4 is-clickable" id="dashCryptoCard" role="button" tabindex="0" aria-label="مشاهده دارایی‌های دیجیتال">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">💎</span>
+                  <h3 class="card-title">دارایی‌های دیجیتال</h3>
+                </div>
+                <span class="badge">Crypto</span>
+              </div>
+              <div class="card-body">
+                <div class="crypto-summary-card" id="dashCryptoSummary">
+                  <div>
+                    <div class="crypto-summary-label">ارزش کل</div>
+                    <div class="crypto-summary-value" id="dashCryptoValue">—</div>
+                  </div>
+                  <div class="crypto-summary-meta">
+                    <span class="crypto-change" id="dashCryptoChange">—</span>
+                    <span class="crypto-update" id="dashCryptoUpdated">—</span>
+                  </div>
+                </div>
+                <div class="empty-state crypto-empty" id="dashCryptoEmpty" style="display:none">
+                  <span class="empty-icon">💎</span>
+                  <div class="empty-text">
+                    <div class="empty-title">هنوز دارایی دیجیتال ثبت نشده</div>
+                  </div>
+                  <div class="empty-actions">
+                    <button class="btn btn-secondary" type="button" id="dashCryptoAdd">افزودن دارایی</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="card secondary col-8">
               <div class="card-header">
                 <div class="card-title-group">
@@ -2367,7 +2405,7 @@ canvas {
               </div>
             </div>
 
-            <div class="card passive col-4">
+            <div class="card passive col-12">
               <div class="card-header">
                 <div class="card-title-group">
                   <span class="card-icon">💡</span>
@@ -4000,6 +4038,53 @@ canvas {
   // =========================
   let chartWeek = null, chartIncome = null, chartPortfolio = null;
 
+  const cryptoTotalFromItems = (items) => {
+    return items.reduce((sum, item) => {
+      const directValue = Number(item?.value);
+      const priceValue = Number(item?.amount || 0) * Number(item?.storedPrice || 0);
+      const resolved = Number.isFinite(directValue) ? directValue : priceValue;
+      return sum + (Number.isFinite(resolved) ? resolved : 0);
+    }, 0);
+  };
+
+  const renderDashboardCryptoSummary = () => {
+    const summaryEl = $("#dashCryptoSummary");
+    const emptyEl = $("#dashCryptoEmpty");
+    const valueEl = $("#dashCryptoValue");
+    const changeEl = $("#dashCryptoChange");
+    const updateEl = $("#dashCryptoUpdated");
+    if (!summaryEl || !valueEl || !changeEl || !updateEl || !emptyEl) return;
+
+    const crypto = state.assets.crypto || defaultCryptoState();
+    const items = Array.isArray(crypto.items) ? crypto.items : [];
+
+    if (!items.length) {
+      summaryEl.style.display = "none";
+      emptyEl.style.display = "flex";
+      return;
+    }
+
+    summaryEl.style.display = "flex";
+    emptyEl.style.display = "none";
+
+    const totalValue = cryptoTotalFromItems(items);
+    valueEl.textContent = `${moneyFA(totalValue)} تومان`;
+
+    const changePct = Number.isFinite(Number(crypto.changePct)) ? Number(crypto.changePct) : null;
+    if (changePct === null) {
+      changeEl.className = "crypto-change";
+      changeEl.textContent = "—";
+    } else {
+      const changeDir = changePct >= 0 ? "▲" : "▼";
+      const changeValue = toEnglishDigits(Math.abs(changePct).toFixed(1));
+      changeEl.className = changePct >= 0 ? "crypto-change positive" : "crypto-change negative";
+      changeEl.textContent = `${changeDir} ${changeValue}% امروز`;
+    }
+
+    const updatedAt = crypto.updatedAt ? toEnglishDigits(crypto.updatedAt) : "—";
+    updateEl.textContent = `آخرین بروزرسانی: ${updatedAt}`;
+  };
+
   const renderDashboard = ({ forceInsight = false } = {}) => {
     const t = todayISO();
     const todayTasks = tasksByDate(t);
@@ -4032,6 +4117,7 @@ canvas {
     $("#dashSaveRate").textContent = Math.round((Number(state.profile.savingsRateTarget||0))*100) + "%";
 
     $("#dashMotivation").textContent = state.notes.motivation || "—";
+    renderDashboardCryptoSummary();
     refreshDailyInsight({ force: forceInsight });
     applyEnglishDigits();
   };
@@ -4347,6 +4433,29 @@ canvas {
   $("#chartWeekCTA").addEventListener("click", () => { showView("planner"); openTaskDialog(null); });
   $("#chartIncomeCTA").addEventListener("click", () => { showView("projects"); openProjectDialog(null); });
   $("#chartPortfolioCTA").addEventListener("click", () => { showView("finance"); openHoldingDialog(null); });
+  const goToCryptoAssets = () => {
+    showView("finance");
+    requestAnimationFrame(() => {
+      $("#cryptoAssetsCard")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+  const dashCryptoCard = $("#dashCryptoCard");
+  if (dashCryptoCard) {
+    dashCryptoCard.addEventListener("click", (e) => {
+      if (e.target.closest("button")) return;
+      goToCryptoAssets();
+    });
+    dashCryptoCard.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        goToCryptoAssets();
+      }
+    });
+  }
+  $("#dashCryptoAdd")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    goToCryptoAssets();
+  });
 
   $("#btnQuickAdd").addEventListener("click", () => {
     const title = $("#quickTaskTitle").value.trim();
