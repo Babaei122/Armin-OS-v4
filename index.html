@@ -981,6 +981,184 @@ canvas {
     .empty-sub{ font-size: var(--fs-1); color: var(--muted); }
     .empty-actions{ display:flex; gap: 8px; flex-wrap:wrap; }
 
+    .crypto-summary-card{
+      border: 1px solid var(--border);
+      background: var(--surface-3);
+      border-radius: var(--r-3);
+      padding: var(--s-3);
+      display:flex;
+      flex-direction:column;
+      gap: var(--s-2);
+      box-shadow: var(--shadow-1);
+    }
+    .crypto-summary-label{
+      font-size: var(--fs-1);
+      color: var(--muted);
+    }
+    .crypto-summary-value{
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: .2px;
+    }
+    .crypto-summary-sub{
+      font-size: var(--fs-1);
+      color: var(--muted);
+    }
+    .crypto-summary-meta{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: var(--s-2);
+      flex-wrap:wrap;
+      font-size: var(--fs-1);
+      color: var(--muted);
+    }
+    .crypto-change{
+      display:inline-flex;
+      align-items:center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+      border: 1px solid transparent;
+      background: var(--surface-4);
+      color: var(--muted);
+    }
+    .crypto-change.positive{
+      color: var(--success);
+      background: var(--success-soft);
+      border-color: color-mix(in srgb, var(--success) 35%, var(--border));
+      box-shadow: 0 8px 16px color-mix(in srgb, var(--success) 16%, transparent);
+    }
+    .crypto-change.negative{
+      color: var(--danger);
+      background: var(--danger-soft);
+      border-color: color-mix(in srgb, var(--danger) 35%, var(--border));
+    }
+    .crypto-list{
+      display:flex;
+      flex-direction:column;
+      gap: var(--s-2);
+    }
+    .crypto-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: var(--s-2);
+      padding: var(--s-2);
+      border-radius: var(--r-2);
+      border: 1px solid var(--border);
+      background: var(--surface-3);
+    }
+    .crypto-item-left{
+      display:flex;
+      align-items:center;
+      gap: var(--s-2);
+      min-width: 0;
+    }
+    .crypto-icon{
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: linear-gradient(135deg, var(--primary-soft), var(--success-soft));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--text);
+      flex: 0 0 auto;
+    }
+    .crypto-name{
+      font-weight: 800;
+      font-size: var(--fs-3);
+    }
+    .crypto-symbol{
+      font-size: var(--fs-1);
+      color: var(--muted);
+    }
+    .crypto-item-meta{
+      display:flex;
+      flex-direction:column;
+      gap: 4px;
+      font-size: var(--fs-1);
+      color: var(--muted);
+    }
+    .crypto-item-right{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap: 6px;
+      text-align: end;
+      font-size: var(--fs-1);
+      color: var(--muted);
+    }
+    .crypto-value{
+      font-weight: 800;
+      color: var(--text);
+    }
+    .crypto-empty{
+      align-items:center;
+    }
+
+    .skeleton{
+      position: relative;
+      display:inline-block;
+      background: color-mix(in srgb, var(--border) 45%, transparent);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .skeleton::after{
+      content:"";
+      position:absolute;
+      inset:0;
+      transform: translateX(-100%);
+      background: linear-gradient(90deg, transparent, color-mix(in srgb, #fff 40%, transparent), transparent);
+      animation: shimmer 1.2s infinite;
+    }
+    .skel-lg{ width: 160px; height: 22px; }
+    .skel-md{ width: 120px; height: 14px; }
+    .skel-sm{ width: 90px; height: 12px; }
+    .crypto-skeleton-row{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap: var(--s-2);
+      padding: var(--s-2);
+      border-radius: var(--r-2);
+      border: 1px solid var(--border);
+      background: var(--surface-3);
+    }
+    .crypto-skeleton-left{
+      display:flex;
+      align-items:center;
+      gap: var(--s-2);
+      flex: 1 1 auto;
+    }
+    .crypto-skeleton-icon{
+      width: 38px;
+      height: 38px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: color-mix(in srgb, var(--border) 55%, transparent);
+    }
+    .crypto-skeleton-lines{
+      display:flex;
+      flex-direction:column;
+      gap: 6px;
+      flex: 1 1 auto;
+    }
+    .crypto-skeleton-right{
+      display:flex;
+      flex-direction:column;
+      align-items:flex-end;
+      gap: 6px;
+    }
+    @keyframes shimmer{
+      100%{ transform: translateX(100%); }
+    }
+
     body.focus-mode .sidebar{
       opacity: .42;
       filter: grayscale(.25);
@@ -2467,6 +2645,34 @@ canvas {
               </div>
             </div>
 
+            <div class="card secondary col-6" id="cryptoAssetsCard">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">💎</span>
+                  <div>
+                    <h3 class="card-title">دارایی‌های دیجیتال</h3>
+                    <div class="card-subtitle">نمای کلی ارزش کریپتو (نمایشی)</div>
+                  </div>
+                </div>
+                <span class="badge">Crypto</span>
+              </div>
+              <div class="card-body">
+                <div class="crypto-summary-card">
+                  <div>
+                    <div class="crypto-summary-label">دارایی‌های دیجیتال</div>
+                    <div class="crypto-summary-value" id="cryptoTotalValue">—</div>
+                    <div class="crypto-summary-sub">≈ ارزش امروز</div>
+                  </div>
+                  <div class="crypto-summary-meta">
+                    <span class="crypto-change" id="cryptoChange">—</span>
+                    <span class="crypto-update" id="cryptoUpdatedAt">—</span>
+                  </div>
+                </div>
+                <div class="sep"></div>
+                <div id="cryptoAssetsContent"></div>
+              </div>
+            </div>
+
             <div class="card secondary col-6">
               <div class="card-header">
                 <div class="card-title-group">
@@ -3030,9 +3236,12 @@ canvas {
 
   const J_MONTHS = ["فروردین","اردیبهشت","خرداد","تیر","مرداد","شهریور","مهر","آبان","آذر","دی","بهمن","اسفند"];
   const FA_DIGITS = "۰۱۲۳۴۵۶۷۸۹";
+  const AR_DIGITS = "٠١٢٣٤٥٦٧٨٩";
   const toEnglishDigits = (input) => {
     if (input == null) return "";
-    return input.toString().replace(/[۰-۹]/g, d => FA_DIGITS.indexOf(d));
+    return input.toString()
+      .replace(/[۰-۹]/g, d => FA_DIGITS.indexOf(d))
+      .replace(/[٠-٩]/g, d => AR_DIGITS.indexOf(d));
   };
   const pad2 = (n) => (n < 10 ? "0" + n : "" + n);
   const isoToParts = (iso) => {
@@ -3087,6 +3296,18 @@ canvas {
   const moneyFA = (n) => toEnglishDigits(Number(n||0).toLocaleString("fa-IR"));
   const safeParse = (raw) => { try { return JSON.parse(raw); } catch { return null; } };
 
+  const defaultCryptoState = () => ({
+    loading: false,
+    totalValue: 23450000,
+    changePct: 3.2,
+    updatedAt: "14:32",
+    items: [
+      { id: "btc", name: "Bitcoin", symbol: "BTC", icon: "₿", amount: 0.035, value: 12300000, changePct: 2.1 },
+      { id: "eth", name: "Ethereum", symbol: "ETH", icon: "Ξ", amount: 0.7, value: 9800000, changePct: -1.4 },
+      { id: "sol", name: "Solana", symbol: "SOL", icon: "◎", amount: 12, value: 1350000, changePct: 5.0 }
+    ]
+  });
+
   const defaultState = () => {
     return {
       meta: { version: 3, createdAt: new Date().toISOString() },
@@ -3110,7 +3331,8 @@ canvas {
       goals: [],
       assets: {
         holdings: [],
-        plan: { split: { gold: 0, crypto: 0, silver: 0, cash: 0 } }
+        plan: { split: { gold: 0, crypto: 0, silver: 0, cash: 0 } },
+        crypto: defaultCryptoState()
       }
     };
   };
@@ -3217,6 +3439,24 @@ canvas {
   state.profile.avatarData = state.profile.avatarData || "";
   state.settings = { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "", ...state.settings };
   state.settings.focusMode = !!state.settings.focusMode;
+  state.assets = {
+    holdings: [],
+    plan: { split: { gold: 0, crypto: 0, silver: 0, cash: 0 } },
+    crypto: defaultCryptoState(),
+    ...state.assets
+  };
+  state.assets.plan = {
+    split: { gold: 0, crypto: 0, silver: 0, cash: 0 },
+    ...state.assets.plan
+  };
+  state.assets.plan.split = {
+    gold: 0,
+    crypto: 0,
+    silver: 0,
+    cash: 0,
+    ...state.assets.plan.split
+  };
+  state.assets.crypto = { ...defaultCryptoState(), ...(state.assets.crypto || {}) };
   const normalizePin = (val) => String(val || "").replace(/\D/g, "").slice(0,4);
   const hasWebCrypto = () => !!(window.crypto && window.crypto.subtle && window.crypto.getRandomValues);
   const toHex = (buffer) => Array.from(new Uint8Array(buffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -4574,6 +4814,7 @@ canvas {
   // Finance / Holdings
   // =========================
   let editingHoldingId = null;
+  let cryptoPricesLoading = false;
 
   const openHoldingDialog = (h=null) => {
     editingHoldingId = h ? h.id : null;
@@ -4606,6 +4847,101 @@ canvas {
       tbody.appendChild(tr);
     });
     applyEnglishDigits();
+  };
+
+  const cryptoPercentLabel = (value) => {
+    const sign = value > 0 ? "+" : "";
+    return toEnglishDigits(`${sign}${value.toFixed(1)}`);
+  };
+
+  const renderCryptoAssets = () => {
+    const crypto = state.assets.crypto || defaultCryptoState();
+    const totalValueEl = $("#cryptoTotalValue");
+    const changeEl = $("#cryptoChange");
+    const updateEl = $("#cryptoUpdatedAt");
+    const contentEl = $("#cryptoAssetsContent");
+
+    if (!totalValueEl || !changeEl || !updateEl || !contentEl) return;
+
+    const isLoading = cryptoPricesLoading || !!crypto.loading;
+    if (isLoading) {
+      totalValueEl.innerHTML = `<span class="skeleton skel-lg"></span>`;
+      changeEl.className = "crypto-change";
+      changeEl.innerHTML = `<span class="skeleton skel-sm"></span>`;
+      updateEl.innerHTML = `<span class="skeleton skel-sm"></span>`;
+      contentEl.innerHTML = `
+        <div class="crypto-list">
+          ${[1,2,3].map(() => `
+            <div class="crypto-skeleton-row">
+              <div class="crypto-skeleton-left">
+                <div class="crypto-skeleton-icon"></div>
+                <div class="crypto-skeleton-lines">
+                  <span class="skeleton skel-md"></span>
+                  <span class="skeleton skel-sm"></span>
+                </div>
+              </div>
+              <div class="crypto-skeleton-right">
+                <span class="skeleton skel-md"></span>
+                <span class="skeleton skel-sm"></span>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+      `;
+      return;
+    }
+
+    totalValueEl.textContent = `${moneyFA(crypto.totalValue)} تومان`;
+    const changeDir = crypto.changePct >= 0 ? "▲" : "▼";
+    const changeClass = crypto.changePct >= 0 ? "crypto-change positive" : "crypto-change negative";
+    changeEl.className = changeClass;
+    changeEl.textContent = `${changeDir} ${cryptoPercentLabel(crypto.changePct)}% امروز`;
+    updateEl.textContent = `آخرین بروزرسانی: ${toEnglishDigits(crypto.updatedAt)}`;
+
+    const items = Array.isArray(crypto.items) ? crypto.items : [];
+    if (!items.length) {
+      contentEl.innerHTML = `
+        <div class="empty-state crypto-empty">
+          <span class="empty-icon">🧩</span>
+          <div class="empty-text">
+            <div class="empty-title">هنوز دارایی دیجیتال اضافه نکردی</div>
+          </div>
+          <div class="empty-actions">
+            <button class="btn btn-secondary" type="button">＋ افزودن دارایی</button>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    const list = document.createElement("div");
+    list.className = "crypto-list";
+    items.forEach((item) => {
+      const changeBadgeClass = item.changePct >= 0 ? "crypto-change positive" : "crypto-change negative";
+      const changeBadgeText = `${item.changePct >= 0 ? "+" : ""}${toEnglishDigits(item.changePct.toFixed(1))}%`;
+      const row = document.createElement("div");
+      row.className = "crypto-item";
+      row.innerHTML = `
+        <div class="crypto-item-left">
+          <span class="crypto-icon">${escapeHtml(item.icon || item.symbol?.slice(0,1) || "●")}</span>
+          <div>
+            <div class="crypto-name">${escapeHtml(item.name)}</div>
+            <div class="crypto-symbol">${escapeHtml(item.symbol)}</div>
+          </div>
+        </div>
+        <div class="crypto-item-meta">
+          <span>مقدار: ${toEnglishDigits(item.amount)}</span>
+          <span class="crypto-value">ارزش: ${moneyFA(item.value)} تومان</span>
+        </div>
+        <div class="crypto-item-right">
+          <span class="${changeBadgeClass}">${changeBadgeText}</span>
+        </div>
+      `;
+      list.appendChild(row);
+    });
+    contentEl.innerHTML = "";
+    contentEl.appendChild(list);
+    applyEnglishDigits(contentEl);
   };
 
   const renderFinancePlan = () => {
@@ -4641,7 +4977,7 @@ canvas {
     applyEnglishDigits();
   };
 
-  const renderFinance = () => { renderHoldings(); renderFinancePlan(); };
+  const renderFinance = () => { renderHoldings(); renderCryptoAssets(); renderFinancePlan(); };
 
   $("#btnAddHolding").addEventListener("click", () => { showView("finance"); openHoldingDialog(null); });
   $("#btnAddHolding2").addEventListener("click", () => openHoldingDialog(null));
