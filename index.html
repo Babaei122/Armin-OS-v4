@@ -1020,6 +1020,18 @@ canvas {
       font-size: var(--fs-1);
       color: var(--muted);
     }
+    .crypto-summary-actions{
+      display:flex;
+      align-items:center;
+      gap: 8px;
+      flex-wrap:wrap;
+    }
+    .crypto-refresh{
+      width: 32px;
+      height: 32px;
+      border-radius: 12px;
+      font-size: 14px;
+    }
     .crypto-change{
       display:inline-flex;
       align-items:center;
@@ -2689,7 +2701,7 @@ canvas {
                   <span class="card-icon">💎</span>
                   <div>
                     <h3 class="card-title">دارایی‌های دیجیتال</h3>
-                    <div class="card-subtitle">نمای کلی ارزش کریپتو (نمایشی)</div>
+                    <div class="card-subtitle">نمای کلی ارزش کریپتو (زنده)</div>
                   </div>
                 </div>
                 <span class="badge">Crypto</span>
@@ -2703,7 +2715,10 @@ canvas {
                   </div>
                   <div class="crypto-summary-meta">
                     <span class="crypto-change" id="cryptoChange">—</span>
-                    <span class="crypto-update" id="cryptoUpdatedAt">—</span>
+                    <div class="crypto-summary-actions">
+                      <span class="crypto-update" id="cryptoUpdatedAt">—</span>
+                      <button class="btn btn-icon crypto-refresh" type="button" id="cryptoRefreshBtn" aria-label="بروزرسانی قیمت‌ها" title="بروزرسانی قیمت‌ها">⟳</button>
+                    </div>
                   </div>
                 </div>
                 <div class="sep"></div>
@@ -3336,13 +3351,14 @@ canvas {
 
   const defaultCryptoState = () => ({
     loading: false,
-    totalValue: 23450000,
-    changePct: 3.2,
-    updatedAt: "14:32",
+    totalValue: 0,
+    changePct: null,
+    updatedAt: "",
+    hasPrices: false,
     items: [
-      { id: "btc", name: "Bitcoin", symbol: "BTC", icon: "₿", amount: 0.035, value: 12300000, changePct: 2.1 },
-      { id: "eth", name: "Ethereum", symbol: "ETH", icon: "Ξ", amount: 0.7, value: 9800000, changePct: -1.4 },
-      { id: "sol", name: "Solana", symbol: "SOL", icon: "◎", amount: 12, value: 1350000, changePct: 5.0 }
+      { id: "bitcoin", name: "Bitcoin", symbol: "BTC", icon: "₿", amount: 0.035 },
+      { id: "ethereum", name: "Ethereum", symbol: "ETH", icon: "Ξ", amount: 0.7 },
+      { id: "solana", name: "Solana", symbol: "SOL", icon: "◎", amount: 12 }
     ]
   });
 
@@ -3357,7 +3373,7 @@ canvas {
         savingsRateTarget: 0,
         currency: "تومان"
       },
-      settings: { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "" },
+      settings: { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "", usdToToman: 0 },
       notes: {
         daily: "",
         motivation: "",
@@ -3371,6 +3387,9 @@ canvas {
         holdings: [],
         plan: { split: { gold: 0, crypto: 0, silver: 0, cash: 0 } },
         crypto: defaultCryptoState()
+      },
+      cache: {
+        cryptoPrices: { fetchedAt: 0, pricesById: {}, fxUsdToIrr: null }
       }
     };
   };
@@ -3475,7 +3494,7 @@ canvas {
   };
   let state = loadState() || defaultState();
   state.profile.avatarData = state.profile.avatarData || "";
-  state.settings = { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "", ...state.settings };
+  state.settings = { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "", usdToToman: 0, ...state.settings };
   state.settings.focusMode = !!state.settings.focusMode;
   state.assets = {
     holdings: [],
@@ -3495,6 +3514,10 @@ canvas {
     ...state.assets.plan.split
   };
   state.assets.crypto = { ...defaultCryptoState(), ...(state.assets.crypto || {}) };
+  state.cache = {
+    cryptoPrices: { fetchedAt: 0, pricesById: {}, fxUsdToIrr: null },
+    ...(state.cache || {})
+  };
   const normalizePin = (val) => String(val || "").replace(/\D/g, "").slice(0,4);
   const hasWebCrypto = () => !!(window.crypto && window.crypto.subtle && window.crypto.getRandomValues);
   const toHex = (buffer) => Array.from(new Uint8Array(buffer)).map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -4027,10 +4050,173 @@ canvas {
       refreshDailyInsight({ force: true });
     });
   };
+  const bindCryptoRefresh = () => {
+    const btn = $("#cryptoRefreshBtn");
+    if (!btn) return;
+    btn.addEventListener("click", () => {
+      void fetchCryptoPrices({ force: true });
+    });
+  };
 
   const currentJalaliYM = () => {
     const t = isoToJalali(todayISO());
     return { jy: t.jy, jm: t.jm };
+  };
+
+  const CRYPTO_CACHE_TTL = 10 * 60 * 1000;
+  const CRYPTO_PRICE_ENDPOINT = "https://api.coingecko.com/api/v3/simple/price";
+  const FX_RATE_ENDPOINT = "https://open.er-api.com/v6/latest/USD";
+
+  const cryptoCacheDefaults = () => ({ fetchedAt: 0, pricesById: {}, fxUsdToIrr: null });
+  const getCryptoCache = () => state.cache?.cryptoPrices || cryptoCacheDefaults();
+  const getUsdToTomanRate = (cache) => {
+    const manualRate = Number(state.settings.usdToToman || 0);
+    if (manualRate > 0) return manualRate;
+    const fxRate = Number(cache?.fxUsdToIrr || 0);
+    return fxRate > 0 ? fxRate / 10 : 0;
+  };
+  const formatTime = (ts) => {
+    const date = new Date(ts);
+    if (Number.isNaN(date.valueOf())) return "";
+    return `${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+  };
+  const resolveCryptoPriceId = (item) => {
+    const raw = String(item?.coingeckoId || item?.priceId || item?.id || item?.symbol || "").toLowerCase();
+    const map = {
+      btc: "bitcoin",
+      bitcoin: "bitcoin",
+      eth: "ethereum",
+      ethereum: "ethereum",
+      sol: "solana",
+      solana: "solana",
+      xrp: "ripple",
+      ripple: "ripple",
+      ada: "cardano",
+      cardano: "cardano",
+      bnb: "binancecoin",
+      doge: "dogecoin",
+      trx: "tron",
+      usdt: "tether",
+      usdc: "usd-coin"
+    };
+    return map[raw] || raw;
+  };
+  const cryptoPercentLabel = (value) => {
+    const sign = value > 0 ? "+" : "";
+    return toEnglishDigits(`${sign}${value.toFixed(1)}`);
+  };
+  const formatCryptoUpdatedLabel = (updatedAt, usdToToman) => {
+    const hasUpdate = updatedAt && updatedAt.trim();
+    const updatedLabel = hasUpdate ? `آخرین بروزرسانی: ${toEnglishDigits(updatedAt)}` : "";
+    if (!usdToToman) {
+      if (updatedLabel) return `نیاز به نرخ تبدیل تومان • ${updatedLabel}`;
+      return "نیاز به نرخ تبدیل تومان";
+    }
+    return updatedLabel || "—";
+  };
+  const applyCryptoPricing = (cache) => {
+    const crypto = state.assets.crypto || defaultCryptoState();
+    const items = Array.isArray(crypto.items) ? crypto.items : [];
+    const usdToToman = getUsdToTomanRate(cache);
+    const pricedItems = items.map((item) => {
+      const priceId = resolveCryptoPriceId(item);
+      const priceData = cache?.pricesById?.[priceId];
+      const usdPrice = Number(priceData?.usd);
+      const changePct = Number(priceData?.usd_24h_change);
+      const value = Number.isFinite(usdPrice)
+        ? Math.round(Number(item.amount || 0) * usdPrice * usdToToman)
+        : null;
+      return {
+        ...item,
+        priceId,
+        usdPrice: Number.isFinite(usdPrice) ? usdPrice : null,
+        changePct: Number.isFinite(changePct) ? changePct : null,
+        value: usdToToman ? value : (Number.isFinite(usdPrice) ? 0 : null)
+      };
+    });
+    const totalValue = pricedItems.reduce((sum, item) => sum + (Number.isFinite(item.value) ? item.value : 0), 0);
+    const weightedItems = pricedItems.filter((item) => Number.isFinite(item.value) && Number.isFinite(item.changePct));
+    let changePct = null;
+    if (weightedItems.length) {
+      const valueSum = weightedItems.reduce((sum, item) => sum + item.value, 0);
+      if (valueSum > 0) {
+        const weightedSum = weightedItems.reduce((sum, item) => sum + (item.value * item.changePct), 0);
+        changePct = weightedSum / valueSum;
+      }
+    }
+    const updatedAt = cache?.fetchedAt ? formatTime(cache.fetchedAt) : "";
+    state.assets.crypto = {
+      ...crypto,
+      items: pricedItems,
+      totalValue,
+      changePct,
+      updatedAt,
+      hasPrices: pricedItems.some((item) => Number.isFinite(item.usdPrice))
+    };
+  };
+  const fetchCryptoPrices = async ({ force = false } = {}) => {
+    const crypto = state.assets.crypto || defaultCryptoState();
+    const items = Array.isArray(crypto.items) ? crypto.items : [];
+    const ids = Array.from(new Set(items.map(resolveCryptoPriceId).filter(Boolean)));
+    if (!ids.length) return;
+
+    const cache = getCryptoCache();
+    const hasCache = cache && cache.pricesById && Object.keys(cache.pricesById).length > 0;
+    const isFresh = cache?.fetchedAt && (Date.now() - cache.fetchedAt < CRYPTO_CACHE_TTL);
+    if (!force && isFresh && hasCache) {
+      applyCryptoPricing(cache);
+      renderCryptoAssets();
+      renderDashboardCryptoSummary();
+      return;
+    }
+
+    cryptoPricesLoading = true;
+    renderCryptoAssets();
+    renderDashboardCryptoSummary();
+
+    try {
+      const params = new URLSearchParams({
+        ids: ids.join(","),
+        vs_currencies: "usd",
+        include_24hr_change: "true"
+      });
+      const res = await fetch(`${CRYPTO_PRICE_ENDPOINT}?${params.toString()}`);
+      if (!res.ok) throw new Error("crypto price fetch failed");
+      const prices = await res.json();
+
+      let fxUsdToIrr = cache?.fxUsdToIrr ?? null;
+      if (!(Number(state.settings.usdToToman || 0) > 0)) {
+        try {
+          const fxRes = await fetch(FX_RATE_ENDPOINT);
+          if (fxRes.ok) {
+            const fxData = await fxRes.json();
+            const rate = Number(fxData?.rates?.IRR);
+            fxUsdToIrr = Number.isFinite(rate) ? rate : fxUsdToIrr;
+          }
+        } catch {
+          // keep existing fx rate
+        }
+      }
+
+      state.cache.cryptoPrices = {
+        fetchedAt: Date.now(),
+        pricesById: prices || {},
+        fxUsdToIrr: Number.isFinite(Number(fxUsdToIrr)) ? Number(fxUsdToIrr) : null
+      };
+      applyCryptoPricing(state.cache.cryptoPrices);
+      saveState();
+    } catch {
+      if (hasCache) {
+        applyCryptoPricing(cache);
+      } else {
+        state.assets.crypto = { ...crypto, totalValue: 0, changePct: null, updatedAt: "", hasPrices: false };
+      }
+      toast("خطا در دریافت قیمت‌ها. دوباره تلاش کنید.");
+    } finally {
+      cryptoPricesLoading = false;
+      renderCryptoAssets();
+      renderDashboardCryptoSummary();
+    }
   };
 
   // =========================
@@ -4067,6 +4253,15 @@ canvas {
     summaryEl.style.display = "flex";
     emptyEl.style.display = "none";
 
+    const usdToToman = getUsdToTomanRate(getCryptoCache());
+    if (!crypto.hasPrices) {
+      valueEl.textContent = "—";
+      changeEl.className = "crypto-change";
+      changeEl.textContent = "—";
+      updateEl.textContent = "—";
+      return;
+    }
+
     const totalValue = cryptoTotalFromItems(items);
     valueEl.textContent = `${moneyFA(totalValue)} تومان`;
 
@@ -4081,8 +4276,7 @@ canvas {
       changeEl.textContent = `${changeDir} ${changeValue}% امروز`;
     }
 
-    const updatedAt = crypto.updatedAt ? toEnglishDigits(crypto.updatedAt) : "—";
-    updateEl.textContent = `آخرین بروزرسانی: ${updatedAt}`;
+    updateEl.textContent = formatCryptoUpdatedLabel(crypto.updatedAt, usdToToman);
   };
 
   const renderDashboard = ({ forceInsight = false } = {}) => {
@@ -4958,11 +5152,6 @@ canvas {
     applyEnglishDigits();
   };
 
-  const cryptoPercentLabel = (value) => {
-    const sign = value > 0 ? "+" : "";
-    return toEnglishDigits(`${sign}${value.toFixed(1)}`);
-  };
-
   const renderCryptoAssets = () => {
     const crypto = state.assets.crypto || defaultCryptoState();
     const totalValueEl = $("#cryptoTotalValue");
@@ -5000,12 +5189,25 @@ canvas {
       return;
     }
 
-    totalValueEl.textContent = `${moneyFA(crypto.totalValue)} تومان`;
-    const changeDir = crypto.changePct >= 0 ? "▲" : "▼";
-    const changeClass = crypto.changePct >= 0 ? "crypto-change positive" : "crypto-change negative";
-    changeEl.className = changeClass;
-    changeEl.textContent = `${changeDir} ${cryptoPercentLabel(crypto.changePct)}% امروز`;
-    updateEl.textContent = `آخرین بروزرسانی: ${toEnglishDigits(crypto.updatedAt)}`;
+    const usdToToman = getUsdToTomanRate(getCryptoCache());
+    if (!crypto.hasPrices) {
+      totalValueEl.textContent = "—";
+      changeEl.className = "crypto-change";
+      changeEl.textContent = "—";
+      updateEl.textContent = "—";
+    } else {
+      totalValueEl.textContent = `${moneyFA(crypto.totalValue)} تومان`;
+      if (Number.isFinite(crypto.changePct)) {
+        const changeDir = crypto.changePct >= 0 ? "▲" : "▼";
+        const changeClass = crypto.changePct >= 0 ? "crypto-change positive" : "crypto-change negative";
+        changeEl.className = changeClass;
+        changeEl.textContent = `${changeDir} ${cryptoPercentLabel(crypto.changePct)}% امروز`;
+      } else {
+        changeEl.className = "crypto-change";
+        changeEl.textContent = "—";
+      }
+      updateEl.textContent = formatCryptoUpdatedLabel(crypto.updatedAt, usdToToman);
+    }
 
     const items = Array.isArray(crypto.items) ? crypto.items : [];
     if (!items.length) {
@@ -5026,8 +5228,14 @@ canvas {
     const list = document.createElement("div");
     list.className = "crypto-list";
     items.forEach((item) => {
-      const changeBadgeClass = item.changePct >= 0 ? "crypto-change positive" : "crypto-change negative";
-      const changeBadgeText = `${item.changePct >= 0 ? "+" : ""}${toEnglishDigits(item.changePct.toFixed(1))}%`;
+      const hasChange = Number.isFinite(item.changePct);
+      const changeBadgeClass = hasChange
+        ? (item.changePct >= 0 ? "crypto-change positive" : "crypto-change negative")
+        : "crypto-change";
+      const changeBadgeText = hasChange
+        ? `${item.changePct >= 0 ? "+" : ""}${toEnglishDigits(item.changePct.toFixed(1))}%`
+        : "—";
+      const valueLabel = Number.isFinite(item.value) ? `${moneyFA(item.value)} تومان` : "—";
       const row = document.createElement("div");
       row.className = "crypto-item";
       row.innerHTML = `
@@ -5040,7 +5248,7 @@ canvas {
         </div>
         <div class="crypto-item-meta">
           <span>مقدار: ${toEnglishDigits(item.amount)}</span>
-          <span class="crypto-value">ارزش: ${moneyFA(item.value)} تومان</span>
+          <span class="crypto-value">ارزش: ${valueLabel}</span>
         </div>
         <div class="crypto-item-right">
           <span class="${changeBadgeClass}">${changeBadgeText}</span>
@@ -5344,8 +5552,12 @@ canvas {
         return;
       }
       state = latest.data;
-      state.settings = { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "", ...state.settings };
+      state.settings = { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "", usdToToman: 0, ...state.settings };
       state.settings.focusMode = !!state.settings.focusMode;
+      state.cache = {
+        cryptoPrices: { fetchedAt: 0, pricesById: {}, fxUsdToIrr: null },
+        ...(state.cache || {})
+      };
       await migrateLegacyPin();
       saveState();
       renderAll();
@@ -5366,8 +5578,12 @@ canvas {
     const data = safeParse(text);
     if(!data || !data.meta){ toast("فایل معتبر نیست."); return; }
     state = data;
-    state.settings = { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "", ...state.settings };
+    state.settings = { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "", usdToToman: 0, ...state.settings };
     state.settings.focusMode = !!state.settings.focusMode;
+    state.cache = {
+      cryptoPrices: { fetchedAt: 0, pricesById: {}, fxUsdToIrr: null },
+      ...(state.cache || {})
+    };
     await migrateLegacyPin();
     saveState();
     closeDlg("dlgImport");
@@ -5461,9 +5677,12 @@ canvas {
     await migrateLegacyPin();
     initLock();
     bindInsightRefresh();
+    bindCryptoRefresh();
+    applyCryptoPricing(getCryptoCache());
     renderAll();
     startClock();
     renderDashboardCharts();
+    void fetchCryptoPrices();
   };
   void boot();
 })();
