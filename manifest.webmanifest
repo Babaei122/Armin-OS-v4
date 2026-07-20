@@ -1,24 +1,26 @@
 {
   "name": "PlanOS",
   "short_name": "PlanOS",
-  "description": "Personal planner (Tasks, Projects, Goals, Finance) with Jalali calendar + PIN lock.",
+  "description": "برنامه‌ریز شخصی فارسی با تقویم شمسی، Inbox، برنامه‌ریزی ظرفیت روز، اهداف و پروژه‌های متصل، مرور هفتگی و یادآور.",
   "lang": "fa",
   "dir": "rtl",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#090d16",
-  "theme_color": "#090d16",
+  "background_color": "#f5f8ff",
+  "theme_color": "#f5f8ff",
   "icons": [
     {
       "src": "./icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "./icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }

@@ -3,20 +3,23 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="referrer" content="no-referrer" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; img-src 'self' data: blob:; font-src 'self' data: https://cdn.jsdelivr.net; connect-src 'self' https://api.coingecko.com https://open.er-api.com; object-src 'none'; base-uri 'none'; form-action 'self'; worker-src 'self'" />
   <title>PlanOS • Personal Planner</title>
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#f6f8fd">
+  <meta name="theme-color" content="#f5f8ff">
   <meta name="application-name" content="PlanOS">
   <meta name="apple-mobile-web-app-title" content="PlanOS">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
 
   <!-- Chart.js (CDN). Optional: you can bundle locally later. -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" crossorigin="anonymous"></script>
 
   <style>
     /* =========================
@@ -199,6 +202,10 @@ canvas {
     }
 
     *{ box-sizing:border-box; }
+    .sr-only{
+      position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;
+      overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important;
+    }
     html, body{
       height:100%;
       overflow-x: hidden;
@@ -1712,7 +1719,10 @@ canvas {
       font-size: var(--fs-2);
       animation: viewIn .18s ease both;
       z-index: 9998;
+      align-items:center;
+      gap:12px;
     }
+    .toast-action{border:0;background:transparent;color:var(--primary);font:inherit;font-weight:800;cursor:pointer;padding:4px 6px;}
 
     .sep{ height:1px; background: var(--border); margin: 10px 0; opacity:.9; }
 
@@ -2025,21 +2035,596 @@ canvas {
       }
     }
 
+    /* =========================
+       Calendar workspace + mobile experience
+       ========================= */
+    .mobile-appbar,
+    .mobile-nav{ display:none; }
+
+    .insight-actions{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:10px;
+      margin-top:14px;
+    }
+    .insight-action{
+      min-width:0;
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:color-mix(in srgb, var(--surface) 90%, var(--primary) 10%);
+      color:var(--text);
+      text-align:right;
+      cursor:pointer;
+    }
+    .insight-action strong,
+    .insight-action span{ display:block; }
+    .insight-action strong{ font-size:13px; margin-bottom:4px; }
+    .insight-action span{ color:var(--muted); font-size:11px; line-height:1.7; }
+    .insight-action.is-danger{ border-color:color-mix(in srgb, var(--danger) 35%, var(--border)); }
+    .daily-quote{
+      margin:0;
+      padding:4px 0;
+      font-size:18px;
+      font-weight:800;
+      line-height:2;
+    }
+    .daily-quote-meta{ color:var(--muted); font-size:12px; margin-top:8px; }
+    .personal-quote{ margin-top:14px; padding-top:14px; border-top:1px solid var(--border); color:var(--muted); }
+
+    .planner-command-grid{
+      display:grid;
+      grid-template-columns:minmax(0, 1.25fr) minmax(320px, .75fr);
+      gap:14px;
+    }
+    .planner-command-grid > .card{ min-width:0; }
+    .planner-metrics{
+      display:grid;
+      grid-template-columns:repeat(3, minmax(0, 1fr));
+      gap:10px;
+      margin-top:12px;
+    }
+    .planner-metric{
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:var(--surface-2);
+    }
+    .planner-metric span{ display:block; color:var(--muted); font-size:11px; }
+    .planner-metric strong{ display:block; margin-top:4px; font-size:18px; }
+    .planner-capacity{
+      display:grid;
+      grid-template-columns:minmax(0, 1fr) 160px;
+      gap:12px;
+      align-items:end;
+      margin-top:14px;
+    }
+    .planner-capacity-status{ margin-top:8px; }
+    .planner-task-compact{
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:12px;
+      padding:12px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:var(--surface);
+    }
+    .planner-task-compact + .planner-task-compact{ margin-top:8px; }
+    .planner-task-compact.is-overdue{ border-color:color-mix(in srgb, var(--danger) 38%, var(--border)); }
+    .planner-task-compact.is-big3{ border-color:color-mix(in srgb, var(--primary) 50%, var(--border)); background:color-mix(in srgb, var(--surface) 92%, var(--primary) 8%); }
+    .planner-task-title{ font-weight:900; line-height:1.8; }
+    .planner-task-actions{ display:flex; flex-wrap:wrap; gap:6px; justify-content:flex-end; }
+    .planner-task-actions .btn{ min-height:36px; padding:7px 10px; font-size:10px; }
+    .weekly-review-grid{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+      gap:10px;
+      margin-top:12px;
+    }
+    .weekly-review-stat{ padding:12px; border-radius:16px; background:var(--surface-2); border:1px solid var(--border); }
+    .weekly-review-stat strong,.weekly-review-stat span{ display:block; }
+    .weekly-review-stat strong{ font-size:20px; }
+    .weekly-review-stat span{ color:var(--muted); font-size:11px; margin-top:3px; }
+    .linked-entity{ color:var(--primary); font-weight:800; }
+    .big3-marker{ color:var(--primary); font-weight:950; }
+
+    .calendar-shell{ padding:22px; }
+    .calendar-toolbar{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:16px;
+      margin-bottom:18px;
+    }
+    .calendar-heading h3{ margin:0; font-size:20px; }
+    .calendar-heading p{ margin:5px 0 0; color:var(--muted); font-size:12px; }
+    .calendar-month-controls{ display:flex; align-items:center; gap:10px; }
+    .calendar-month-title{ min-width:120px; text-align:center; font-weight:900; }
+    .calendar-segments{
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:4px;
+      padding:4px;
+      margin-bottom:16px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:var(--surface-2);
+    }
+    .calendar-segments button{
+      border:0;
+      border-radius:12px;
+      padding:10px;
+      background:transparent;
+      color:var(--muted);
+      font:inherit;
+      font-size:12px;
+      font-weight:800;
+      cursor:pointer;
+    }
+    .calendar-segments button.active{
+      background:var(--surface);
+      color:var(--primary);
+      box-shadow:0 8px 18px rgba(32,87,190,.10);
+    }
+    .calendar-grid-wrap{ min-width:0; }
+    .calendar-shell[data-mode="agenda"] .calendar-grid-wrap,
+    .calendar-shell[data-mode="agenda"] .calendar-legend{ display:none; }
+    .calendar-shell[data-mode="week"] .cal-day:not(.is-selected):not(.is-today){ opacity:.42; }
+    .calendar-legend{ display:flex; flex-wrap:wrap; gap:14px; margin:14px 2px 20px; color:var(--muted); font-size:11px; }
+    .legend-dot{ width:8px; height:8px; display:inline-block; border-radius:50%; margin-left:5px; background:var(--primary); }
+    .legend-dot.done{ background:var(--success); }
+    .legend-dot.reminder{ background:#f59e0b; }
+    .cal-day{
+      appearance:none;
+      width:100%;
+      color:var(--text);
+      font:inherit;
+      text-align:right;
+    }
+    .cal-day.is-today{ border-color:var(--primary); }
+    .cal-day.is-selected{
+      border-color:var(--primary);
+      background:linear-gradient(145deg, color-mix(in srgb, var(--primary) 14%, var(--surface)), var(--surface));
+      box-shadow:0 10px 24px rgba(37,99,235,.13);
+    }
+    .cal-day-dots{ display:flex; gap:4px; margin-top:auto; padding-top:10px; }
+    .cal-day-dot{ width:6px; height:6px; border-radius:50%; background:var(--primary); }
+    .cal-day-dot.done{ background:var(--success); }
+    .cal-day-dot.reminder{ background:#f59e0b; }
+    .calendar-detail-grid{ display:grid; grid-template-columns:minmax(0, 1.5fr) minmax(260px, .8fr); gap:16px; }
+    .selected-day-card,
+    .calendar-alert,
+    .agenda-panel{
+      border:1px solid var(--border);
+      border-radius:20px;
+      background:color-mix(in srgb, var(--surface) 94%, var(--primary) 6%);
+      padding:16px;
+    }
+    .selected-day-head{ display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+    .selected-day-title{ font-size:16px; font-weight:900; }
+    .selected-day-date{ color:var(--muted); font-size:11px; margin-top:4px; }
+    .selected-day-stats{ display:flex; gap:8px; flex-wrap:wrap; margin-top:14px; }
+    .calendar-alert{ margin-top:12px; border-color:color-mix(in srgb, var(--danger) 30%, var(--border)); }
+    .calendar-alert[hidden]{ display:none; }
+    .calendar-alert-title{ font-weight:900; color:var(--danger); }
+    .calendar-alert p{ color:var(--muted); font-size:12px; margin:6px 0 12px; line-height:1.8; }
+    .agenda-title{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; font-weight:900; }
+    .agenda-list{ display:flex; flex-direction:column; gap:8px; }
+    .agenda-item{ display:grid; grid-template-columns:54px 1fr auto; align-items:center; gap:10px; padding:11px; border:1px solid var(--border); border-radius:15px; background:var(--surface); }
+    .agenda-time{ color:var(--primary); font-size:12px; font-weight:900; direction:ltr; }
+    .agenda-copy{ min-width:0; }
+    .agenda-copy strong{ display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:12px; }
+    .agenda-copy span{ display:block; margin-top:3px; color:var(--muted); font-size:10px; }
+    .agenda-empty{ color:var(--muted); text-align:center; padding:24px 8px; font-size:12px; }
+    .reminder-box{ border:1px solid var(--border); border-radius:16px; padding:14px; background:var(--surface-2); }
+    .reminder-box-title{ display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; }
+    .notification-status{ font-size:11px; color:var(--muted); }
+
+    @media (max-width: 760px){
+      html, body{ max-width:100%; overflow-x:hidden; }
+      body{ background:var(--bg); }
+      .app{ width:100%; min-height:100vh; display:block; padding:0; }
+      .sidebar{ display:none !important; }
+      .content{ min-height:100vh; border:0; border-radius:0; box-shadow:none; background:transparent; }
+      .mobile-appbar{
+        display:flex;
+        position:sticky;
+        top:0;
+        z-index:25;
+        justify-content:space-between;
+        align-items:center;
+        min-height:64px;
+        padding:calc(10px + env(safe-area-inset-top, 0px)) 16px 10px;
+        border-bottom:1px solid var(--border);
+        background:color-mix(in srgb, var(--bg) 88%, transparent);
+        backdrop-filter:blur(18px);
+      }
+      .mobile-brand{ font-size:19px; font-weight:950; letter-spacing:-.4px; }
+      .mobile-actions{ display:flex; gap:8px; }
+      .mobile-actions .btn{ min-height:38px; padding:8px 11px; border-radius:13px; font-size:11px; }
+      .topbar{ padding:14px 16px 10px; grid-template-columns:auto 1fr; border-bottom:0; background:transparent; }
+      .topbar-left{ width:auto; }
+      .topbar-main{ text-align:right; align-items:flex-start; }
+      .topbar-right{ display:none; }
+      .date-card{ width:64px; min-width:64px; padding:9px; border-radius:17px; }
+      .date-card-weekday{ font-size:9px; }
+      .date-card-day{ font-size:24px; }
+      .date-card-footer{ font-size:8px; gap:3px; }
+      .topbar-title{ font-size:18px; }
+      .topbar-sub{ font-size:10px; }
+      .views{ padding:10px 14px calc(104px + env(safe-area-inset-bottom, 0px)); }
+      .grid.cols-12{ gap:12px; }
+      .col-4,.col-6,.col-8{ grid-column:span 12; }
+      .card{ border-radius:20px; }
+      .insight-actions{ grid-template-columns:1fr; }
+      .insight-action{ display:flex; justify-content:space-between; gap:12px; align-items:center; }
+      .insight-action strong{ margin:0; }
+      .daily-quote{ font-size:15px; }
+      .planner-command-grid{ grid-template-columns:1fr; }
+      .planner-metrics{ grid-template-columns:repeat(3, 1fr); }
+      .planner-capacity{ grid-template-columns:1fr; }
+      .weekly-review-grid{ grid-template-columns:repeat(2, 1fr); }
+      .planner-task-compact{ flex-direction:column; }
+      .planner-task-actions{ width:100%; justify-content:flex-start; }
+
+      .calendar-shell{ padding:14px; border-radius:24px; }
+      .calendar-toolbar{ align-items:flex-start; margin-bottom:12px; }
+      .calendar-heading h3{ font-size:18px; }
+      .calendar-heading p{ display:none; }
+      .calendar-month-controls{ gap:4px; }
+      .calendar-month-controls .btn{ width:36px; min-height:36px; padding:0; border-radius:12px; font-size:0; }
+      .calendar-month-controls .btn::after{ font-size:18px; }
+      #btnPrevMonth::after{ content:"‹"; }
+      #btnNextMonth::after{ content:"›"; }
+      .calendar-month-title{ min-width:86px; font-size:12px; }
+      .cal-grid{ gap:5px; }
+      .cal-dow{ padding:7px 1px; border:0; background:transparent; font-size:9px; }
+      .cal-day{ min-height:56px; padding:7px; border-radius:14px; justify-content:flex-start; }
+      .cal-day.blank{ min-height:56px; opacity:.35; }
+      .cal-num{ font-size:12px; }
+      .cal-day .cal-date-label,
+      .cal-day .cal-badges{ display:none; }
+      .cal-day-dots{ padding-top:7px; }
+      .cal-day-dot{ width:5px; height:5px; }
+      .calendar-detail-grid{ grid-template-columns:1fr; gap:12px; }
+      .selected-day-card,.calendar-alert,.agenda-panel{ border-radius:18px; padding:14px; }
+      .agenda-item{ grid-template-columns:44px 1fr auto; padding:10px; }
+      .agenda-item .btn{ width:34px; height:34px; min-height:34px; padding:0; }
+
+      .mobile-nav{
+        display:grid;
+        grid-template-columns:repeat(5, 1fr);
+        position:fixed;
+        z-index:40;
+        right:12px;
+        left:12px;
+        bottom:calc(10px + env(safe-area-inset-bottom, 0px));
+        min-height:68px;
+        padding:7px;
+        border:1px solid var(--border);
+        border-radius:22px;
+        background:color-mix(in srgb, var(--surface) 92%, transparent);
+        box-shadow:0 18px 44px rgba(17,35,70,.18);
+        backdrop-filter:blur(20px);
+      }
+      .mobile-nav button{
+        border:0;
+        border-radius:15px;
+        background:transparent;
+        color:var(--muted);
+        font:inherit;
+        font-size:9px;
+        font-weight:850;
+        cursor:pointer;
+      }
+      .mobile-nav button::before{ content:""; display:block; width:18px; height:3px; margin:0 auto 8px; border-radius:3px; background:currentColor; opacity:.35; }
+      .mobile-nav button.active{ color:var(--primary); background:color-mix(in srgb, var(--primary) 10%, transparent); }
+      .mobile-nav .mobile-add{ color:#fff; background:var(--primary); margin:-18px 4px 4px; border-radius:18px; box-shadow:0 10px 24px rgba(37,99,235,.32); font-size:11px; }
+      .mobile-nav .mobile-add::before{ content:"+"; width:auto; height:auto; margin:0 0 3px; background:none; font-size:23px; line-height:1; opacity:1; }
+
+      table{ min-width:720px; }
+      .table-wrap{ overflow-x:auto; -webkit-overflow-scrolling:touch; }
+      dialog .modal-card{ width:calc(100vw - 20px); max-height:calc(100vh - 20px); border-radius:22px; }
+      .form-grid{ grid-template-columns:1fr; }
+      .form-grid > *{ grid-column:1 !important; }
+    }
+
+    /* =========================
+       PlanOS 4.2 — Orbit UI
+       ========================= */
+    :root{
+      --sidebar: 304px;
+      --bg:#f5f8ff;
+      --bg2:#edf3ff;
+      --surface:#ffffff;
+      --surface-2:#f7f9fe;
+      --border:#dfe6f3;
+      --border-strong:#c7d5ee;
+      --text:#121a2d;
+      --text-muted:#64748b;
+      --primary:#3f6df6;
+      --primary-2:#6548ee;
+      --success:#0eaf70;
+      --shadow-1:0 8px 22px rgba(32,61,110,.07);
+      --shadow-2:0 24px 64px rgba(37,68,120,.11);
+      --grad:
+        radial-gradient(880px 520px at 2% 2%, rgba(89,126,255,.13), transparent 60%),
+        radial-gradient(760px 500px at 100% 32%, rgba(98,220,201,.10), transparent 62%),
+        linear-gradient(180deg,var(--bg),var(--bg2));
+    }
+    body{ letter-spacing:-.01em; }
+    .app{ width:min(1540px,100%); gap:16px; padding:22px; }
+    .glass{ background:rgba(255,255,255,.76); border-color:rgba(207,218,237,.88); backdrop-filter:blur(24px); }
+    .content,.sidebar{ border-radius:32px; }
+    .content{ min-width:0; }
+    .sidebar{ background:rgba(255,255,255,.86); box-shadow:0 30px 80px rgba(38,63,108,.13); }
+    .side-top{ padding:22px 20px 20px; background:rgba(255,255,255,.72); }
+    .brand h1{ font-size:22px; letter-spacing:-.35px; gap:10px; direction:ltr; }
+    .brand-mark{ width:42px; height:42px; padding:6px; box-sizing:border-box; object-fit:contain; border:1px solid rgba(255,255,255,.58); border-radius:14px; background:linear-gradient(145deg,#345ef5 0%,#6245f2 58%,#30c9e8 140%); box-shadow:0 10px 24px rgba(66,94,245,.24); }
+    .profile{ align-items:center; padding:14px 2px 0; }
+    .avatar{ border-radius:50%; width:44px; height:44px; box-shadow:none; }
+    .nav{ padding:14px 12px; gap:6px; }
+    .nav button{ min-height:62px; padding:9px 11px; border-color:transparent; border-radius:15px; box-shadow:none; background:transparent; }
+    .nav button:hover{ transform:none; background:#f6f8fe; border-color:#e7ecf6; }
+    .nav button.active{ background:linear-gradient(100deg,rgba(68,111,247,.11),rgba(100,72,238,.04)); border-color:rgba(66,109,246,.12); box-shadow:none; color:var(--primary); }
+    .nav-ic{ width:34px; height:34px; border:0; border-radius:11px; background:transparent; box-shadow:none; color:#43526c; }
+    .nav button.active .nav-ic{ background:#fff; color:var(--primary); border:1px solid #dbe4f5; box-shadow:0 7px 20px rgba(51,82,141,.09); }
+    .nav-ic svg{ width:20px; height:20px; }
+    .nav-arrow{ width:18px; height:18px; display:grid; place-items:center; opacity:.55; }
+    .side-bottom{ background:rgba(248,250,255,.82); }
+    .side-actions.primary,.side-actions.secondary{ background:transparent; border-color:#e4eaf5; }
+    .side-actions .btn{ box-shadow:none; background:#fff; }
+
+    .ui-icon{ width:1em; height:1em; display:inline-flex; align-items:center; justify-content:center; color:inherit; font-size:1em; font-style:normal; line-height:1; flex:0 0 auto; }
+    .btn[data-icon],.compact-icon-button{ display:inline-flex; align-items:center; justify-content:center; gap:8px; }
+    .btn[data-icon]>.ui-icon,.compact-icon-button>.ui-icon{ width:18px; height:18px; }
+    .card-icon>.ui-icon,.insight-icon>.ui-icon,.focus-icon>.ui-icon,.nav-arrow>.ui-icon{ width:20px; height:20px; }
+    .chip[data-icon]{ display:grid; place-items:center; }
+    .chip[data-icon]>.ui-icon{ width:16px; height:16px; }
+
+    .topbar{ min-height:132px; padding:18px 24px; grid-template-columns:188px 1fr auto; background:rgba(255,255,255,.72); }
+    .topbar-main{ text-align:right; align-items:center; }
+    .topbar-title{ font-size:24px; }
+    .topbar-sub{ font-size:12px; }
+    .date-card{ min-width:154px; padding:10px 16px; border:0; border-inline-start:1px solid var(--border); border-radius:0; background:transparent; box-shadow:none; }
+    .date-card::after{ display:none; }
+    .date-card-day{ font-size:32px; line-height:1; }
+    .flip-clock{ direction:ltr; }
+    .focus-btn{ min-height:48px; border-radius:14px; background:#fff; box-shadow:none; }
+    .focus-icon{ color:var(--primary); }
+    .top-notification,.top-theme{ position:relative; width:44px; height:44px; display:grid; place-items:center; border:1px solid var(--border); border-radius:14px; color:#52627e; background:#fff; cursor:pointer; transition:background .18s ease,color .18s ease,border-color .18s ease,transform .18s ease; }
+    .top-notification:hover,.top-theme:hover{ color:var(--primary); border-color:var(--border-strong); transform:translateY(-1px); }
+    .top-notification>.ui-icon,.top-theme>.ui-icon{ width:20px; height:20px; }
+    .notification-dot{ position:absolute; top:8px; right:8px; width:7px; height:7px; border:2px solid #fff; border-radius:50%; background:var(--primary); opacity:0; transform:scale(.6); transition:.2s ease; }
+    .notification-dot.is-active{ opacity:1; transform:scale(1); }
+
+    .views{ padding:24px; }
+    .grid.cols-12{ gap:16px; }
+    .card{ border-radius:22px; box-shadow:var(--shadow-1); }
+    .card.primary{ min-height:250px; border-color:#dce4f2; box-shadow:0 12px 34px rgba(43,71,120,.07); }
+    .card.primary:hover{ border-color:#cbd8ed; background:#fff; }
+    .card.primary .card-icon{ border-color:#dce5f5; background:#f9fbff; color:var(--primary); box-shadow:none; }
+    .card-icon{ border-radius:11px; box-shadow:none; }
+    .card-title{ font-size:14px; }
+    .kpi{ font-size:30px; letter-spacing:-.5px; direction:ltr; text-align:right; }
+    .chip,.badge{ box-shadow:none; }
+
+    .card.secondary.insight-card{ position:relative; min-height:350px; padding:34px 38px; isolation:isolate; overflow:hidden; border:1px solid rgba(72,111,246,.22); border-radius:28px; background:#dfeaff url("./assets/brand/daily-insight-orbit.png") center/cover no-repeat; box-shadow:0 28px 64px rgba(65,84,177,.14); }
+    .insight-card::before{ content:""; position:absolute; inset:0; z-index:-1; background:linear-gradient(90deg,rgba(255,255,255,.97) 0%,rgba(255,255,255,.86) 43%,rgba(255,255,255,.06) 76%); }
+    .insight-card::after{ content:""; position:absolute; inset:-8%; z-index:-2; background:inherit; background-size:cover; animation:orbitDrift 14s ease-in-out infinite alternate; }
+    @keyframes orbitDrift{ from{ transform:scale(1.02) translate3d(-4px,0,0); } to{ transform:scale(1.07) translate3d(8px,-3px,0); } }
+    .insight-row{ width:min(56%,610px); min-height:280px; margin-right:auto; margin-left:0; align-items:flex-start; flex-direction:column; justify-content:center; gap:16px; }
+    .insight-content{ width:100%; gap:16px; }
+    .insight-title-row{ width:max-content; padding:7px 12px; border:1px solid rgba(71,109,246,.14); border-radius:12px; color:var(--primary); background:rgba(255,255,255,.6); }
+    .insight-title{ color:var(--primary); font-weight:850; }
+    .insight-refresh{ width:26px; height:26px; display:grid; place-items:center; color:var(--primary); }
+    .insight-refresh>.ui-icon{ width:17px; height:17px; }
+    .insight-text{ max-width:580px; font-size:24px; line-height:1.75; font-weight:950; letter-spacing:-.45px; }
+    .insight-actions{ display:flex; flex-wrap:wrap; gap:10px; }
+    .insight-action{ min-width:210px; border:1px solid rgba(71,109,246,.13); background:rgba(255,255,255,.72); }
+    .insight-action:first-child{ color:#fff; border:0; background:linear-gradient(110deg,var(--primary),var(--primary-2)); box-shadow:0 14px 34px rgba(74,83,230,.23); }
+    .insight-action:first-child span{ color:rgba(255,255,255,.82); }
+    .insight-icon{ position:absolute; inset:22px 22px auto auto; width:42px; height:42px; border:0; background:rgba(255,255,255,.65); box-shadow:none; animation:insightPulse 3.5s ease-in-out infinite; }
+    @keyframes insightPulse{ 50%{ transform:translateY(-3px); box-shadow:0 12px 28px rgba(72,104,244,.16); } }
+    .insight-accent{ display:none; }
+
+    .reminder-center{ position:fixed; z-index:1001; top:18px; bottom:18px; left:18px; width:min(410px,calc(100vw - 36px)); display:flex; flex-direction:column; gap:16px; padding:20px; border:1px solid var(--border); border-radius:26px; background:rgba(255,255,255,.96); box-shadow:0 36px 100px rgba(17,34,68,.24); backdrop-filter:blur(24px); transform:translateX(calc(-100% - 34px)); opacity:0; visibility:hidden; transition:transform .25s ease,opacity .2s ease,visibility .2s; }
+    .reminder-center.is-open{ transform:translateX(0); opacity:1; visibility:visible; }
+    .reminder-center-head{ display:flex; align-items:center; justify-content:space-between; gap:14px; }
+    .reminder-center-head h2{ margin:2px 0 0; font-size:22px; }
+    .reminder-center-eyebrow{ color:var(--primary); font-size:11px; font-weight:850; }
+    .reminder-health{ display:flex; align-items:flex-start; gap:11px; padding:13px; border:1px solid #dce6f7; border-radius:16px; background:#f6f9ff; }
+    .reminder-health-icon{ width:36px; height:36px; display:grid; place-items:center; color:var(--primary); border-radius:11px; background:#fff; }
+    .reminder-health-icon>.ui-icon{ width:18px; height:18px; }
+    .reminder-health strong,.reminder-health span{ display:block; }
+    .reminder-health strong{ font-size:12px; }
+    .reminder-health span{ margin-top:2px; color:var(--muted); font-size:10px; line-height:1.65; }
+    .reminder-center-list{ flex:1; min-height:0; overflow:auto; display:flex; flex-direction:column; gap:10px; padding-left:2px; }
+    .reminder-item{ padding:14px; border:1px solid var(--border); border-radius:17px; background:#fff; }
+    .reminder-item.is-due{ border-color:#f3b6bd; background:#fffafb; }
+    .reminder-item-head{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+    .reminder-item-title{ font-size:13px; font-weight:900; }
+    .reminder-item-time{ color:var(--primary); font-size:11px; font-weight:800; direction:ltr; }
+    .reminder-item-meta{ margin-top:4px; color:var(--muted); font-size:10px; }
+    .reminder-item-actions{ display:flex; gap:7px; flex-wrap:wrap; margin-top:11px; }
+    .reminder-item-actions .btn{ min-height:34px; padding:6px 10px; border-radius:10px; font-size:10px; }
+    .reminder-empty{ margin:auto; padding:32px 12px; text-align:center; color:var(--muted); }
+    .reminder-empty>.ui-icon{ width:30px; height:30px; margin:0 auto 10px; color:var(--primary); }
+    .reminder-center-foot{ display:flex; gap:8px; }
+    .reminder-center-foot .btn{ flex:1; }
+    .reminder-scrim{ position:fixed; z-index:1000; inset:0; background:rgba(17,28,49,.18); backdrop-filter:blur(2px); }
+
+    @media (max-width:1120px) and (min-width:761px){
+      .app{ grid-template-columns:260px minmax(0,1fr); }
+      .sidebar{ position:sticky; height:calc(100vh - 44px); overflow:auto; }
+      .topbar{ grid-template-columns:140px 1fr; }
+      .topbar-right{ grid-column:1/-1; justify-content:center; }
+      .insight-row{ width:64%; }
+    }
+    @media (max-width:760px){
+      .app{ width:100%; padding:0; margin:0; }
+      .content{ width:100%; }
+      .mobile-appbar{ background:rgba(255,255,255,.88); box-shadow:0 10px 30px rgba(30,54,96,.07); }
+      .mobile-brand{ display:flex; flex:0 0 auto; align-items:center; gap:6px; direction:rtl; font-size:17px; }
+      .mobile-brand img{ width:30px; height:30px; padding:4px; object-fit:contain; border-radius:10px; }
+      .mobile-brand span{ direction:ltr; }
+      .mobile-actions{ flex:0 0 auto; }
+      .topbar{ grid-template-columns:64px minmax(0,1fr); }
+      .date-card{ width:64px; min-width:64px; padding:9px; border-radius:17px; border:1px solid var(--border); }
+      .mobile-actions .btn-label{ display:none; }
+      .mobile-actions .btn{ width:40px; padding:0; }
+      .topbar{ min-height:100px; }
+      .card.secondary.insight-card{ min-height:500px; padding:22px 18px; background-color:#dfeaff; background-image:url("./assets/brand/daily-insight-orbit-mobile.png"); background-position:center; background-size:cover; }
+      .insight-card::before{ background:linear-gradient(180deg,rgba(255,255,255,.02) 0%,rgba(255,255,255,.08) 39%,rgba(255,255,255,.88) 60%,rgba(255,255,255,.99) 100%); }
+      .insight-card::after{ inset:0; background-position:center; background-size:cover; animation:none; }
+      .insight-row{ width:100%; min-height:454px; margin:0; padding-top:205px; box-sizing:border-box; justify-content:flex-end; }
+      .insight-content{ gap:12px; }
+      .insight-title-row{ padding:6px 10px; background:rgba(255,255,255,.72); backdrop-filter:blur(10px); }
+      .insight-text{ max-width:310px; font-size:19px; line-height:1.68; }
+      .insight-actions{ width:100%; }
+      .insight-action{ width:100%; min-width:0; padding:11px 13px; }
+      .insight-icon{ inset:18px 18px auto auto; }
+      .card.primary{ min-height:220px; }
+      .reminder-center{ inset:10px 10px calc(94px + env(safe-area-inset-bottom,0px)); width:auto; border-radius:24px; transform:translateY(110%); }
+      .reminder-center.is-open{ transform:translateY(0); }
+    }
+
+    /* =========================
+       Orbit Dark Mode
+       ========================= */
+    html[data-theme="dark"]{
+      color-scheme:dark;
+      --bg:#070b13;
+      --bg2:#0b1220;
+      --surface:#101827;
+      --surface-2:#141f31;
+      --border:#27364d;
+      --border-strong:#3d5272;
+      --text:#f0f5ff;
+      --text-muted:#98a8bf;
+      --primary:#7798ff;
+      --primary-2:#977cff;
+      --success:#39d598;
+      --danger:#ff7082;
+      --warning:#f7b955;
+      --shadow:0 12px 34px rgba(0,0,0,.34);
+      --shadow-1:0 10px 28px rgba(0,0,0,.26);
+      --shadow-2:0 26px 72px rgba(0,0,0,.42);
+      --overlay:rgba(2,6,14,.58);
+      --overlay-strong:rgba(2,6,14,.76);
+      --scrollbar-thumb:rgba(150,169,199,.30);
+      --grad:
+        radial-gradient(900px 540px at 2% 0%,rgba(87,112,255,.18),transparent 62%),
+        radial-gradient(720px 500px at 100% 30%,rgba(48,203,181,.10),transparent 64%),
+        linear-gradient(180deg,var(--bg),var(--bg2));
+    }
+    html[data-theme="dark"] body{ background:var(--grad); }
+    html[data-theme="dark"] .glass{ background:rgba(12,19,32,.82); border-color:rgba(45,61,86,.92); }
+    html[data-theme="dark"] .content,
+    html[data-theme="dark"] .sidebar{ background:rgba(13,20,34,.88); box-shadow:0 34px 90px rgba(0,0,0,.36); }
+    html[data-theme="dark"] .side-top,
+    html[data-theme="dark"] .topbar{ background:rgba(14,22,37,.84); }
+    html[data-theme="dark"] .side-bottom{ background:rgba(10,17,29,.92); }
+    html[data-theme="dark"] .nav button{ color:var(--text); }
+    html[data-theme="dark"] .nav button:hover{ background:#162136; border-color:#2b3b54; }
+    html[data-theme="dark"] .nav button.active{ color:#a8bbff; background:linear-gradient(100deg,rgba(92,127,255,.20),rgba(148,101,255,.09)); border-color:rgba(121,153,255,.25); }
+    html[data-theme="dark"] .nav-ic{ color:#9badc6; }
+    html[data-theme="dark"] .nav button.active .nav-ic{ color:#9eb5ff; background:#18243a; border-color:#314663; box-shadow:0 8px 22px rgba(0,0,0,.22); }
+    html[data-theme="dark"] .side-actions.primary,
+    html[data-theme="dark"] .side-actions.secondary{ border-color:#27364c; background:rgba(10,17,30,.32); }
+    html[data-theme="dark"] .side-actions .btn,
+    html[data-theme="dark"] .focus-btn,
+    html[data-theme="dark"] .top-notification,
+    html[data-theme="dark"] .top-theme{ color:var(--text); background:#131e30; border-color:#2a3a52; }
+    html[data-theme="dark"] .date-card{ border-color:#2a3a52; }
+    html[data-theme="dark"] .flip-digit{ color:var(--text); background:#131d2e; border-color:#293951; }
+    html[data-theme="dark"] .notification-dot{ border-color:#131e30; }
+
+    html[data-theme="dark"] .card{ border-color:#26364d; background:#111b2b; box-shadow:0 16px 42px rgba(0,0,0,.24); }
+    html[data-theme="dark"] .card.primary{ border-color:#2c3d56; background:#111b2b; }
+    html[data-theme="dark"] .card.primary:hover{ border-color:#425978; background:#152136; }
+    html[data-theme="dark"] .card.secondary:not(.insight-card){ background:#121d2f; }
+    html[data-theme="dark"] .card.primary .card-icon,
+    html[data-theme="dark"] .card-icon{ color:#92aaff; border-color:#30435e; background:#17243a; }
+    html[data-theme="dark"] .chip,
+    html[data-theme="dark"] .badge,
+    html[data-theme="dark"] .mini{ background:#141f32; border-color:#2b3b53; }
+    html[data-theme="dark"] .bar{ background:#0b1321; border-color:#2a3a52; }
+
+    html[data-theme="dark"] .card.secondary.insight-card{ background-color:#070d1d; background-image:url("./assets/brand/daily-insight-orbit-dark.png"); background-blend-mode:normal; border-color:rgba(119,152,255,.34); box-shadow:0 30px 76px rgba(0,0,0,.34); }
+    html[data-theme="dark"] .insight-card::before{ background:linear-gradient(90deg,rgba(8,13,24,.98) 0%,rgba(10,17,30,.90) 44%,rgba(7,12,24,.30) 78%); }
+    html[data-theme="dark"] .insight-title-row,
+    html[data-theme="dark"] .insight-icon{ color:#a9bcff; border-color:rgba(129,157,255,.26); background:rgba(14,25,44,.72); }
+    html[data-theme="dark"] .insight-action{ color:var(--text); border-color:#344964; background:rgba(17,29,48,.86); }
+    html[data-theme="dark"] .insight-action span{ color:#a7b7cd; }
+    html[data-theme="dark"] .insight-action:first-child{ color:#fff; border-color:transparent; background:linear-gradient(110deg,#4b74f5,#7256ef); }
+    html[data-theme="dark"] .insight-action:first-child span{ color:rgba(255,255,255,.82); }
+
+    html[data-theme="dark"] .input,
+    html[data-theme="dark"] select,
+    html[data-theme="dark"] textarea,
+    html[data-theme="dark"] .btn-secondary,
+    html[data-theme="dark"] .btn-icon,
+    html[data-theme="dark"] .icon-btn{ color:var(--text); background:#131e30; border-color:#2b3b53; }
+    html[data-theme="dark"] .input::placeholder,
+    html[data-theme="dark"] textarea::placeholder{ color:#71829b; }
+    html[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator,
+    html[data-theme="dark"] input[type="time"]::-webkit-calendar-picker-indicator{ filter:invert(1) opacity(.72); }
+    html[data-theme="dark"] .item,
+    html[data-theme="dark"] .planner-task-compact,
+    html[data-theme="dark"] .agenda-item,
+    html[data-theme="dark"] .cal-day,
+    html[data-theme="dark"] .cal-dow{ background:#111b2b; border-color:#293950; }
+    html[data-theme="dark"] .item:hover,
+    html[data-theme="dark"] .cal-day:hover{ background:#172339; border-color:#3b5271; }
+    html[data-theme="dark"] .calendar-segments{ background:#0d1625; }
+    html[data-theme="dark"] .calendar-segments button.active{ color:#9eb5ff; background:#19253a; box-shadow:0 8px 20px rgba(0,0,0,.26); }
+    html[data-theme="dark"] .selected-day-card,
+    html[data-theme="dark"] .calendar-alert,
+    html[data-theme="dark"] .agenda-panel{ background:color-mix(in srgb,#111b2b 92%,var(--primary) 8%); }
+
+    html[data-theme="dark"] .modal-card,
+    html[data-theme="dark"] .lock-card{ background:rgba(15,24,39,.98); border-color:#30415a; box-shadow:0 34px 100px rgba(0,0,0,.52); }
+    html[data-theme="dark"] .dlg-head{ background:linear-gradient(180deg,#162238,rgba(15,24,39,.94)); }
+    html[data-theme="dark"] .dlg-foot{ background:linear-gradient(0deg,#162238,rgba(15,24,39,.94)); }
+    html[data-theme="dark"] .toast{ background:#172339; border-color:#32455f; }
+    html[data-theme="dark"] .reminder-center{ color:var(--text); background:rgba(13,21,35,.98); border-color:#30415a; box-shadow:0 40px 110px rgba(0,0,0,.58); }
+    html[data-theme="dark"] .reminder-health{ background:#131f33; border-color:#2f425d; }
+    html[data-theme="dark"] .reminder-health-icon{ background:#1a2941; }
+    html[data-theme="dark"] .reminder-item{ background:#111b2b; border-color:#2b3b52; }
+    html[data-theme="dark"] .reminder-item.is-due{ background:#2a1821; border-color:#71404b; }
+    html[data-theme="dark"] .reminder-scrim{ background:rgba(1,4,10,.62); }
+    html[data-theme="dark"] canvas{ filter:saturate(.92) brightness(.95); }
+
+    @media (max-width:760px){
+      html[data-theme="dark"] body{ background:#080d17; }
+      html[data-theme="dark"] .mobile-appbar{ background:rgba(10,17,29,.92); border-color:#24344a; box-shadow:0 10px 34px rgba(0,0,0,.30); }
+      html[data-theme="dark"] .content{ background:#080e18; }
+      html[data-theme="dark"] .topbar{ background:transparent; }
+      html[data-theme="dark"] .date-card{ background:#111b2b; border-color:#2a3a52; }
+      html[data-theme="dark"] .card.secondary.insight-card{ background-color:#050a17; background-image:url("./assets/brand/daily-insight-orbit-mobile-dark.png"); background-position:center; background-size:cover; }
+      html[data-theme="dark"] .insight-card::before{ background:linear-gradient(180deg,rgba(5,10,23,.01) 0%,rgba(5,10,23,.10) 39%,rgba(7,13,27,.86) 61%,rgba(7,13,25,.99) 100%); }
+      html[data-theme="dark"] .insight-title-row{ background:rgba(12,22,43,.72); }
+      html[data-theme="dark"] .mobile-nav{ background:rgba(13,22,36,.95); border-color:#2a3a52; box-shadow:0 20px 54px rgba(0,0,0,.46); }
+      html[data-theme="dark"] .mobile-nav button.active{ background:rgba(101,134,255,.17); }
+    }
+
   </style>
 </head>
 
 <body>
   <!-- Lock Screen -->
-  <div class="lock-screen" id="lockScreen" aria-hidden="true">
+  <div class="lock-screen" id="lockScreen" role="dialog" aria-modal="true" aria-labelledby="lockTitle" aria-describedby="lockSub" aria-hidden="true">
     <div class="lock-card">
-      <div class="lock-title">PlanOS</div>
+      <div class="lock-title" id="lockTitle">PlanOS</div>
       <div class="lock-sub" id="lockSub">برای ورود، پین 4 رقمی را وارد کن</div>
 
       <div class="pin-row" id="pinRow">
-        <input class="pin" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-idx="0" />
-        <input class="pin" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-idx="1" />
-        <input class="pin" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-idx="2" />
-        <input class="pin" inputmode="numeric" pattern="[0-9]*" maxlength="1" data-idx="3" />
+        <input class="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="one-time-code" aria-label="رقم اول پین" data-idx="0" />
+        <input class="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" aria-label="رقم دوم پین" data-idx="1" />
+        <input class="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" aria-label="رقم سوم پین" data-idx="2" />
+        <input class="pin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="1" autocomplete="off" aria-label="رقم چهارم پین" data-idx="3" />
       </div>
 
       <div class="lock-actions">
@@ -2047,7 +2632,7 @@ canvas {
         <button class="btn btn-secondary" id="btnClearPin">پاک کردن</button>
       </div>
 
-      <div class="lock-error" id="lockError"></div>
+      <div class="lock-error" id="lockError" role="alert" aria-live="assertive"></div>
       <!-- نکته: این قفل «کلاینتی» است (برای استفاده شخصی عالیه، اما امنیت سازمانی نیست). -->
     </div>
   </div>
@@ -2058,12 +2643,7 @@ canvas {
       <div class="side-top">
         <div class="brand">
           <h1>
-            <span class="nav-ic" style="width:40px;height:40px">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M4 7.5c0-1.93 1.57-3.5 3.5-3.5h9C18.43 4 20 5.57 20 7.5v9c0 1.93-1.57 3.5-3.5 3.5h-9C5.57 20 4 18.43 4 16.5v-9Z"/>
-                <path d="M8 9h8M8 12h8M8 15h5"/>
-              </svg>
-            </span>
+            <img class="brand-mark" src="assets/brand/planos-orbit-mark.png" alt="" width="42" height="42" />
             PlanOS
           </h1>
         </div>
@@ -2252,6 +2832,14 @@ canvas {
 
     <!-- CONTENT -->
     <section class="content glass">
+      <div class="mobile-appbar" aria-label="نوار بالای موبایل">
+        <div class="mobile-brand"><img class="brand-mark" src="assets/brand/planos-orbit-mark.png" alt="" width="34" height="34" /><span>PlanOS</span></div>
+        <div class="mobile-actions">
+          <button class="btn btn-secondary compact-icon-button" type="button" id="btnMobileTheme" data-icon="moon" aria-label="فعال‌کردن حالت تاریک"></button>
+          <button class="btn btn-secondary compact-icon-button" type="button" id="btnMobileNotifications" data-icon="bell" aria-label="مرکز یادآورها"><span class="btn-label">یادآورها</span></button>
+          <button class="btn btn-secondary compact-icon-button" type="button" id="btnMobileProfile" data-icon="user-circle" aria-label="پروفایل"><span class="btn-label">پروفایل</span></button>
+        </div>
+      </div>
       <header class="topbar">
         <div class="topbar-left">
           <div class="date-card" aria-label="تاریخ امروز">
@@ -2282,8 +2870,12 @@ canvas {
               <div class="flip-digit" data-digit="0"><span class="flip-value">0</span></div>
             </div>
           </div>
+          <button class="top-theme" id="btnTopTheme" type="button" data-icon="moon" aria-label="فعال‌کردن حالت تاریک" title="حالت تاریک"></button>
+          <button class="top-notification" id="btnTopNotifications" type="button" data-icon="bell" aria-label="باز کردن مرکز یادآورها" title="مرکز یادآورها">
+            <span class="notification-dot" id="notificationDot" aria-hidden="true"></span>
+          </button>
           <button class="focus-btn" id="btnFocusMode" aria-pressed="false">
-            <span class="focus-icon">🎯</span>
+            <span class="focus-icon" data-icon="focus"></span>
             <span class="focus-text">
               <span class="focus-title">حالت تمرکز</span>
               <span class="focus-state" id="focusState">خاموش</span>
@@ -2299,13 +2891,14 @@ canvas {
           <div class="grid cols-12">
             <div class="card secondary col-12 insight-card">
               <div class="insight-row">
-                <div class="insight-icon" aria-hidden="true">✨</div>
+                <div class="insight-icon" data-icon="sparkles" aria-hidden="true"></div>
                 <div class="insight-content">
                   <div class="insight-title-row">
                     <div class="insight-title">بینش روزانه</div>
-                    <button class="insight-refresh" id="btnInsightRefresh" type="button" aria-label="بازسازی بینش روزانه" title="بازسازی">↻</button>
+                    <button class="insight-refresh" id="btnInsightRefresh" type="button" data-icon="refresh" aria-label="بازسازی بینش روزانه" title="بازسازی"></button>
                   </div>
                   <div class="insight-text" id="dashInsightText">—</div>
+                  <div class="insight-actions" id="dashInsightActions" aria-label="اقدام‌های پیشنهادی امروز"></div>
                 </div>
               </div>
               <div class="insight-accent" aria-hidden="true"></div>
@@ -2314,7 +2907,7 @@ canvas {
             <div class="card primary col-4 focus-priority">
               <div class="card-header">
                 <div class="card-title-group">
-                  <span class="card-icon">📅</span>
+                  <span class="card-icon" data-icon="clock"></span>
                   <h3 class="card-title">پیشرفت امروز</h3>
                 </div>
                 <span class="chip" id="dashTodayChip">—</span>
@@ -2329,7 +2922,7 @@ canvas {
             <div class="card primary col-4">
               <div class="card-header">
                 <div class="card-title-group">
-                  <span class="card-icon">✅</span>
+                  <span class="card-icon" data-icon="checklist"></span>
                   <h3 class="card-title">تسک‌های این ماه (شمسی)</h3>
                 </div>
                 <span class="chip" id="dashMonthChip">—</span>
@@ -2344,10 +2937,10 @@ canvas {
             <div class="card primary col-4">
               <div class="card-header">
                 <div class="card-title-group">
-                  <span class="card-icon">💼</span>
+                  <span class="card-icon" data-icon="chart-line"></span>
                   <h3 class="card-title">درآمد این ماه (شمسی)</h3>
                 </div>
-                <span class="chip acc">💼</span>
+                <span class="chip acc" data-icon="wallet"></span>
               </div>
               <div class="card-body">
                 <div class="kpi" id="dashIncomeKpi">—</div>
@@ -2426,7 +3019,9 @@ canvas {
               </div>
               <div class="card-body">
                 <div class="sep"></div>
-                <div id="dashMotivation" style="line-height:1.9"></div>
+                <blockquote class="daily-quote" id="dashDailyQuote">—</blockquote>
+                <div class="daily-quote-meta" id="dashDailyQuoteMeta">جملهٔ روزانهٔ دیسیپلین</div>
+                <div class="personal-quote" id="dashMotivation" style="display:none"></div>
                 <div class="sep"></div>
                 <button class="btn btn-secondary" id="btnGoNotes">رفتن به یادداشت‌ها</button>
               </div>
@@ -2508,9 +3103,13 @@ canvas {
 
                 <div class="form-grid">
                   <div class="full">
-                    <label>افزودن سریع</label>
+                    <label for="quickTaskTitle">افزودن سریع</label>
                     <div class="row" style="gap:10px; align-items:stretch">
                       <input class="input" id="quickTaskTitle" placeholder="مثلاً: 45 دقیقه تمرین طراحی / پیام به مشتری / مطالعه..." />
+                      <select class="input" id="quickTaskTarget" aria-label="محل ثبت تسک" style="max-width:170px">
+                        <option value="day">برنامه این روز</option>
+                        <option value="inbox">Inbox بدون تاریخ</option>
+                      </select>
                       <button class="btn btn-secondary nowrap" id="btnQuickAdd">افزودن</button>
                     </div>
                     <div class="row" style="margin-top:10px">
@@ -2525,6 +3124,101 @@ canvas {
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div class="col-12 planner-command-grid" id="plannerCommandSurface">
+              <div class="card secondary">
+                <div class="card-header">
+                  <div class="card-title-group">
+                    <span class="card-icon">🎯</span>
+                    <div>
+                      <h3 class="card-title">فرمان امروز</h3>
+                      <div class="card-subtitle">سه اولویت اصلی، ظرفیت واقعی و هشدار شلوغی روز.</div>
+                    </div>
+                  </div>
+                  <button class="btn btn-secondary" type="button" id="btnAutoPickBig3">پیشنهاد Big 3</button>
+                </div>
+                <div class="card-body">
+                  <div class="planner-metrics">
+                    <div class="planner-metric"><span>زمان برنامه‌ریزی‌شده</span><strong id="todayPlannedMin">0 دقیقه</strong></div>
+                    <div class="planner-metric"><span>ظرفیت روز</span><strong id="todayCapacityLabel">8 ساعت</strong></div>
+                    <div class="planner-metric"><span>فضای باقی‌مانده</span><strong id="todayRemainingMin">0 دقیقه</strong></div>
+                  </div>
+                  <div class="planner-capacity">
+                    <div>
+                      <label for="todayCapacity">ظرفیت قابل‌استفاده امروز (دقیقه)</label>
+                      <input class="input" type="number" id="todayCapacity" min="30" max="1440" step="30" />
+                    </div>
+                    <span class="chip" id="todayCapacityState">متعادل</span>
+                  </div>
+                  <div class="bar" style="margin-top:10px"><i id="todayCapacityBar"></i></div>
+                  <div class="sep"></div>
+                  <div class="list" id="todayBig3List"></div>
+                </div>
+              </div>
+
+              <div class="card secondary">
+                <div class="card-header">
+                  <div class="card-title-group">
+                    <span class="card-icon">📥</span>
+                    <div>
+                      <h3 class="card-title">Inbox</h3>
+                      <div class="card-subtitle">کارهای ثبت‌شده‌ای که هنوز برایشان تصمیم نگرفته‌ای.</div>
+                    </div>
+                  </div>
+                  <span class="badge" id="plannerInboxCount">0</span>
+                </div>
+                <div class="card-body">
+                  <div class="list" id="plannerInboxList"></div>
+                  <div class="empty-state" id="plannerInboxEmpty" style="display:none">
+                    <span class="empty-icon">📥</span>
+                    <div class="empty-text"><div class="empty-title">Inbox خالی است.</div><div class="empty-sub">همه چیز تعیین‌تکلیف شده؛ عالیه.</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card secondary col-12">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">⚠️</span>
+                  <div>
+                    <h3 class="card-title">موارد عقب‌افتاده</h3>
+                    <div class="card-subtitle">انجام بده، به امروز منتقل کن یا برای فردا زمان‌بندی کن.</div>
+                  </div>
+                </div>
+                <span class="badge" id="plannerOverdueCount">0</span>
+              </div>
+              <div class="card-body">
+                <div class="list" id="plannerOverdueList"></div>
+                <div class="empty-state" id="plannerOverdueEmpty" style="display:none">
+                  <span class="empty-icon">✅</span>
+                  <div class="empty-text"><div class="empty-title">کار عقب‌افتاده‌ای نداری.</div><div class="empty-sub">برنامه‌ات به‌روز و قابل اعتماد است.</div></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card secondary col-12">
+              <div class="card-header">
+                <div class="card-title-group">
+                  <span class="card-icon">🔄</span>
+                  <div>
+                    <h3 class="card-title">مرور هفتگی</h3>
+                    <div class="card-subtitle">Inbox را خالی کن، پروژه‌های بدون اقدام بعدی را پیدا کن و هفته بعد را آگاهانه ببند.</div>
+                  </div>
+                </div>
+                <button class="btn btn-primary" type="button" id="btnStartWeeklyReview">شروع مرور هفتگی</button>
+              </div>
+              <div class="card-body">
+                <div class="weekly-review-grid">
+                  <div class="weekly-review-stat"><strong id="weeklyDoneCount">0</strong><span>تسک تکمیل‌شده در 7 روز</span></div>
+                  <div class="weekly-review-stat"><strong id="weeklyInboxCount">0</strong><span>آیتم باقی‌مانده در Inbox</span></div>
+                  <div class="weekly-review-stat"><strong id="weeklyOverdueCount">0</strong><span>کار عقب‌افتاده</span></div>
+                  <div class="weekly-review-stat"><strong id="weeklyStuckCount">0</strong><span>پروژه بدون اقدام بعدی</span></div>
+                </div>
+                <div class="muted small" id="weeklyReviewLast" style="margin-top:12px">هنوز مرور هفتگی ثبت نشده.</div>
+                <div class="list" id="weeklyStuckProjects" style="margin-top:12px"></div>
               </div>
             </div>
 
@@ -2559,26 +3253,49 @@ canvas {
 
         <!-- CALENDAR -->
         <section class="view" id="view-calendar">
-          <div class="card secondary">
-            <div class="card-header">
-              <div class="card-title-group">
-                <span class="card-icon">🗓️</span>
-                <div>
-                  <h3 class="card-title">تقویم ماهانه (شمسی)</h3>
-                  <div class="card-subtitle">روی هر روز کلیک کن تا برنامه همون روز باز شه.</div>
-                </div>
+          <div class="card secondary calendar-shell" id="calendarShell" data-mode="month">
+            <div class="calendar-toolbar">
+              <div class="calendar-heading">
+                <h3>تقویم شمسی</h3>
+                <p>روزت را انتخاب کن؛ کارها، یادآورها و موارد عقب‌افتاده همان‌جا دیده می‌شوند.</p>
               </div>
-              <div class="btn-row">
-                <button class="btn btn-secondary" id="btnPrevMonth">◀ ماه قبل</button>
-                <span class="badge" id="calMonthLabel">—</span>
-                <button class="btn btn-secondary" id="btnNextMonth">ماه بعد ▶</button>
+              <div class="calendar-month-controls">
+                <button class="btn btn-secondary" id="btnPrevMonth" aria-label="ماه قبل">ماه قبل</button>
+                <div class="calendar-month-title" id="calMonthLabel">—</div>
+                <button class="btn btn-secondary" id="btnNextMonth" aria-label="ماه بعد">ماه بعد</button>
               </div>
             </div>
 
-            <div class="card-body">
+            <div class="calendar-segments" role="tablist" aria-label="نوع نمایش تقویم">
+              <button type="button" class="active" data-cal-mode="month" role="tab" aria-selected="true">ماه</button>
+              <button type="button" data-cal-mode="week" role="tab" aria-selected="false">هفته</button>
+              <button type="button" data-cal-mode="agenda" role="tab" aria-selected="false">برنامه</button>
+            </div>
+
+            <div class="calendar-grid-wrap">
               <div class="cal-grid" id="calDow"></div>
-              <div style="height:10px"></div>
+              <div style="height:6px"></div>
               <div class="cal-grid" id="calGrid"></div>
+            </div>
+
+            <div class="calendar-legend" aria-label="راهنمای تقویم">
+              <span><i class="legend-dot"></i>تسک</span>
+              <span><i class="legend-dot done"></i>انجام‌شده</span>
+              <span><i class="legend-dot reminder"></i>یادآور</span>
+            </div>
+
+            <div class="calendar-detail-grid">
+              <div>
+                <div class="selected-day-card" id="calSelectedSummary"></div>
+                <div class="calendar-alert" id="calOverdueAlert" hidden></div>
+              </div>
+              <div class="agenda-panel">
+                <div class="agenda-title">
+                  <span>برنامه روز</span>
+                  <button class="btn btn-primary" type="button" id="btnCalendarAdd">افزودن</button>
+                </div>
+                <div class="agenda-list" id="calAgendaList"></div>
+              </div>
             </div>
           </div>
         </section>
@@ -2623,14 +3340,15 @@ canvas {
               </div>
               <div class="card-body">
                 <table>
+                  <caption class="sr-only">فهرست پروژه‌ها</caption>
                   <thead>
                     <tr>
-                      <th>عنوان</th>
-                      <th>مشتری</th>
-                      <th>مبلغ</th>
-                      <th>تاریخ (شمسی)</th>
-                      <th>وضعیت</th>
-                      <th>عملیات</th>
+                      <th scope="col">عنوان</th>
+                      <th scope="col">مشتری</th>
+                      <th scope="col">مبلغ</th>
+                      <th scope="col">تاریخ (شمسی)</th>
+                      <th scope="col">وضعیت</th>
+                      <th scope="col">عملیات</th>
                     </tr>
                   </thead>
                   <tbody id="projectTbody"></tbody>
@@ -2681,12 +3399,13 @@ canvas {
                 <div class="muted2 small">پیشنهاد: هر هفته/ماه آپدیت کن تا نمودارها معنی‌دار بشن.</div>
                 <div style="height:10px"></div>
                 <table>
+                  <caption class="sr-only">فهرست دارایی‌ها</caption>
                   <thead>
                     <tr>
-                      <th>نوع</th>
-                      <th>مقدار</th>
-                      <th>واحد</th>
-                      <th>عملیات</th>
+                      <th scope="col">نوع</th>
+                      <th scope="col">مقدار</th>
+                      <th scope="col">واحد</th>
+                      <th scope="col">عملیات</th>
                     </tr>
                   </thead>
                   <tbody id="holdingsTbody"></tbody>
@@ -2739,10 +3458,10 @@ canvas {
               <div class="card-body">
                 <div class="sep"></div>
 
-                <label>حداقل درآمد ماهانه</label>
+                <label for="monthlyMinIncome">حداقل درآمد ماهانه</label>
                 <input class="input" type="number" id="monthlyMinIncome" />
 
-                <label>نرخ پس‌انداز هدف (مثلاً 0.3 یعنی 30%)</label>
+                <label for="savingsRateTarget">نرخ پس‌انداز هدف (مثلاً 0.3 یعنی 30%)</label>
                 <input class="input" type="number" step="0.01" id="savingsRateTarget" />
 
                 <div class="sep"></div>
@@ -2753,19 +3472,19 @@ canvas {
 
                 <div class="form-grid" style="margin-top:10px">
                   <div>
-                    <label>طلا (%)</label>
+                    <label for="splitGold">طلا (%)</label>
                     <input class="input" type="number" id="splitGold" />
                   </div>
                   <div>
-                    <label>کریپتو (%)</label>
+                    <label for="splitCrypto">کریپتو (%)</label>
                     <input class="input" type="number" id="splitCrypto" />
                   </div>
                   <div>
-                    <label>نقره (%)</label>
+                    <label for="splitSilver">نقره (%)</label>
                     <input class="input" type="number" id="splitSilver" />
                   </div>
                   <div>
-                    <label>نقد/تتر آزاد (%)</label>
+                    <label for="splitCash">نقد/تتر آزاد (%)</label>
                     <input class="input" type="number" id="splitCash" />
                   </div>
                   <div class="full">
@@ -2823,7 +3542,7 @@ canvas {
                 </div>
               </div>
               <div class="card-body">
-                <label>چی امروز مهمه؟</label>
+                <label for="noteDaily">چی امروز مهمه؟</label>
                 <textarea id="noteDaily" placeholder="امروز 2 کار اصلی..."></textarea>
               </div>
             </div>
@@ -2836,7 +3555,7 @@ canvas {
                 </div>
               </div>
               <div class="card-body">
-                <label>جمله کوتاه روز</label>
+                <label for="noteMotivation">جمله کوتاه روز</label>
                 <textarea id="noteMotivation" placeholder="تمرکز روی سیستم، نه هیجان."></textarea>
               </div>
             </div>
@@ -2849,7 +3568,7 @@ canvas {
                 </div>
               </div>
               <div class="card-body">
-                <label>ثبت اتفاقات، درس‌ها، احساسات</label>
+                <label for="noteJournal">ثبت اتفاقات، درس‌ها، احساسات</label>
                 <textarea id="noteJournal" placeholder="امروز چی یاد گرفتم؟"></textarea>
               </div>
             </div>
@@ -2862,7 +3581,7 @@ canvas {
                 </div>
               </div>
               <div class="card-body">
-                <label>ایده‌های پروژه/محصول/یادگیری</label>
+                <label for="noteIdeas">ایده‌های پروژه/محصول/یادگیری</label>
                 <textarea id="noteIdeas" placeholder="ایده: ..."></textarea>
               </div>
             </div>
@@ -2872,34 +3591,76 @@ canvas {
     </section>
   </div>
 
-  <div class="toast" id="toast"></div>
+  <nav class="mobile-nav" id="mobileNav" aria-label="ناوبری اصلی موبایل">
+    <button type="button" data-mobile-view="dashboard" class="active">خانه</button>
+    <button type="button" data-mobile-view="calendar">تقویم</button>
+    <button type="button" class="mobile-add" id="btnMobileAddReminder">یادآور</button>
+    <button type="button" data-mobile-view="planner">امروز</button>
+    <button type="button" data-mobile-view="projects">پروژه‌ها</button>
+  </nav>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
+    <span id="toastMessage"></span>
+    <button class="toast-action" type="button" id="toastAction" style="display:none"></button>
+  </div>
+
+  <aside class="reminder-center" id="reminderCenter" aria-labelledby="reminderCenterTitle" aria-hidden="true">
+    <div class="reminder-center-head">
+      <div>
+        <div class="reminder-center-eyebrow">مرکز هشدار PlanOS</div>
+        <h2 id="reminderCenterTitle">یادآورها</h2>
+      </div>
+      <button class="btn btn-icon" type="button" id="btnCloseReminderCenter" data-icon="x" aria-label="بستن مرکز یادآورها"></button>
+    </div>
+    <div class="reminder-health" id="reminderHealth">
+      <span class="reminder-health-icon" data-icon="bell" aria-hidden="true"></span>
+      <div>
+        <strong id="reminderHealthTitle">هشدار داخل اپ فعال است</strong>
+        <span id="reminderHealthText">PlanOS موعدها را هنگام باز بودن برنامه بررسی می‌کند.</span>
+      </div>
+    </div>
+    <div class="reminder-center-list" id="reminderCenterList"></div>
+    <div class="reminder-center-foot">
+      <button class="btn btn-secondary" type="button" id="btnTestReminder" data-icon="alarm">تست هشدار</button>
+      <button class="btn btn-primary" type="button" id="btnReminderAdd" data-icon="plus">یادآور جدید</button>
+    </div>
+  </aside>
+  <div class="reminder-scrim" id="reminderScrim" hidden></div>
 
   <!-- DIALOGS -->
   <div id="modalRoot">
-  <dialog id="dlgTask" class="modal-overlay">
+  <dialog id="dlgTask" class="modal-overlay" aria-labelledby="dlgTaskTitle">
     <div class="modal-card">
       <div class="dlg-head">
         <div>
           <div class="dlg-title" id="dlgTaskTitle">افزودن تسک</div>
           <div class="dlg-sub">تسک، تاریخ، اولویت و تایم‌بلاک را مشخص کن.</div>
         </div>
-        <button class="btn btn-icon" data-close="dlgTask" title="بستن">✕</button>
+        <button class="btn btn-icon" type="button" data-close="dlgTask" aria-label="بستن پنجره افزودن تسک" title="بستن">✕</button>
       </div>
       <div class="dlg-body">
         <div class="form-grid">
           <div class="full">
-            <label>عنوان</label>
+            <label for="taskTitle">عنوان</label>
             <input class="input" id="taskTitle" placeholder="مثلاً: 45 دقیقه تمرین UI" />
           </div>
 
           <div>
-            <label>تاریخ (میلادی - برای ذخیره)</label>
+            <label for="taskDate">تاریخ برنامه‌ریزی</label>
             <input class="input" type="date" id="taskDate" />
-            <div class="muted2 small" id="taskDateJ" style="margin-top:6px">—</div>
+            <div class="muted2 small" id="taskDateJ" style="margin-top:6px">تاریخ شمسی: —</div>
           </div>
 
           <div>
-            <label>اولویت</label>
+            <label for="taskInbox">
+              <input type="checkbox" id="taskInbox" />
+              نگهداری در Inbox بدون برنامه زمانی
+            </label>
+            <div class="muted2 small">برای کارهایی که هنوز زمان دقیقشان مشخص نیست.</div>
+          </div>
+
+          <div>
+            <label for="taskPriority">اولویت</label>
             <select class="input" id="taskPriority">
               <option value="low">کم</option>
               <option value="medium" selected>متوسط</option>
@@ -2908,12 +3669,12 @@ canvas {
           </div>
 
           <div>
-            <label>دسته‌بندی</label>
+            <label for="taskCategory">دسته‌بندی</label>
             <input class="input" id="taskCategory" placeholder="کار / درس / مهارت / سلامتی ..." />
           </div>
 
           <div>
-            <label>تایم‌بلاک</label>
+            <label for="taskTimeBlock">تایم‌بلاک</label>
             <select class="input" id="taskTimeBlock">
               <option value="صبح">صبح</option>
               <option value="ظهر">ظهر</option>
@@ -2922,15 +3683,70 @@ canvas {
             </select>
           </div>
 
+          <div>
+            <label for="taskProject">پروژه مرتبط</label>
+            <select class="input" id="taskProject"><option value="">بدون پروژه</option></select>
+          </div>
+
+          <div>
+            <label for="taskGoal">هدف مرتبط</label>
+            <select class="input" id="taskGoal"><option value="">بدون هدف</option></select>
+          </div>
+
           <div class="full">
-            <label>تخمین زمان (دقیقه)</label>
+            <label for="taskEstimate">تخمین زمان (دقیقه)</label>
             <input class="input" type="number" id="taskEstimate" min="0" step="5" value="30" />
+          </div>
+
+          <div class="full">
+            <label for="taskRepeat">تکرار برنامه</label>
+            <select class="input" id="taskRepeat">
+              <option value="none">بدون تکرار</option>
+              <option value="daily">هر روز</option>
+              <option value="weekly">هر هفته</option>
+              <option value="monthly">هر ماه</option>
+            </select>
+          </div>
+
+          <div class="full reminder-box">
+            <div class="reminder-box-title">
+              <label for="taskReminderEnabled">
+                <input type="checkbox" id="taskReminderEnabled" />
+                یادآور و اعلان دستگاه
+              </label>
+              <span class="notification-status" id="notificationStatus">اعلان هنوز فعال نشده</span>
+            </div>
+            <div class="form-grid" id="taskReminderControls">
+              <div>
+                <label for="taskReminderTime">ساعت یادآوری</label>
+                <input class="input" type="time" id="taskReminderTime" value="09:00" />
+              </div>
+              <div>
+                <label for="taskReminderLead">اعلان زودتر</label>
+                <select class="input" id="taskReminderLead">
+                  <option value="0">دقیقاً همان ساعت</option>
+                  <option value="5">5 دقیقه قبل</option>
+                  <option value="15" selected>15 دقیقه قبل</option>
+                  <option value="30">30 دقیقه قبل</option>
+                  <option value="60">1 ساعت قبل</option>
+                </select>
+              </div>
+            </div>
+            <div class="btn-row" id="taskReminderActions" style="margin-top:12px">
+              <button class="btn btn-secondary" type="button" id="btnEnableNotifications">فعال‌کردن اعلان دستگاه</button>
+              <button class="btn btn-secondary" type="button" id="btnPreviewTaskReminder" data-icon="alarm">تست همین هشدار</button>
+              <button class="btn btn-secondary" type="button" id="btnExportTaskCalendar" data-icon="external-link">افزودن به تقویم دستگاه؛ حتی وقتی PlanOS بسته است</button>
+            </div>
           </div>
 
           <div class="full">
             <label>
               <input type="checkbox" id="taskDone" />
               انجام شده
+            </label>
+            <label style="margin-right:18px">
+              <input type="checkbox" id="taskBig3" />
+              یکی از سه اولویت اصلی روز
             </label>
           </div>
         </div>
@@ -2945,33 +3761,81 @@ canvas {
     </div>
   </dialog>
 
-  <dialog id="dlgProfile" class="modal-overlay">
+  <dialog id="dlgWeeklyReview" class="modal-overlay" aria-labelledby="dlgWeeklyReviewTitle">
     <div class="modal-card">
       <div class="dlg-head">
         <div>
-          <div class="dlg-title">ویرایش پروفایل</div>
-          <div class="dlg-sub">نام، عنوان و آواتار را تغییر بده.</div>
+          <div class="dlg-title" id="dlgWeeklyReviewTitle">مرور هفتگی</div>
+          <div class="dlg-sub">هفته را ببند، درس‌ها را ثبت کن و تمرکز هفته بعد را مشخص کن.</div>
         </div>
-        <button class="btn btn-icon" data-close="dlgProfile" title="بستن">✕</button>
+        <button class="btn btn-icon" type="button" data-close="dlgWeeklyReview" aria-label="بستن مرور هفتگی" title="بستن">✕</button>
       </div>
       <div class="dlg-body">
         <div class="form-grid">
           <div class="full">
-            <label>نام</label>
+            <div class="chips" id="weeklyReviewChecklist"></div>
+          </div>
+          <div class="full">
+            <label for="weeklyReviewWins">بردهای این هفته</label>
+            <textarea id="weeklyReviewWins" placeholder="چه چیزهایی خوب پیش رفت؟"></textarea>
+          </div>
+          <div class="full">
+            <label for="weeklyReviewLessons">درس‌ها و موانع</label>
+            <textarea id="weeklyReviewLessons" placeholder="چه چیزی مانع شد و هفته بعد چه تغییری می‌دهی؟"></textarea>
+          </div>
+          <div class="full">
+            <label for="weeklyReviewFocus">سه تمرکز هفته بعد</label>
+            <textarea id="weeklyReviewFocus" placeholder="1. ...&#10;2. ...&#10;3. ..."></textarea>
+          </div>
+          <div>
+            <label for="weeklyReviewEnergy">انرژی این هفته از 5</label>
+            <select class="input" id="weeklyReviewEnergy">
+              <option value="1">1 — خیلی کم</option><option value="2">2</option><option value="3" selected>3 — متوسط</option><option value="4">4</option><option value="5">5 — عالی</option>
+            </select>
+          </div>
+          <div>
+            <label for="weeklyReviewDate">تاریخ مرور</label>
+            <input class="input" type="date" id="weeklyReviewDate" />
+          </div>
+        </div>
+      </div>
+      <div class="dlg-foot">
+        <div></div>
+        <div class="btn-row">
+          <button class="btn btn-secondary" data-close="dlgWeeklyReview">انصراف</button>
+          <button class="btn btn-primary" id="btnWeeklyReviewSave">ثبت و بستن هفته</button>
+        </div>
+      </div>
+    </div>
+  </dialog>
+
+  <dialog id="dlgProfile" class="modal-overlay" aria-labelledby="dlgProfileTitle">
+    <div class="modal-card">
+      <div class="dlg-head">
+        <div>
+          <div class="dlg-title" id="dlgProfileTitle">ویرایش پروفایل</div>
+          <div class="dlg-sub">نام، عنوان و آواتار را تغییر بده.</div>
+        </div>
+        <button class="btn btn-icon" type="button" data-close="dlgProfile" aria-label="بستن پنجره پروفایل" title="بستن">✕</button>
+      </div>
+      <div class="dlg-body">
+        <div class="form-grid">
+          <div class="full">
+            <label for="profileName">نام</label>
             <input class="input" id="profileName" placeholder="نام شما" />
           </div>
           <div class="full">
-            <label>عنوان/شغل</label>
+            <label for="profileTitle">عنوان/شغل</label>
             <input class="input" id="profileTitle" placeholder="عنوان شما" />
           </div>
           <div class="full">
-            <label>آپلود آواتار</label>
+            <label for="profileAvatar">آپلود آواتار</label>
             <input class="input" type="file" id="profileAvatar" accept="image/*" />
           </div>
           <div class="full">
-            <label>پین قفل (4 رقم)</label>
+            <label for="profilePin">پین قفل حریم خصوصی (4 رقم)</label>
             <input class="input" id="profilePin" type="password" inputmode="numeric" maxlength="4" placeholder="مثلاً 1234" />
-            <!-- PIN به صورت امن (هش) ذخیره می‌شود. -->
+            <div class="muted2 small">این قفل جلوی مشاهده اتفاقی را می‌گیرد؛ برای حفاظت سازمانی یا اشتراک دستگاه طراحی نشده است.</div>
           </div>
           <div class="full">
             <button class="btn btn-danger" id="btnRemoveAvatar">حذف آواتار</button>
@@ -2988,36 +3852,36 @@ canvas {
     </div>
   </dialog>
 
-  <dialog id="dlgProject" class="modal-overlay">
+  <dialog id="dlgProject" class="modal-overlay" aria-labelledby="dlgProjectTitle">
     <div class="modal-card">
       <div class="dlg-head">
         <div>
           <div class="dlg-title" id="dlgProjectTitle">افزودن پروژه</div>
           <div class="dlg-sub">ثبت پروژه‌ها باعث میشه درآمد و رشد واقعی‌ت مشخص بشه.</div>
         </div>
-        <button class="btn btn-icon" data-close="dlgProject" title="بستن">✕</button>
+        <button class="btn btn-icon" type="button" data-close="dlgProject" aria-label="بستن پنجره پروژه" title="بستن">✕</button>
       </div>
       <div class="dlg-body">
         <div class="form-grid">
           <div class="full">
-            <label>عنوان پروژه</label>
+            <label for="projName">عنوان پروژه</label>
             <input class="input" id="projName" placeholder="مثلاً: طراحی لوگو / UI سایت ..." />
           </div>
           <div>
-            <label>مشتری</label>
+            <label for="projClient">مشتری</label>
             <input class="input" id="projClient" placeholder="نام مشتری/برند" />
           </div>
           <div>
-            <label>مبلغ</label>
+            <label for="projAmount">مبلغ</label>
             <input class="input" type="number" id="projAmount" placeholder="مثلاً 6500000" />
           </div>
           <div>
-            <label>تاریخ (میلادی - برای ذخیره)</label>
+            <label for="projDate">تاریخ (میلادی - برای ذخیره)</label>
             <input class="input" type="date" id="projDate" />
             <div class="muted2 small" id="projDateJ" style="margin-top:6px">—</div>
           </div>
           <div>
-            <label>وضعیت</label>
+            <label for="projStatus">وضعیت</label>
             <select class="input" id="projStatus">
               <option value="todo">در انتظار</option>
               <option value="doing">در حال انجام</option>
@@ -3025,11 +3889,20 @@ canvas {
             </select>
           </div>
           <div>
-            <label>تگ‌ها (با کاما جدا کن)</label>
+            <label for="projGoal">هدف مرتبط</label>
+            <select class="input" id="projGoal"><option value="">بدون هدف</option></select>
+          </div>
+          <div>
+            <label for="projTags">تگ‌ها (با کاما جدا کن)</label>
             <input class="input" id="projTags" placeholder="مثلاً: برندینگ, UI, لوگو" />
           </div>
           <div class="full">
-            <label>یادداشت</label>
+            <label for="projNextAction">اقدام بعدی روشن</label>
+            <input class="input" id="projNextAction" placeholder="مثلاً: ارسال وایرفریم برای تأیید مشتری" />
+            <div class="muted2 small">هر پروژه فعال باید دقیقاً یک اقدام بعدی واضح داشته باشد.</div>
+          </div>
+          <div class="full">
+            <label for="projNotes">یادداشت</label>
             <textarea id="projNotes" placeholder="نکات تحویل، فیدبک مشتری، لینک‌ها..."></textarea>
           </div>
         </div>
@@ -3044,46 +3917,46 @@ canvas {
     </div>
   </dialog>
 
-  <dialog id="dlgGoal" class="modal-overlay">
+  <dialog id="dlgGoal" class="modal-overlay" aria-labelledby="dlgGoalTitle">
     <div class="modal-card">
       <div class="dlg-head">
         <div>
           <div class="dlg-title" id="dlgGoalTitle">افزودن هدف</div>
           <div class="dlg-sub">هدف بزرگ = مسیر روشن. مایلستون‌ها = حرکت واقعی.</div>
         </div>
-        <button class="btn btn-icon" data-close="dlgGoal" title="بستن">✕</button>
+        <button class="btn btn-icon" type="button" data-close="dlgGoal" aria-label="بستن پنجره هدف" title="بستن">✕</button>
       </div>
       <div class="dlg-body">
         <div class="form-grid">
           <div class="full">
-            <label>عنوان هدف</label>
+            <label for="goalTitle">عنوان هدف</label>
             <input class="input" id="goalTitle" placeholder="مثلاً: رسیدن به 40 میلیون درآمد ماهانه" />
           </div>
           <div>
-            <label>افق زمانی</label>
+            <label for="goalHorizon">افق زمانی</label>
             <input class="input" id="goalHorizon" placeholder="مثلاً: 3 ماه / 6 ماه" />
           </div>
           <div>
-            <label>متریک</label>
+            <label for="goalMetric">متریک</label>
             <input class="input" id="goalMetric" placeholder="مثلاً: درآمد / وزن / ساعت مطالعه ..." />
           </div>
           <div>
-            <label>هدف (Target)</label>
+            <label for="goalTarget">هدف (Target)</label>
             <input class="input" type="number" id="goalTarget" />
           </div>
           <div>
-            <label>مقدار فعلی (Current)</label>
+            <label for="goalCurrent">مقدار فعلی (Current)</label>
             <input class="input" type="number" id="goalCurrent" />
           </div>
           <div class="full">
-            <label>مایلستون‌ها (هر خط یک مورد)</label>
+            <label for="goalMilestones">مایلستون‌ها (هر خط یک مورد)</label>
             <textarea id="goalMilestones" placeholder="مثلاً:
 پورتفولیو جدید
 3 کیس‌استادی کامل
 افزایش قیمت‌گذاری"></textarea>
           </div>
           <div class="full">
-            <label>یادداشت</label>
+            <label for="goalNotes">یادداشت</label>
             <textarea id="goalNotes" placeholder="توضیح مسیر، برنامه، دلیل، منابع..."></textarea>
           </div>
         </div>
@@ -3098,27 +3971,27 @@ canvas {
     </div>
   </dialog>
 
-  <dialog id="dlgHolding" class="modal-overlay">
+  <dialog id="dlgHolding" class="modal-overlay" aria-labelledby="dlgHoldingTitle">
     <div class="modal-card">
       <div class="dlg-head">
         <div>
           <div class="dlg-title" id="dlgHoldingTitle">افزودن دارایی</div>
           <div class="dlg-sub">دارایی‌ها رو دقیق ثبت کن تا پرتفوی معنی‌دار بشه.</div>
         </div>
-        <button class="btn btn-icon" data-close="dlgHolding" title="بستن">✕</button>
+        <button class="btn btn-icon" type="button" data-close="dlgHolding" aria-label="بستن پنجره دارایی" title="بستن">✕</button>
       </div>
       <div class="dlg-body">
         <div class="form-grid">
           <div>
-            <label>نوع</label>
+            <label for="holdType">نوع</label>
             <input class="input" id="holdType" placeholder="طلا / نقره / XRP / ETH ..." />
           </div>
           <div>
-            <label>واحد</label>
+            <label for="holdUnit">واحد</label>
             <input class="input" id="holdUnit" placeholder="تومان / گرم / USDT / USD ..." />
           </div>
           <div class="full">
-            <label>مقدار</label>
+            <label for="holdAmount">مقدار</label>
             <input class="input" type="number" id="holdAmount" />
           </div>
         </div>
@@ -3133,17 +4006,17 @@ canvas {
     </div>
   </dialog>
 
-  <dialog id="dlgImport" class="modal-overlay">
+  <dialog id="dlgImport" class="modal-overlay" aria-labelledby="dlgImportTitle">
     <div class="modal-card">
       <div class="dlg-head">
         <div>
-          <div class="dlg-title">ورود داده (Import)</div>
+          <div class="dlg-title" id="dlgImportTitle">ورود داده (Import)</div>
           <div class="dlg-sub">فایل JSON خروجی رو وارد کن.</div>
         </div>
-        <button class="btn btn-icon" data-close="dlgImport" title="بستن">✕</button>
+        <button class="btn btn-icon" type="button" data-close="dlgImport" aria-label="بستن پنجره ورود داده" title="بستن">✕</button>
       </div>
       <div class="dlg-body">
-        <label>فایل خروجی (JSON)</label>
+        <label for="importFile">فایل خروجی (JSON)</label>
         <input class="input" type="file" id="importFile" accept=".json,application/json" />
         <div class="sep"></div>
         <div class="muted small">
@@ -3153,6 +4026,29 @@ canvas {
       <div class="dlg-foot">
         <button class="btn btn-secondary" data-close="dlgImport">انصراف</button>
         <button class="btn btn-primary" id="btnImportDo">وارد کردن</button>
+      </div>
+    </div>
+  </dialog>
+  <dialog id="dlgWelcome" class="modal-overlay" aria-labelledby="dlgWelcomeTitle">
+    <div class="modal-card">
+      <div class="dlg-head">
+        <div>
+          <div class="dlg-title" id="dlgWelcomeTitle">به PlanOS خوش آمدید</div>
+          <div class="dlg-sub">یک شروع سریع برای اینکه داده‌هایتان امن‌تر و برنامه‌ریزی‌تان ساده‌تر باشد.</div>
+        </div>
+        <button class="btn btn-icon" type="button" data-close="dlgWelcome" aria-label="بستن راهنمای شروع">✕</button>
+      </div>
+      <div class="dlg-body">
+        <ol>
+          <li>اولین تسک یا هدف را از منوی کناری بسازید.</li>
+          <li>اطلاعات روی همین مرورگر ذخیره می‌شوند؛ مرتب خروجی JSON بگیرید.</li>
+          <li>قفل PIN برای حریم خصوصی روزمره است و جای رمزگذاری سازمانی را نمی‌گیرد.</li>
+          <li>قیمت کریپتو از سرویس‌های عمومی دریافت می‌شود و ممکن است موقتاً در دسترس نباشد.</li>
+        </ol>
+      </div>
+      <div class="dlg-foot">
+        <div></div>
+        <button class="btn btn-primary" type="button" id="btnWelcomeDone">شروع کنیم</button>
       </div>
     </div>
   </dialog>
@@ -3337,16 +4233,42 @@ canvas {
   // =========================
   const STORAGE_KEY = "planos_v1"; // keep stable
   const LOCK_SESSION_KEY = "planos_unlocked";
+  const isFirstRun = !localStorage.getItem(STORAGE_KEY);
 
   const $ = (sel, root=document) => root.querySelector(sel);
   const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  const uiIconMarkup = (name, className = "") => `<i class="ui-icon ti ti-${name}${className ? ` ${className}` : ""}" aria-hidden="true"></i>`;
+  const interfaceIconMap = new Map([
+    ["📅","calendar"],["🗓️","calendar"],["🗓","calendar"],["✅","circle-check"],["💼","briefcase"],
+    ["💎","diamond"],["📊","chart-bar"],["💡","bulb"],["📈","chart-line"],["🧺","basket"],
+    ["🎯","target"],["📥","inbox"],["⚠️","alert-triangle"],["⚠","alert-triangle"],["🔄","repeat"],
+    ["📋","clipboard"],["📁","folder"],["💰","cash"],["🧭","compass"],["📝","notebook"],
+    ["📌","pin"],["✨","sparkles"],["📓","book"],["💭","message-circle"],["🧩","puzzle"],
+    ["🔒","lock"],["🌓","moon"],["⬇️","download"],["⬆️","upload"],["✎","edit"],["✏️","edit"],
+    ["🗑","trash"],["✕","x"],["×","x"],["✓","check"],["↺","refresh"],["↻","refresh"],
+    ["⟳","refresh"],["↶","undo"],["＋","plus"],["+","plus"],["⌁","chevron-left"],["🪙","coins"]
+  ]);
+  const hydrateInterfaceIcons = (root = document) => {
+    const nodes = root.querySelectorAll?.("[data-icon],.btn-emoji,.card-icon,.empty-icon,.focus-icon,.insight-icon,.nav-arrow,.insight-refresh,.btn-icon") || [];
+    nodes.forEach((node) => {
+      if (node.querySelector(":scope > .ui-icon")) return;
+      const holder = node.matches(".btn-emoji,.card-icon,.empty-icon,.focus-icon,.insight-icon,.nav-arrow,.insight-refresh,.btn-icon");
+      const raw = node.textContent.trim();
+      const name = node.dataset.icon || (node.matches(".nav-arrow") ? "chevron-left" : interfaceIconMap.get(raw));
+      if (!name) return;
+      const template = document.createElement("template");
+      template.innerHTML = uiIconMarkup(name);
+      if (holder) node.replaceChildren(template.content.firstElementChild);
+      else node.prepend(template.content.firstElementChild);
+    });
+  };
   const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const uid = () => (Math.random().toString(36).slice(2, 10) + "_" + Date.now().toString(36));
   const todayISO = () => {
     const d = new Date();
     return d.getFullYear() + "-" + pad2(d.getMonth()+1) + "-" + pad2(d.getDate());
   };
-  const moneyFA = (n) => toEnglishDigits(Number(n||0).toLocaleString("fa-IR"));
+  const moneyFA = (n) => Number(n||0).toLocaleString("en-US");
   const safeParse = (raw) => { try { return JSON.parse(raw); } catch { return null; } };
 
   const defaultCryptoState = () => ({
@@ -3356,15 +4278,15 @@ canvas {
     updatedAt: "",
     hasPrices: false,
     items: [
-      { id: "bitcoin", name: "Bitcoin", symbol: "BTC", icon: "₿", amount: 0.035 },
-      { id: "ethereum", name: "Ethereum", symbol: "ETH", icon: "Ξ", amount: 0.7 },
-      { id: "solana", name: "Solana", symbol: "SOL", icon: "◎", amount: 12 }
+      { id: "bitcoin", name: "Bitcoin", symbol: "BTC", icon: "₿", amount: 0 },
+      { id: "ethereum", name: "Ethereum", symbol: "ETH", icon: "Ξ", amount: 0 },
+      { id: "solana", name: "Solana", symbol: "SOL", icon: "◎", amount: 0 }
     ]
   });
 
   const defaultState = () => {
     return {
-      meta: { version: 3, createdAt: new Date().toISOString() },
+      meta: { version: 5, createdAt: new Date().toISOString() },
       profile: {
         name: "",
         title: "",
@@ -3373,7 +4295,7 @@ canvas {
         savingsRateTarget: 0,
         currency: "تومان"
       },
-      settings: { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "", usdToToman: 0 },
+      settings: { theme: "light", rtl: true, focusMode: false, onboarded: false, pinHash: "", pinSalt: "", pinKdf: "", usdToToman: 0, dailyCapacityMin: 480 },
       notes: {
         daily: "",
         motivation: "",
@@ -3383,6 +4305,7 @@ canvas {
       tasks: [],
       projects: [],
       goals: [],
+      weeklyReviews: [],
       assets: {
         holdings: [],
         plan: { split: { gold: 0, crypto: 0, silver: 0, cash: 0 } },
@@ -3391,6 +4314,134 @@ canvas {
       cache: {
         cryptoPrices: { fetchedAt: 0, pricesById: {}, fxUsdToIrr: null }
       }
+    };
+  };
+
+  const IMPORT_MAX_BYTES = 5 * 1024 * 1024;
+  const cleanText = (value, max = 500) => String(value ?? "").replace(/\u0000/g, "").slice(0, max);
+  const cleanNumber = (value, fallback = 0, min = -1e15, max = 1e15) => {
+    const number = Number(value);
+    return Number.isFinite(number) ? Math.min(max, Math.max(min, number)) : fallback;
+  };
+  const cleanId = (value) => cleanText(value || uid(), 100).replace(/[^a-zA-Z0-9_-]/g, "_") || uid();
+  const cleanDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(String(value || "")) ? String(value) : todayISO();
+  const cleanOptionalDate = (value) => /^\d{4}-\d{2}-\d{2}$/.test(String(value || "")) ? String(value) : "";
+  const cleanTime = (value, fallback = "09:00") => /^([01]\d|2[0-3]):[0-5]\d$/.test(String(value || "")) ? String(value) : fallback;
+  const sanitizeImportedState = (source) => {
+    if (!isValidBackupState(source)) return null;
+    const base = defaultState();
+    const profile = source.profile || {};
+    const settings = source.settings || {};
+    const notes = source.notes || {};
+    const plan = source.assets?.plan?.split || {};
+    const allowedTheme = settings.theme === "dark" ? "dark" : "light";
+    const allowedPriority = new Set(["low", "medium", "high"]);
+    const allowedProjectStatus = new Set(["todo", "doing", "done"]);
+    const allowedRepeat = new Set(["none", "daily", "weekly", "monthly"]);
+    const avatar = typeof profile.avatarData === "string" && /^data:image\/(png|jpeg|webp);base64,/i.test(profile.avatarData) && profile.avatarData.length <= 2_000_000
+      ? profile.avatarData : "";
+
+    return {
+      meta: {
+        version: Math.max(5, Math.floor(cleanNumber(source.meta?.version, 5, 1, 999))),
+        createdAt: cleanText(source.meta?.createdAt || base.meta.createdAt, 50)
+      },
+      profile: {
+        name: cleanText(profile.name, 100),
+        title: cleanText(profile.title, 160),
+        avatarData: avatar,
+        monthlyMinIncome: cleanNumber(profile.monthlyMinIncome, 0, 0),
+        savingsRateTarget: cleanNumber(profile.savingsRateTarget, 0, 0, 1),
+        currency: cleanText(profile.currency || "تومان", 20)
+      },
+      settings: {
+        theme: allowedTheme,
+        rtl: true,
+        focusMode: !!settings.focusMode,
+        onboarded: !!settings.onboarded,
+        pinHash: cleanText(settings.pinHash, 256),
+        pinSalt: cleanText(settings.pinSalt, 128),
+        pinKdf: settings.pinKdf === "pbkdf2-sha256" ? "pbkdf2-sha256" : "",
+        usdToToman: cleanNumber(settings.usdToToman, 0, 0),
+        dailyCapacityMin: cleanNumber(settings.dailyCapacityMin, 480, 30, 1440)
+      },
+      notes: {
+        daily: cleanText(notes.daily, 20_000),
+        motivation: cleanText(notes.motivation, 5_000),
+        journal: cleanText(notes.journal, 50_000),
+        ideas: cleanText(notes.ideas, 20_000)
+      },
+      tasks: source.tasks.slice(0, 5_000).map((task) => ({
+        id: cleanId(task?.id),
+        title: cleanText(task?.title, 300),
+        date: cleanDate(task?.date),
+        done: !!task?.done,
+        priority: allowedPriority.has(task?.priority) ? task.priority : "medium",
+        category: cleanText(task?.category, 100),
+        timeBlock: cleanText(task?.timeBlock, 50),
+        estimateMin: cleanNumber(task?.estimateMin, 0, 0, 100_000),
+        reminderEnabled: !!task?.reminderEnabled,
+        reminderTime: cleanTime(task?.reminderTime, "09:00"),
+        reminderLeadMin: cleanNumber(task?.reminderLeadMin, 15, 0, 1440),
+        snoozedUntil: /^\d{4}-\d{2}-\d{2}T/.test(String(task?.snoozedUntil || "")) ? cleanText(task.snoozedUntil, 50) : "",
+        repeat: allowedRepeat.has(task?.repeat) ? task.repeat : "none",
+        repeatSourceId: cleanText(task?.repeatSourceId, 100),
+        projectId: cleanText(task?.projectId, 100),
+        goalId: cleanText(task?.goalId, 100),
+        inbox: !!task?.inbox,
+        isBig3: !!task?.isBig3,
+        completedAt: cleanText(task?.completedAt, 50)
+      })).filter((task) => task.title),
+      projects: source.projects.slice(0, 2_000).map((project) => ({
+        id: cleanId(project?.id),
+        name: cleanText(project?.name, 300),
+        client: cleanText(project?.client, 200),
+        amount: cleanNumber(project?.amount, 0, 0),
+        date: cleanDate(project?.date),
+        status: allowedProjectStatus.has(project?.status) ? project.status : "todo",
+        goalId: cleanText(project?.goalId, 100),
+        nextAction: cleanText(project?.nextAction, 500),
+        tags: Array.isArray(project?.tags) ? project.tags.slice(0, 50).map((tag) => cleanText(tag, 60)).filter(Boolean) : [],
+        notes: cleanText(project?.notes, 20_000)
+      })).filter((project) => project.name),
+      goals: source.goals.slice(0, 2_000).map((goal) => ({
+        id: cleanId(goal?.id),
+        title: cleanText(goal?.title, 300),
+        horizon: cleanText(goal?.horizon, 100),
+        metric: cleanText(goal?.metric, 100),
+        target: cleanNumber(goal?.target, 0),
+        current: cleanNumber(goal?.current, 0),
+        notes: cleanText(goal?.notes, 20_000),
+        milestones: Array.isArray(goal?.milestones) ? goal.milestones.slice(0, 500).map((item) => ({
+          id: cleanId(item?.id), text: cleanText(item?.text, 500), done: !!item?.done
+        })).filter((item) => item.text) : []
+      })).filter((goal) => goal.title),
+      weeklyReviews: Array.isArray(source.weeklyReviews) ? source.weeklyReviews.slice(0, 260).map((review) => ({
+        id: cleanId(review?.id),
+        date: cleanOptionalDate(review?.date) || todayISO(),
+        wins: cleanText(review?.wins, 10_000),
+        lessons: cleanText(review?.lessons, 10_000),
+        nextFocus: cleanText(review?.nextFocus, 10_000),
+        energy: cleanNumber(review?.energy, 3, 1, 5),
+        createdAt: cleanText(review?.createdAt, 50)
+      })) : [],
+      assets: {
+        holdings: Array.isArray(source.assets?.holdings) ? source.assets.holdings.slice(0, 2_000).map((holding) => ({
+          id: cleanId(holding?.id), type: cleanText(holding?.type, 100), unit: cleanText(holding?.unit, 50), amount: cleanNumber(holding?.amount, 0)
+        })).filter((holding) => holding.type && holding.unit) : [],
+        plan: { split: {
+          gold: cleanNumber(plan.gold, 0, 0, 100), crypto: cleanNumber(plan.crypto, 0, 0, 100),
+          silver: cleanNumber(plan.silver, 0, 0, 100), cash: cleanNumber(plan.cash, 0, 0, 100)
+        } },
+        crypto: {
+          ...defaultCryptoState(),
+          items: Array.isArray(source.assets?.crypto?.items) ? source.assets.crypto.items.slice(0, 100).map((item) => ({
+            id: cleanText(item?.id, 100).toLowerCase(), name: cleanText(item?.name, 100),
+            symbol: cleanText(item?.symbol, 20).toUpperCase(), icon: cleanText(item?.icon, 10), amount: cleanNumber(item?.amount, 0, 0)
+          })).filter((item) => item.id && item.name && item.symbol) : defaultCryptoState().items
+        }
+      },
+      cache: base.cache
     };
   };
 
@@ -3422,12 +4473,12 @@ canvas {
     return `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}`;
   };
 
-  const saveDailyBackup = async (stateObject) => {
+  const saveDailyBackup = async (stateObject, dateKeyOverride = "") => {
     const db = await openBackupDB();
     return new Promise((resolve, reject) => {
       const tx = db.transaction(BACKUP_STORE, "readwrite");
       const store = tx.objectStore(BACKUP_STORE);
-      const dateKey = buildDateKey();
+      const dateKey = dateKeyOverride || buildDateKey();
       store.put({ dateKey, createdAt: new Date().toISOString(), data: stateObject });
       const getAllReq = store.getAll();
       getAllReq.onsuccess = () => {
@@ -3492,10 +4543,13 @@ canvas {
     if (typeof data.assets !== "object") return false;
     return true;
   };
-  let state = loadState() || defaultState();
+  const loadedState = loadState();
+  let state = loadedState ? (sanitizeImportedState(loadedState) || defaultState()) : defaultState();
   state.profile.avatarData = state.profile.avatarData || "";
-  state.settings = { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "", usdToToman: 0, ...state.settings };
+  state.settings = { theme: "light", rtl: true, focusMode: false, onboarded: false, pinHash: "", pinSalt: "", pinKdf: "", usdToToman: 0, dailyCapacityMin: 480, ...state.settings };
   state.settings.focusMode = !!state.settings.focusMode;
+  state.settings.dailyCapacityMin = Math.max(30, Math.min(1440, Number(state.settings.dailyCapacityMin || 480)));
+  state.weeklyReviews = Array.isArray(state.weeklyReviews) ? state.weeklyReviews : [];
   state.assets = {
     holdings: [],
     plan: { split: { gold: 0, crypto: 0, silver: 0, cash: 0 } },
@@ -3526,24 +4580,74 @@ canvas {
     window.crypto.getRandomValues(bytes);
     return toHex(bytes);
   };
-  const hashPin = async (pin, salt) => {
+  const legacyHashPin = async (pin, salt) => {
     const encoder = new TextEncoder();
     const data = encoder.encode(`${salt}:${pin}`);
     const digest = await window.crypto.subtle.digest("SHA-256", data);
     return toHex(digest);
   };
+
+  const saveSafetyBackup = async (stateObject, reason) => {
+    if (!("indexedDB" in window)) return;
+    const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+    await saveDailyBackup(stateObject, `${buildDateKey()}_${cleanText(reason, 20)}_${stamp}`);
+  };
+  const hashPin = async (pin, salt) => {
+    const encoder = new TextEncoder();
+    const key = await window.crypto.subtle.importKey("raw", encoder.encode(pin), "PBKDF2", false, ["deriveBits"]);
+    const bits = await window.crypto.subtle.deriveBits({
+      name: "PBKDF2", hash: "SHA-256", salt: encoder.encode(salt), iterations: 150_000
+    }, key, 256);
+    return toHex(bits);
+  };
+  const verifyPin = async (pin) => {
+    const hashed = state.settings.pinKdf === "pbkdf2-sha256"
+      ? await hashPin(pin, state.settings.pinSalt)
+      : await legacyHashPin(pin, state.settings.pinSalt);
+    return hashed === state.settings.pinHash;
+  };
   const hasPinSet = () => !!(state.settings.pinHash && state.settings.pinSalt);
   const saveState = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    scheduleDailyBackup(state);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      scheduleDailyBackup(typeof structuredClone === "function" ? structuredClone(state) : JSON.parse(JSON.stringify(state)));
+      return true;
+    } catch (error) {
+      console.error("PlanOS storage failed", error);
+      toast("ذخیره انجام نشد؛ فضای مرورگر را بررسی یا خروجی تهیه کنید.");
+      return false;
+    }
   };
 
-  const toast = (msg) => {
+  const toast = (msg, options = {}) => {
     const el = $("#toast");
-    el.textContent = msg;
-    el.style.display = "block";
+    $("#toastMessage").textContent = msg;
+    const action = $("#toastAction");
+    action.style.display = options.actionLabel && options.onAction ? "inline-flex" : "none";
+    action.textContent = options.actionLabel || "";
+    action.onclick = options.onAction ? () => { options.onAction(); action.style.display = "none"; } : null;
+    el.style.display = "flex";
     clearTimeout(el._t);
-    el._t = setTimeout(() => el.style.display = "none", 2200);
+    el._t = setTimeout(() => el.style.display = "none", options.duration || 3000);
+  };
+
+  const deleteWithUndo = (label, mutate) => {
+    const snapshot = typeof structuredClone === "function" ? structuredClone(state) : JSON.parse(JSON.stringify(state));
+    mutate();
+    saveState();
+    renderAll({ forceInsight: true });
+    renderDashboardCharts();
+    toast(`${label} حذف شد.`, {
+      actionLabel: "بازگردانی",
+      duration: 6000,
+      onAction: () => {
+        state = snapshot;
+        saveState();
+        renderAll({ forceInsight: true });
+        renderDashboardCharts();
+        toast(`${label} بازگردانی شد.`);
+      }
+    });
   };
 
   const migrateLegacyPin = async () => {
@@ -3585,6 +4689,10 @@ canvas {
   // =========================
   // PIN Lock
   // =========================
+  const MAX_PIN_ATTEMPTS = 5;
+  const PIN_COOLDOWN_MS = 30_000;
+  let failedPinAttempts = 0;
+  let pinCooldownUntil = 0;
   const updateLockAvailability = () => {
     const hasPin = hasPinSet();
     const btnLock = $("#btnLock");
@@ -3633,24 +4741,37 @@ canvas {
       $("#lockError").textContent = "مرورگر از رمزنگاری امن پشتیبانی نمی‌کند.";
       return;
     }
+    const remainingCooldown = pinCooldownUntil - Date.now();
+    if (remainingCooldown > 0) {
+      $("#lockError").textContent = `تلاش‌های ناموفق زیاد بود؛ ${Math.ceil(remainingCooldown / 1000)} ثانیه دیگر دوباره امتحان کنید.`;
+      return;
+    }
     const val = getPinValue();
     if (val.length < 4) {
       $("#lockError").textContent = "پین باید 4 رقم باشد.";
       return;
     }
     try {
-      const hashed = await hashPin(val, state.settings.pinSalt);
-      if (hashed === state.settings.pinHash) {
+      if (await verifyPin(val)) {
+        failedPinAttempts = 0;
+        pinCooldownUntil = 0;
         sessionStorage.setItem(LOCK_SESSION_KEY, "1");
         hideLock();
-        toast("خوش اومدی ✅");
+        toast("خوش آمدی.");
         return;
       }
     } catch {
       $("#lockError").textContent = "خطا در بررسی پین.";
       return;
     }
-    $("#lockError").textContent = "پین اشتباه است.";
+    failedPinAttempts += 1;
+    if (failedPinAttempts >= MAX_PIN_ATTEMPTS) {
+      failedPinAttempts = 0;
+      pinCooldownUntil = Date.now() + PIN_COOLDOWN_MS;
+      $("#lockError").textContent = "تلاش‌های ناموفق زیاد بود؛ 30 ثانیه بعد دوباره امتحان کنید.";
+    } else {
+      $("#lockError").textContent = `پین اشتباه است؛ ${MAX_PIN_ATTEMPTS - failedPinAttempts} تلاش باقی مانده.`;
+    }
     clearPinInputs();
     pinInputs()[0]?.focus();
   };
@@ -3728,7 +4849,7 @@ canvas {
   // =========================
   const viewMeta = {
     dashboard: { title: "داشبورد", sub: "نمای کلی پیشرفت، درآمد، سرمایه و اهداف" },
-    planner:   { title: "برنامه روزانه", sub: "مدیریت تسک‌ها با تاریخ و اولویت و تایم‌بلاک" },
+    planner:   { title: "برنامه روزانه", sub: "Inbox، Big 3، ظرفیت روز، عقب‌افتاده‌ها و مرور هفتگی" },
     calendar:  { title: "تقویم (شمسی)", sub: "نمای ماهانه شمسی + کلیک روی روز برای رفتن به برنامه" },
     projects:  { title: "پروژه‌ها", sub: "ثبت پروژه‌ها و درآمد و وضعیت پیشرفت" },
     goals:     { title: "اهداف بزرگ", sub: "اهداف + مایلستون‌ها + درصد پیشرفت" },
@@ -3748,6 +4869,7 @@ canvas {
     $$(".view").forEach(v => v.classList.remove("active"));
     $("#view-" + name).classList.add("active");
     $$("#nav button").forEach(b => b.classList.toggle("active", b.dataset.view === name));
+    $$("#mobileNav [data-mobile-view]").forEach(b => b.classList.toggle("active", b.dataset.mobileView === name));
     const titleText = $("#viewTitle .title-text");
     if (titleText) titleText.textContent = viewMeta[name].title;
     $("#viewSub").textContent = viewMeta[name].sub;
@@ -3762,6 +4884,10 @@ canvas {
     const btn = e.target.closest("button[data-view]");
     if(!btn) return;
     showView(btn.dataset.view);
+  });
+  $("#mobileNav").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-mobile-view]");
+    if (button) showView(button.dataset.mobileView);
   });
 
   const MORE_DRAWER_KEY = "planos_more_open";
@@ -3905,6 +5031,34 @@ canvas {
     });
   };
 
+  const syncThemeControls = () => {
+    const dark = state.settings.theme === "dark";
+    const icon = dark ? "sun" : "moon";
+    const actionLabel = dark ? "فعال‌کردن حالت روشن" : "فعال‌کردن حالت تاریک";
+    const sideButton = $("#btnTheme");
+    if (sideButton) {
+      sideButton.removeAttribute("data-icon");
+      sideButton.querySelectorAll(":scope > .ui-icon").forEach((item) => item.remove());
+      const holder = sideButton.querySelector(".btn-emoji");
+      if (holder) {
+        holder.dataset.icon = icon;
+        const holderIcon = holder.querySelector(".ui-icon");
+        if (holderIcon) holderIcon.className = `ui-icon ti ti-${icon}`;
+      }
+      sideButton.setAttribute("aria-label", actionLabel);
+      sideButton.title = actionLabel;
+    }
+    [$("#btnTopTheme"), $("#btnMobileTheme")].filter(Boolean).forEach((button) => {
+      button.dataset.icon = icon;
+      button.setAttribute("aria-label", actionLabel);
+      button.title = actionLabel;
+      const iconElement = button.querySelector(":scope > .ui-icon");
+      if (iconElement) iconElement.className = `ui-icon ti ti-${icon}`;
+    });
+    const sideLabel = $("#btnTheme .btn-label");
+    if (sideLabel) sideLabel.textContent = dark ? "روشن" : "تاریک";
+  };
+
   const renderHeader = () => {
     $("#pname").textContent = state.profile.name || "نام شما";
     $("#ptitle").textContent = state.profile.title || "عنوان شما";
@@ -3928,6 +5082,8 @@ canvas {
     $("#todayYear").textContent = toEnglishDigits(j.jy);
     document.documentElement.setAttribute("dir", state.settings.rtl ? "rtl" : "ltr");
     document.documentElement.setAttribute("data-theme", state.settings.theme || "light");
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", state.settings.theme === "dark" ? "#070b13" : "#f5f8ff");
+    syncThemeControls();
     const activeView = document.querySelector("#nav button.active")?.dataset.view || "dashboard";
     const titleText = $("#viewTitle .title-text");
     if (titleText && viewMeta[activeView]) titleText.textContent = viewMeta[activeView].title;
@@ -3950,7 +5106,7 @@ canvas {
   // =========================
   // Metrics
   // =========================
-  const tasksByDate = (iso) => state.tasks.filter(t => t.date === iso);
+  const tasksByDate = (iso) => state.tasks.filter(t => !t.inbox && t.date === iso);
   const projectsInRange = (s,e) => state.projects.filter(p => p.date >= s && p.date <= e);
   const calcTaskRate = (tasks) => {
     if(!tasks.length) return { total:0, done:0, rate:0 };
@@ -3958,19 +5114,24 @@ canvas {
     return { total:tasks.length, done, rate: Math.round(done/tasks.length*100) };
   };
   const calcIncome = (projects) => projects.reduce((sum,p)=>sum + Number(p.amount||0), 0);
-  const DAILY_INSIGHT_KEY = "planos_daily_insight_v2";
-  const INSIGHT_I18N = {
-    fa: {
-      unfinished: "امروز {count} تسک نیمه‌کاره داری.",
-      allDone: "تمام تسک‌های امروز انجام شد 🎯",
-      staleProject: "پروژه «{name}» چند روزه بی‌خبره.",
-      weekRate: "نرخ انجام تسک‌های این هفته {rate}% بوده.",
-      fallback: "قدم‌های کوچیک هر روز نتیجه می‌ده."
-    }
-  };
-  const tInsight = (key, vars = {}) => {
-    const template = INSIGHT_I18N.fa[key] || "";
-    return Object.entries(vars).reduce((acc, [k, v]) => acc.replaceAll(`{${k}}`, v), template);
+  const DAILY_INSIGHT_KEY = "planos_daily_insight_v3";
+  const DISCIPLINE_QUOTES = [
+    "انگیزه شروع می‌کند؛ نظم کاری می‌کند که ادامه بدهی.",
+    "کاری که امروز تمام می‌کنی، ذهن فردایت را آزاد می‌کند.",
+    "ثباتِ کوچک، از تلاش بزرگِ گهگاهی قدرتمندتر است.",
+    "اول مهم‌ترین کار را انجام بده؛ بقیه روز سبک‌تر می‌شود.",
+    "به برنامه‌ات وفادار بمان، حتی وقتی حسش نیست.",
+    "پیشرفت واقعی نتیجه تکرار کارهای ساده است.",
+    "هر بار که به قولت به خودت عمل می‌کنی، اعتمادبه‌نفس می‌سازی.",
+    "امروز فقط یک قدم روشن بردار؛ فردا مسیر واضح‌تر است.",
+    "کامل بودن لازم نیست؛ حاضر بودن و ادامه دادن لازم است.",
+    "نظم یعنی تصمیم دیروزت را در لحظه سخت امروز اجرا کنی.",
+    "کار نیمه‌تمام انرژی می‌گیرد؛ تمام‌کردن انرژی برمی‌گرداند.",
+    "تقویم تو نشان می‌دهد چه چیزی واقعاً برایت مهم بوده است."
+  ];
+  const getDailyQuote = (iso = todayISO()) => {
+    const seed = Array.from(iso).reduce((sum, char) => ((sum * 31) + char.charCodeAt(0)) >>> 0, 7);
+    return DISCIPLINE_QUOTES[seed % DISCIPLINE_QUOTES.length];
   };
   const daysBetweenISO = (fromIso, toIso) => {
     if (!fromIso || !toIso) return NaN;
@@ -3984,16 +5145,20 @@ canvas {
     const todayTasks = tasksByDate(today);
     const todayStats = calcTaskRate(todayTasks);
     const unfinished = todayStats.total - todayStats.done;
+    const overdueTasks = state.tasks
+      .filter((task) => !task.inbox && !task.done && task.date < today)
+      .sort((a, b) => a.date.localeCompare(b.date));
+    const overdueProjects = state.projects
+      .filter((project) => project.status !== "done" && project.date < today)
+      .map((project) => ({ ...project, idleDays: daysBetweenISO(project.date, today) }))
+      .sort((a, b) => b.idleDays - a.idleDays);
     const weekStart = new Date();
     weekStart.setDate(weekStart.getDate() - 6);
     const weekStartIso = `${weekStart.getFullYear()}-${pad2(weekStart.getMonth()+1)}-${pad2(weekStart.getDate())}`;
-    const weekTasks = state.tasks.filter(task => task.date >= weekStartIso && task.date <= today);
+    const weekTasks = state.tasks.filter(task => !task.inbox && task.date >= weekStartIso && task.date <= today);
     const weekStats = calcTaskRate(weekTasks);
-    const staleProject = state.projects
-      .map((project) => ({ ...project, idleDays: daysBetweenISO(project.date, today) }))
-      .filter((project) => Number.isFinite(project.idleDays) && project.idleDays >= 3)
-      .sort((a, b) => b.idleDays - a.idleDays)[0];
-
+    const inboxTasks = state.tasks.filter((task) => task.inbox && !task.done).sort((a,b) => taskPriorityScore?.(b) - taskPriorityScore?.(a));
+    const stuckProjects = state.projects.filter((project) => project.status !== "done" && !String(project.nextAction || "").trim());
     return {
       today,
       totalTasks: state.tasks.length,
@@ -4001,46 +5166,78 @@ canvas {
       todayStats,
       unfinished,
       weekStats,
-      staleProject
+      overdueTasks,
+      overdueProjects,
+      inboxTasks,
+      stuckProjects,
+      staleProject: overdueProjects[0] || null
     };
   };
   const buildDailyInsight = (stats) => {
+    if (stats.overdueTasks.length || stats.overdueProjects.length) {
+      const taskPart = stats.overdueTasks.length ? `${toEnglishDigits(stats.overdueTasks.length)} تسک` : "";
+      const projectPart = stats.overdueProjects.length ? `${toEnglishDigits(stats.overdueProjects.length)} پروژه` : "";
+      return { key: "overdue", text: `${[taskPart, projectPart].filter(Boolean).join(" و ")} عقب‌افتاده نیاز به تصمیم امروز دارد.` };
+    }
+    if (stats.inboxTasks.length) {
+      return { key: "inbox", text: `${toEnglishDigits(stats.inboxTasks.length)} کار در Inbox منتظر تصمیم توست؛ امروز تعیین‌تکلیفشان کن.` };
+    }
+    if (stats.stuckProjects.length) {
+      return { key: "stuck", text: `${toEnglishDigits(stats.stuckProjects.length)} پروژه اقدام بعدی روشن ندارد؛ یکی را همین امروز مشخص کن.` };
+    }
     if (stats.todayStats.total > 0 && stats.unfinished > 0) {
-      return {
-        key: "unfinished",
-        text: tInsight("unfinished", { count: toEnglishDigits(stats.unfinished) })
-      };
+      return { key: "unfinished", text: `امروز ${toEnglishDigits(stats.unfinished)} تسک نیمه‌کاره داری؛ از مهم‌ترین مورد شروع کن.` };
     }
     if (stats.todayStats.total > 0 && stats.unfinished === 0) {
-      return { key: "allDone", text: tInsight("allDone") };
-    }
-    if (stats.staleProject) {
-      const name = (stats.staleProject.name || "بدون عنوان").trim() || "بدون عنوان";
-      return { key: "staleProject", text: tInsight("staleProject", { name }) };
+      return { key: "allDone", text: "تمام کارهای امروز انجام شده؛ برای فردا یک اولویت روشن تعیین کن." };
     }
     if (stats.weekStats.total > 0) {
-      return {
-        key: "weekRate",
-        text: tInsight("weekRate", { rate: toEnglishDigits(stats.weekStats.rate) })
-      };
+      return { key: "weekRate", text: `نرخ انجام کارهای 7 روز اخیر ${toEnglishDigits(stats.weekStats.rate)}٪ بوده؛ یک کار کوچک برای امروز ثبت کن.` };
     }
-    return { key: "fallback", text: tInsight("fallback") };
+    return { key: "fallback", text: "چیزی از قلم نیفتاده؛ یک کار مهم برای امروز ثبت کن." };
   };
   const getDailyInsight = ({ force = false } = {}) => {
     const stats = getDailyInsightStats();
-    const cached = safeParse(localStorage.getItem(DAILY_INSIGHT_KEY) || "");
-    const canUseCache = cached && cached.date === stats.today && cached.text && cached.key;
-    if (canUseCache && !force) {
-      return { text: cached.text, key: cached.key, usedCache: true, stats };
-    }
     const fresh = buildDailyInsight(stats);
     localStorage.setItem(DAILY_INSIGHT_KEY, JSON.stringify({ date: stats.today, text: fresh.text, key: fresh.key }));
     return { ...fresh, usedCache: false, stats };
+  };
+  const renderInsightActions = (stats) => {
+    const box = $("#dashInsightActions");
+    if (!box) return;
+    const actions = [];
+    stats.overdueTasks.slice(0, 2).forEach((task) => actions.push({
+      type: "moveToday", id: task.id, danger: true,
+      title: task.title,
+      meta: `${toEnglishDigits(daysBetweenISO(task.date, stats.today))} روز عقب‌افتاده • انتقال به امروز`
+    }));
+    if (stats.overdueProjects[0]) actions.push({
+      type: "openProject", id: stats.overdueProjects[0].id, danger: true,
+      title: stats.overdueProjects[0].name,
+      meta: `${toEnglishDigits(stats.overdueProjects[0].idleDays)} روز از موعد • بررسی پروژه`
+    });
+    if (actions.length < 3) stats.inboxTasks.slice(0, 3 - actions.length).forEach((task) => actions.push({
+      type: "scheduleInbox", id: task.id, danger: false,
+      title: task.title,
+      meta: "Inbox • افزودن به برنامه امروز"
+    }));
+    if (!actions.length) {
+      stats.todayTasks.filter((task) => !task.done).slice(0, 3).forEach((task) => actions.push({
+        type: "complete", id: task.id, danger: false, title: task.title,
+        meta: task.reminderEnabled ? `یادآور ${task.reminderTime}` : "علامت‌زدن به‌عنوان انجام‌شده"
+      }));
+    }
+    if (!actions.length) actions.push({ type: "addTask", id: "", danger: false, title: "برنامه امروز خالی است", meta: "یک کار مهم اضافه کن" });
+    box.innerHTML = actions.slice(0, 3).map((action) => `
+      <button type="button" class="insight-action${action.danger ? " is-danger" : ""}" data-insight-action="${action.type}" data-id="${action.id}">
+        <strong>${escapeHtml(action.title)}</strong><span>${escapeHtml(action.meta)}</span>
+      </button>`).join("");
   };
   const refreshDailyInsight = ({ force = false } = {}) => {
     const data = getDailyInsight({ force });
     const insightEl = $("#dashInsightText");
     if (insightEl) insightEl.textContent = data.text || "—";
+    renderInsightActions(data.stats);
     return data;
   };
   const bindInsightRefresh = () => {
@@ -4050,6 +5247,36 @@ canvas {
       refreshDailyInsight({ force: true });
     });
   };
+  $("#dashInsightActions")?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-insight-action]");
+    if (!button) return;
+    const task = state.tasks.find((item) => item.id === button.dataset.id);
+    if (button.dataset.insightAction === "moveToday" && task) {
+      task.date = todayISO();
+      task.inbox = false;
+      plannerDate = todayISO();
+      saveState(); renderAll({ forceInsight: true }); renderDashboardCharts();
+      toast("تسک به برنامه امروز منتقل شد.");
+    } else if (button.dataset.insightAction === "scheduleInbox" && task) {
+      task.inbox = false;
+      task.date = todayISO();
+      plannerDate = todayISO();
+      saveState(); renderAll({ forceInsight: true }); renderDashboardCharts();
+      toast("آیتم Inbox به برنامه امروز اضافه شد.");
+    } else if (button.dataset.insightAction === "complete" && task) {
+      task.done = true;
+      task.completedAt = new Date().toISOString();
+      scheduleNextRepeat(task);
+      saveState(); renderAll({ forceInsight: true }); renderDashboardCharts();
+      toast("تسک انجام‌شده ثبت شد.");
+    } else if (button.dataset.insightAction === "openProject") {
+      showView("projects");
+      const project = state.projects.find((item) => item.id === button.dataset.id);
+      if (project) openProjectDialog(project);
+    } else if (button.dataset.insightAction === "addTask") {
+      plannerDate = todayISO(); showView("planner"); openTaskDialog(null);
+    }
+  });
   const bindCryptoRefresh = () => {
     const btn = $("#cryptoRefreshBtn");
     if (!btn) return;
@@ -4310,7 +5537,11 @@ canvas {
     $("#dashSaveTarget").textContent = moneyFA(saveTarget) + " " + state.profile.currency;
     $("#dashSaveRate").textContent = Math.round((Number(state.profile.savingsRateTarget||0))*100) + "%";
 
-    $("#dashMotivation").textContent = state.notes.motivation || "—";
+    $("#dashDailyQuote").textContent = `«${getDailyQuote(t)}»`;
+    $("#dashDailyQuoteMeta").textContent = `${isoToJalaliStr(t)} • جملهٔ روزانهٔ دیسیپلین`;
+    const personalQuote = $("#dashMotivation");
+    personalQuote.textContent = state.notes.motivation ? `یادداشت انگیزشی شما: ${state.notes.motivation}` : "";
+    personalQuote.style.display = state.notes.motivation ? "block" : "none";
     renderDashboardCryptoSummary();
     refreshDailyInsight({ force: forceInsight });
     applyEnglishDigits();
@@ -4547,6 +5778,265 @@ canvas {
   let editingTaskId = null;
 
   const priorityLabel = (p) => (p==="high" ? "اولویت زیاد" : (p==="low" ? "اولویت کم" : "اولویت متوسط"));
+  const repeatLabel = (repeat) => ({ daily:"روزانه", weekly:"هفتگی", monthly:"ماهانه" }[repeat] || "");
+  const REMINDER_SENT_KEY = "planos_reminders_sent_v1";
+  const activeReminderIds = new Set();
+  const reminderSent = () => safeParse(localStorage.getItem(REMINDER_SENT_KEY) || "{}") || {};
+  const reminderKey = (task) => `${task.id}:${task.snoozedUntil || `${task.date}T${task.reminderTime || "09:00"}`}`;
+  const taskReminderAt = (task) => {
+    if (task.snoozedUntil) return new Date(task.snoozedUntil);
+    const raw = new Date(`${task.date}T${task.reminderTime || "09:00"}:00`);
+    return new Date(raw.getTime() - (Number(task.reminderLeadMin || 0) * 60000));
+  };
+  const shiftTaskDate = (iso, repeat) => {
+    const date = new Date(`${iso}T12:00:00`);
+    if (repeat === "daily") date.setDate(date.getDate() + 1);
+    if (repeat === "weekly") date.setDate(date.getDate() + 7);
+    if (repeat === "monthly") date.setMonth(date.getMonth() + 1);
+    return `${date.getFullYear()}-${pad2(date.getMonth()+1)}-${pad2(date.getDate())}`;
+  };
+  const scheduleNextRepeat = (task) => {
+    if (!task?.done || !task.repeat || task.repeat === "none") return;
+    const nextDate = shiftTaskDate(task.date, task.repeat);
+    const sourceId = task.repeatSourceId || task.id;
+    const alreadyExists = state.tasks.some((item) => item.repeatSourceId === sourceId && item.date === nextDate);
+    if (alreadyExists) return;
+    state.tasks.push({ ...task, id: uid(), date: nextDate, done:false, inbox:false, isBig3:false, completedAt:"", snoozedUntil:"", repeatSourceId:sourceId });
+  };
+  const notificationPermission = () => ("Notification" in window ? Notification.permission : "unsupported");
+  const updateNotificationUI = () => {
+    const status = $("#notificationStatus");
+    const button = $("#btnEnableNotifications");
+    const permission = notificationPermission();
+    const labels = { granted:"اعلان سیستم و هشدار داخل اپ فعال است", denied:"اعلان سیستم مسدود است؛ هشدار داخل اپ فعال می‌ماند", default:"هشدار داخل اپ فعال است؛ برای اعلان سیستم اجازه بده", unsupported:"هشدار داخل اپ فعال است؛ اعلان سیستم پشتیبانی نمی‌شود" };
+    if (status) status.textContent = labels[permission] || labels.default;
+    if (button) {
+      button.disabled = permission === "granted" || permission === "unsupported";
+      button.textContent = permission === "granted" ? "اعلان دستگاه فعال است" : "فعال‌کردن اعلان دستگاه";
+    }
+    const healthTitle = $("#reminderHealthTitle");
+    const healthText = $("#reminderHealthText");
+    if (healthTitle) healthTitle.textContent = permission === "granted" ? "هشدار کامل فعال است" : "هشدار داخل اپ فعال است";
+    if (healthText) healthText.textContent = permission === "granted"
+      ? "موعدها داخل PlanOS و از طریق اعلان سیستم نمایش داده می‌شوند."
+      : "برای هشدار هنگام بسته بودن PlanOS، تسک را به تقویم دستگاه اضافه کن.";
+  };
+  const syncTaskReminderControls = () => {
+    const enabled = !!$("#taskReminderEnabled")?.checked;
+    if ($("#taskReminderControls")) $("#taskReminderControls").hidden = !enabled;
+    if ($("#taskReminderActions")) $("#taskReminderActions").hidden = !enabled;
+  };
+  const requestNotificationPermission = async () => {
+    if (!("Notification" in window)) { toast("این مرورگر اعلان سیستم را پشتیبانی نمی‌کند."); return false; }
+    const permission = await Notification.requestPermission();
+    updateNotificationUI();
+    toast(permission === "granted" ? "اعلان دستگاه فعال شد." : "اجازه اعلان داده نشد.");
+    return permission === "granted";
+  };
+  const escapeICS = (value) => String(value || "").replaceAll("\\", "\\\\").replaceAll(";", "\\;").replaceAll(",", "\\,").replaceAll("\n", "\\n");
+  const exportTaskToDeviceCalendar = (task) => {
+    const datePart = String(task.date || todayISO()).replaceAll("-", "");
+    const timePart = String(task.reminderTime || "09:00").replace(":", "") + "00";
+    const durationMin = Math.max(5, Number(task.estimateMin || 30));
+    const startDate = new Date(`${task.date}T${task.reminderTime || "09:00"}:00`);
+    const endDate = new Date(startDate.getTime() + durationMin * 60000);
+    const endPart = `${endDate.getFullYear()}${pad2(endDate.getMonth()+1)}${pad2(endDate.getDate())}T${pad2(endDate.getHours())}${pad2(endDate.getMinutes())}00`;
+    const repeatRule = ({ daily:"DAILY", weekly:"WEEKLY", monthly:"MONTHLY" })[task.repeat];
+    const lead = Math.max(0, Number(task.reminderLeadMin || 0));
+    const lines = [
+      "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//PlanOS//FA", "CALSCALE:GREGORIAN", "BEGIN:VEVENT",
+      `UID:${escapeICS(task.id || uid())}@planos.local`,
+      `DTSTAMP:${new Date().toISOString().replaceAll("-", "").replaceAll(":", "").replace(/\.\d{3}/, "")}`,
+      `DTSTART:${datePart}T${timePart}`, `DTEND:${endPart}`, `SUMMARY:${escapeICS(task.title)}`,
+      `DESCRIPTION:${escapeICS(`برنامه ثبت‌شده در PlanOS • ${task.category || ""}`)}`
+    ];
+    if (repeatRule) lines.push(`RRULE:FREQ=${repeatRule}`);
+    lines.push("BEGIN:VALARM", "ACTION:DISPLAY", `DESCRIPTION:${escapeICS(task.title)}`, `TRIGGER:-PT${lead}M`, "END:VALARM", "END:VEVENT", "END:VCALENDAR");
+    const blob = new Blob([lines.join("\r\n")], { type:"text/calendar;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `PlanOS-${task.date}-${String(task.title).slice(0, 30).replace(/[^\p{L}\p{N}_-]+/gu, "-") || "task"}.ics`;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    toast("فایل تقویم ساخته شد؛ آن را در تقویم گوشی یا لپ‌تاپ باز کن.");
+  };
+  const showTaskNotification = async (task) => {
+    const title = "یادآور PlanOS";
+    const body = `${task.title} • ${isoToJalaliStr(task.date)} ساعت ${task.reminderTime || "09:00"}`;
+    activeReminderIds.add(task.id);
+    renderReminderCenter();
+    openReminderCenter();
+    if (notificationPermission() === "granted") {
+      try {
+        if ("serviceWorker" in navigator) {
+          const registration = await navigator.serviceWorker.ready;
+          await registration.showNotification(title, { body, icon:"./icons/icon-192.png", badge:"./icons/icon-192.png", tag:reminderKey(task), renotify:true, data:{ taskId:task.id, date:task.date } });
+        } else {
+          new Notification(title, { body, tag:reminderKey(task) });
+        }
+      } catch { /* هشدار داخل برنامه همچنان نمایش داده می‌شود. */ }
+    }
+    toast(`یادآور: ${task.title}`);
+  };
+  const checkDueReminders = async () => {
+    const sent = reminderSent();
+    const now = new Date();
+    const due = state.tasks
+      .filter((task) => !task.inbox && task.reminderEnabled && !task.done && !sent[reminderKey(task)] && taskReminderAt(task) <= now)
+      .sort((a, b) => taskReminderAt(a) - taskReminderAt(b))
+      .slice(0, 5);
+    for (const task of due) {
+      await showTaskNotification(task);
+      sent[reminderKey(task)] = new Date().toISOString();
+    }
+    if (due.length) localStorage.setItem(REMINDER_SENT_KEY, JSON.stringify(sent));
+    renderReminderCenter();
+  };
+
+  const reminderTimeLabel = (task) => {
+    const date = taskReminderAt(task);
+    return `${isoToJalaliStr(task.date)} • ${pad2(date.getHours())}:${pad2(date.getMinutes())}`;
+  };
+  function renderReminderCenter(){
+    const list = $("#reminderCenterList");
+    if (!list) return;
+    for (const id of activeReminderIds) {
+      if (!state.tasks.some((task) => task.id === id && !task.done && task.reminderEnabled)) activeReminderIds.delete(id);
+    }
+    const now = new Date();
+    const reminders = state.tasks
+      .filter((task) => !task.inbox && task.reminderEnabled && !task.done)
+      .sort((a,b) => taskReminderAt(a) - taskReminderAt(b))
+      .slice(0, 12);
+    const sent = reminderSent();
+    const dueCount = reminders.filter((task) => taskReminderAt(task) <= now && (activeReminderIds.has(task.id) || !sent[reminderKey(task)])).length;
+    $("#notificationDot")?.classList.toggle("is-active", dueCount > 0 || activeReminderIds.size > 0);
+    if (!reminders.length) {
+      list.innerHTML = `<div class="reminder-empty">${uiIconMarkup("bell")}<strong>یادآوری ثبت نشده</strong><div>برای یک تسک، روز و ساعت مشخص کن تا اینجا مراقب موعدش باشیم.</div></div>`;
+      hydrateInterfaceIcons(list);
+      return;
+    }
+    list.innerHTML = reminders.map((task) => {
+      const due = taskReminderAt(task) <= now;
+      return `<article class="reminder-item${due ? " is-due" : ""}" data-reminder-id="${task.id}">
+        <div class="reminder-item-head"><div><div class="reminder-item-title">${escapeHtml(task.title)}</div><div class="reminder-item-meta">${due ? "موعد رسیده" : "یادآور بعدی"}${task.snoozedUntil ? " • به‌تعویق‌افتاده" : ""}</div></div><time class="reminder-item-time">${reminderTimeLabel(task)}</time></div>
+        <div class="reminder-item-actions">
+          <button class="btn btn-primary" data-reminder-act="done" data-id="${task.id}">انجام شد</button>
+          <button class="btn btn-secondary" data-reminder-act="snooze" data-id="${task.id}">10 دقیقه بعد</button>
+          <button class="btn btn-secondary" data-reminder-act="open" data-id="${task.id}">باز کردن</button>
+          ${due ? `<button class="btn btn-ghost" data-reminder-act="dismiss" data-id="${task.id}">بستن هشدار</button>` : ""}
+        </div>
+      </article>`;
+    }).join("");
+    applyEnglishDigits(list);
+  }
+  function openReminderCenter(){
+    const panel = $("#reminderCenter");
+    const scrim = $("#reminderScrim");
+    if (!panel || !scrim) return;
+    renderReminderCenter();
+    panel.classList.add("is-open");
+    panel.setAttribute("aria-hidden","false");
+    scrim.hidden = false;
+  }
+  function closeReminderCenter(){
+    $("#reminderCenter")?.classList.remove("is-open");
+    $("#reminderCenter")?.setAttribute("aria-hidden","true");
+    if ($("#reminderScrim")) $("#reminderScrim").hidden = true;
+  }
+
+  const addDaysISO = (iso, days) => {
+    const date = new Date(`${iso}T12:00:00`);
+    date.setDate(date.getDate() + days);
+    return `${date.getFullYear()}-${pad2(date.getMonth()+1)}-${pad2(date.getDate())}`;
+  };
+  const linkedProject = (task) => state.projects.find((project) => project.id === task.projectId) || null;
+  const linkedGoal = (task) => state.goals.find((goal) => goal.id === task.goalId) || null;
+  const taskPriorityScore = (task) => {
+    const today = todayISO();
+    return (task.priority === "high" ? 30 : task.priority === "medium" ? 15 : 5)
+      + (!task.inbox && task.date < today ? 40 : 0)
+      + (!task.inbox && task.date === today ? 20 : 0)
+      + (task.projectId ? 4 : 0);
+  };
+  const big3Candidates = (iso) => state.tasks
+    .filter((task) => !task.done && (task.inbox || task.date <= iso))
+    .sort((a, b) => taskPriorityScore(b) - taskPriorityScore(a) || a.date.localeCompare(b.date));
+  const taskCompactMarkup = (task, context) => {
+    const project = linkedProject(task);
+    const goal = linkedGoal(task);
+    const overdue = !task.inbox && !task.done && task.date < todayISO();
+    const actions = context === "inbox"
+      ? `<button class="btn btn-secondary" data-act="scheduleToday" data-id="${task.id}">امروز</button><button class="btn btn-secondary" data-act="scheduleTomorrow" data-id="${task.id}">فردا</button>`
+      : context === "overdue"
+        ? `<button class="btn btn-secondary" data-act="scheduleToday" data-id="${task.id}">انتقال به امروز</button><button class="btn btn-secondary" data-act="scheduleTomorrow" data-id="${task.id}">فردا</button><button class="btn btn-secondary" data-act="toggle" data-id="${task.id}">انجام شد</button>`
+        : `<button class="btn btn-secondary" data-act="toggleBig3" data-id="${task.id}">${task.isBig3 ? "خروج از Big 3" : "انتخاب Big 3"}</button><button class="btn btn-secondary" data-act="toggle" data-id="${task.id}">انجام شد</button>`;
+    return `
+      <div class="planner-task-compact${overdue ? " is-overdue" : ""}${task.isBig3 ? " is-big3" : ""}">
+        <div class="item-main">
+          <div class="planner-task-title">${task.isBig3 ? `<span class="big3-marker">★</span> ` : ""}${escapeHtml(task.title)}</div>
+          <div class="item-meta">
+            ${task.inbox ? `<span class="mini">Inbox</span>` : `<span class="mini">${isoToJalaliStr(task.date)}</span>`}
+            <span class="mini">${priorityLabel(task.priority)}</span>
+            <span class="mini">${Number(task.estimateMin || 0)} دقیقه</span>
+            ${project ? `<span class="mini acc">پروژه: ${escapeHtml(project.name)}</span>` : ""}
+            ${goal ? `<span class="mini ok">هدف: ${escapeHtml(goal.title)}</span>` : ""}
+          </div>
+        </div>
+        <div class="planner-task-actions">${actions}<button class="btn btn-ghost" data-act="edit" data-id="${task.id}">ویرایش</button></div>
+      </div>`;
+  };
+  const renderCompactTasks = (container, tasks, context) => {
+    container.innerHTML = tasks.map((task) => taskCompactMarkup(task, context)).join("");
+  };
+  const renderPlannerCommandCenter = () => {
+    const activeDayTasks = tasksByDate(plannerDate).filter((task) => !task.done);
+    const plannedMin = activeDayTasks.reduce((sum, task) => sum + Number(task.estimateMin || 0), 0);
+    const capacity = Math.max(30, Number(state.settings.dailyCapacityMin || 480));
+    const remaining = capacity - plannedMin;
+    $("#todayPlannedMin").textContent = `${plannedMin} دقیقه`;
+    $("#todayCapacityLabel").textContent = `${Math.floor(capacity / 60)} ساعت و ${capacity % 60} دقیقه`;
+    $("#todayRemainingMin").textContent = remaining >= 0 ? `${remaining} دقیقه` : `${Math.abs(remaining)} دقیقه اضافه`;
+    $("#todayCapacity").value = capacity;
+    $("#todayCapacityBar").style.width = `${Math.min(100, Math.round(plannedMin / capacity * 100))}%`;
+    const capacityState = $("#todayCapacityState");
+    capacityState.className = remaining < 0 ? "chip danger" : remaining < 60 ? "chip warn" : "chip ok";
+    capacityState.textContent = remaining < 0 ? "بیش‌ازظرفیت" : remaining < 60 ? "تقریباً پر" : "متعادل";
+
+    const chosenBig3 = activeDayTasks.filter((task) => task.isBig3).slice(0, 3);
+    const displayBig3 = chosenBig3.length ? chosenBig3 : big3Candidates(plannerDate).slice(0, 3);
+    renderCompactTasks($("#todayBig3List"), displayBig3, "big3");
+    if (!displayBig3.length) $("#todayBig3List").innerHTML = `<div class="muted small">هنوز کاری برای انتخاب Big 3 وجود ندارد.</div>`;
+
+    const inbox = state.tasks.filter((task) => task.inbox && !task.done).sort((a,b) => taskPriorityScore(b) - taskPriorityScore(a));
+    $("#plannerInboxCount").textContent = inbox.length;
+    $("#plannerInboxEmpty").style.display = inbox.length ? "none" : "flex";
+    renderCompactTasks($("#plannerInboxList"), inbox.slice(0, 8), "inbox");
+
+    const overdue = state.tasks.filter((task) => !task.inbox && !task.done && task.date < todayISO())
+      .sort((a,b) => a.date.localeCompare(b.date));
+    $("#plannerOverdueCount").textContent = overdue.length;
+    $("#plannerOverdueEmpty").style.display = overdue.length ? "none" : "flex";
+    renderCompactTasks($("#plannerOverdueList"), overdue.slice(0, 12), "overdue");
+
+    const weekStart = addDaysISO(todayISO(), -6);
+    const weeklyDone = state.tasks.filter((task) => task.done && ((task.completedAt || "").slice(0,10) >= weekStart || (!task.completedAt && task.date >= weekStart))).length;
+    const stuck = state.projects.filter((project) => project.status !== "done" && !String(project.nextAction || "").trim());
+    $("#weeklyDoneCount").textContent = weeklyDone;
+    $("#weeklyInboxCount").textContent = inbox.length;
+    $("#weeklyOverdueCount").textContent = overdue.length;
+    $("#weeklyStuckCount").textContent = stuck.length;
+    const lastReview = state.weeklyReviews.slice().sort((a,b) => b.date.localeCompare(a.date))[0];
+    $("#weeklyReviewLast").textContent = lastReview
+      ? `آخرین مرور: ${isoToJalaliStr(lastReview.date)} • انرژی ${lastReview.energy}/5${lastReview.nextFocus ? ` • تمرکز بعدی: ${lastReview.nextFocus.split("\n")[0]}` : ""}`
+      : "هنوز مرور هفتگی ثبت نشده است.";
+    $("#weeklyStuckProjects").innerHTML = stuck.slice(0, 5).map((project) => `
+      <div class="planner-task-compact is-overdue">
+        <div><div class="planner-task-title">${escapeHtml(project.name)}</div><div class="muted2 small">این پروژه اقدام بعدی مشخص ندارد.</div></div>
+        <button class="btn btn-secondary" data-open-project="${project.id}">تعیین اقدام بعدی</button>
+      </div>`).join("");
+  };
 
   const renderPlanner = () => {
     $("#plannerDate").value = plannerDate;
@@ -4580,6 +6070,11 @@ canvas {
             <span class="${priChip}">${priorityLabel(t.priority)}</span>
             <span class="${doneChip}">${t.done ? "انجام شد" : "در انتظار"}</span>
             <span class="mini">⏱ ${Number(t.estimateMin||0)} دقیقه</span>
+            ${t.isBig3 ? `<span class="mini acc">★ Big 3</span>` : ""}
+            ${linkedProject(t) ? `<span class="mini acc">پروژه: ${escapeHtml(linkedProject(t).name)}</span>` : ""}
+            ${linkedGoal(t) ? `<span class="mini ok">هدف: ${escapeHtml(linkedGoal(t).title)}</span>` : ""}
+            ${t.reminderEnabled ? `<span class="mini acc">یادآور ${escapeHtml(t.reminderTime || "09:00")}</span>` : ""}
+            ${t.repeat && t.repeat !== "none" ? `<span class="mini">تکرار ${repeatLabel(t.repeat)}</span>` : ""}
           </div>
         </div>
         <div class="item-actions">
@@ -4590,9 +6085,24 @@ canvas {
       `;
       list.appendChild(item);
     });
+    renderPlannerCommandCenter();
     applyEnglishDigits();
   };
 
+  const populateLinkedEntityOptions = () => {
+    const taskProject = $("#taskProject");
+    const taskGoal = $("#taskGoal");
+    const projGoal = $("#projGoal");
+    taskProject.innerHTML = `<option value="">بدون پروژه</option>${state.projects.map((project) => `<option value="${project.id}">${escapeHtml(project.name)}</option>`).join("")}`;
+    const goalOptions = `<option value="">بدون هدف</option>${state.goals.map((goal) => `<option value="${goal.id}">${escapeHtml(goal.title)}</option>`).join("")}`;
+    taskGoal.innerHTML = goalOptions;
+    projGoal.innerHTML = goalOptions;
+  };
+  const syncTaskInboxControls = () => {
+    const isInbox = $("#taskInbox").checked;
+    $("#taskDate").disabled = isInbox;
+    $("#taskDateJ").textContent = isInbox ? "این تسک پس از ثبت در Inbox می‌ماند." : `تاریخ شمسی: ${isoToJalaliStr($("#taskDate").value || plannerDate)}`;
+  };
   const openTaskDialog = (task=null) => {
     editingTaskId = task ? task.id : null;
     $("#dlgTaskTitle").textContent = task ? "ویرایش تسک" : "افزودن تسک";
@@ -4600,20 +6110,38 @@ canvas {
 
     $("#taskTitle").value = task ? task.title : "";
     $("#taskDate").value = task ? task.date : plannerDate;
-    $("#taskDateJ").textContent = isoToJalaliStr($("#taskDate").value || plannerDate);
+    populateLinkedEntityOptions();
+    $("#taskInbox").checked = task ? !!task.inbox : false;
+    $("#taskDateJ").textContent = `تاریخ شمسی: ${isoToJalaliStr($("#taskDate").value || plannerDate)}`;
 
     $("#taskPriority").value = task ? task.priority : "medium";
     $("#taskCategory").value = task ? task.category : "کار";
     $("#taskTimeBlock").value = task ? task.timeBlock : "صبح";
+    $("#taskProject").value = task?.projectId || "";
+    $("#taskGoal").value = task?.goalId || linkedProject(task || {})?.goalId || "";
     $("#taskEstimate").value = task ? Number(task.estimateMin||0) : 30;
     $("#taskDone").checked = task ? !!task.done : false;
+    $("#taskBig3").checked = task ? !!task.isBig3 : false;
+    $("#taskReminderEnabled").checked = task ? !!task.reminderEnabled : false;
+    $("#taskReminderTime").value = task?.reminderTime || "09:00";
+    $("#taskReminderLead").value = String(task?.reminderLeadMin ?? 15);
+    $("#taskRepeat").value = task?.repeat || "none";
+    syncTaskInboxControls();
+    syncTaskReminderControls();
+    updateNotificationUI();
 
     openDlg("dlgTask");
   };
 
   $("#taskDate").addEventListener("change", (e) => {
     const iso = e.target.value || plannerDate;
-    $("#taskDateJ").textContent = isoToJalaliStr(iso);
+    $("#taskDateJ").textContent = `تاریخ شمسی: ${isoToJalaliStr(iso)}`;
+  });
+  $("#taskInbox").addEventListener("change", syncTaskInboxControls);
+  $("#taskReminderEnabled").addEventListener("change", syncTaskReminderControls);
+  $("#taskProject").addEventListener("change", () => {
+    const project = state.projects.find((item) => item.id === $("#taskProject").value);
+    if (project?.goalId) $("#taskGoal").value = project.goalId;
   });
 
   $("#plannerDate").addEventListener("change", (e) => {
@@ -4623,6 +6151,7 @@ canvas {
 
   $("#btnAddTask").addEventListener("click", () => { showView("planner"); openTaskDialog(null); });
   $("#btnAddTask2").addEventListener("click", () => openTaskDialog(null));
+  $("#btnMobileAddReminder").addEventListener("click", () => { plannerDate = selectedCalendarDate || todayISO(); openTaskDialog(null); });
   $("#btnPlannerEmptyAdd").addEventListener("click", () => openTaskDialog(null));
   $("#chartWeekCTA").addEventListener("click", () => { showView("planner"); openTaskDialog(null); });
   $("#chartIncomeCTA").addEventListener("click", () => { showView("projects"); openProjectDialog(null); });
@@ -4654,15 +6183,64 @@ canvas {
   $("#btnQuickAdd").addEventListener("click", () => {
     const title = $("#quickTaskTitle").value.trim();
     if(!title){ toast("عنوان تسک رو بنویس."); return; }
-    state.tasks.unshift({ id: uid(), title, date: plannerDate, done:false, priority:"medium", category:"کار", timeBlock:"صبح", estimateMin:30 });
+    const inbox = $("#quickTaskTarget").value === "inbox";
+    state.tasks.unshift({ id: uid(), title, date: plannerDate, inbox, isBig3:false, projectId:"", goalId:"", completedAt:"", done:false, priority:"medium", category:"کار", timeBlock:"صبح", estimateMin:30, reminderEnabled:false, reminderTime:"09:00", reminderLeadMin:15, repeat:"none", repeatSourceId:"" });
     $("#quickTaskTitle").value = "";
     saveState(); renderPlanner(); renderDashboard({ forceInsight: true }); renderDashboardCharts();
-    toast("تسک اضافه شد ✅");
+    toast(inbox ? "تسک در Inbox ذخیره شد." : "تسک به برنامه اضافه شد.");
   });
 
   $("#toggleShowDone").addEventListener("click", () => { showDone = !showDone; renderPlanner(); });
 
-  $("#plannerList").addEventListener("click", (e) => {
+  $("#todayCapacity").addEventListener("change", (event) => {
+    state.settings.dailyCapacityMin = Math.max(30, Math.min(1440, Number(event.target.value || 480)));
+    saveState(); renderPlanner();
+    toast("ظرفیت روز ذخیره شد.");
+  });
+  $("#btnAutoPickBig3").addEventListener("click", () => {
+    state.tasks.filter((task) => !task.inbox && task.date === plannerDate).forEach((task) => { task.isBig3 = false; });
+    const selected = big3Candidates(plannerDate).slice(0, 3);
+    selected.forEach((task) => { task.inbox = false; task.date = plannerDate; task.isBig3 = true; });
+    saveState(); renderPlanner();
+    toast(selected.length ? `${selected.length} اولویت اصلی پیشنهاد شد ★` : "تسکی برای پیشنهاد وجود ندارد.");
+  });
+
+  const openWeeklyReviewDialog = () => {
+    const today = todayISO();
+    const inboxCount = state.tasks.filter((task) => task.inbox && !task.done).length;
+    const overdueCount = state.tasks.filter((task) => !task.inbox && !task.done && task.date < today).length;
+    const stuckCount = state.projects.filter((project) => project.status !== "done" && !String(project.nextAction || "").trim()).length;
+    $("#weeklyReviewChecklist").innerHTML = `
+      <span class="chip ${inboxCount ? "warn" : "ok"}">Inbox: ${inboxCount}</span>
+      <span class="chip ${overdueCount ? "danger" : "ok"}">عقب‌افتاده: ${overdueCount}</span>
+      <span class="chip ${stuckCount ? "warn" : "ok"}">پروژه بدون اقدام: ${stuckCount}</span>`;
+    $("#weeklyReviewDate").value = today;
+    $("#weeklyReviewWins").value = "";
+    $("#weeklyReviewLessons").value = "";
+    $("#weeklyReviewFocus").value = "";
+    $("#weeklyReviewEnergy").value = "3";
+    openDlg("dlgWeeklyReview");
+  };
+  $("#btnStartWeeklyReview").addEventListener("click", openWeeklyReviewDialog);
+  $("#btnWeeklyReviewSave").addEventListener("click", () => {
+    const nextFocus = $("#weeklyReviewFocus").value.trim();
+    if (!nextFocus) { toast("حداقل یک تمرکز برای هفته بعد ثبت کن."); return; }
+    state.weeklyReviews.unshift({
+      id: uid(), date: $("#weeklyReviewDate").value || todayISO(),
+      wins: $("#weeklyReviewWins").value.trim(), lessons: $("#weeklyReviewLessons").value.trim(),
+      nextFocus, energy: Number($("#weeklyReviewEnergy").value || 3), createdAt: new Date().toISOString()
+    });
+    saveState(); closeDlg("dlgWeeklyReview"); renderPlanner();
+    toast("مرور هفتگی ثبت شد؛ هفته بعد روشن‌تر است.");
+  });
+
+  $("#view-planner").addEventListener("click", (e) => {
+    const projectButton = e.target.closest("[data-open-project]");
+    if (projectButton) {
+      const project = state.projects.find((item) => item.id === projectButton.dataset.openProject);
+      if (project) openProjectDialog(project);
+      return;
+    }
     const btn = e.target.closest("[data-act]");
     if(!btn) return;
     const id = btn.dataset.id;
@@ -4678,17 +6256,36 @@ canvas {
         item.addEventListener("animationend", () => item.classList.remove("task-complete"), { once: true });
       }
       task.done = nextDone;
+      task.completedAt = nextDone ? new Date().toISOString() : "";
+      if (nextDone) scheduleNextRepeat(task);
       saveState();
       const update = () => { renderPlanner(); renderDashboard({ forceInsight: true }); renderDashboardCharts(); };
       if(prefersReducedMotion.matches){ update(); }
       else { setTimeout(update, 160); }
       return;
     }
+    if(act==="scheduleToday" || act==="scheduleTomorrow"){
+      task.inbox = false;
+      task.date = act === "scheduleToday" ? todayISO() : addDaysISO(todayISO(), 1);
+      saveState(); renderAll({ forceInsight:true }); renderDashboardCharts();
+      toast(act === "scheduleToday" ? "به برنامه امروز منتقل شد." : "برای فردا زمان‌بندی شد.");
+      return;
+    }
+    if(act==="toggleBig3"){
+      if (!task.isBig3) {
+        const current = state.tasks.filter((item) => !item.done && !item.inbox && item.date === plannerDate && item.isBig3);
+        if (current.length >= 3) { toast("برای هر روز حداکثر سه اولویت اصلی انتخاب کن."); return; }
+        task.inbox = false;
+        task.date = plannerDate;
+      }
+      task.isBig3 = !task.isBig3;
+      saveState(); renderPlanner();
+      toast(task.isBig3 ? "به Big 3 اضافه شد ★" : "از Big 3 خارج شد.");
+      return;
+    }
     if(act==="edit"){ openTaskDialog(task); return; }
     if(act==="del"){
-      state.tasks = state.tasks.filter(t => t.id !== id);
-      saveState(); renderPlanner(); renderDashboard({ forceInsight: true }); renderDashboardCharts();
-      toast("حذف شد.");
+      deleteWithUndo("تسک", () => { state.tasks = state.tasks.filter(t => t.id !== id); });
       return;
     }
   });
@@ -4705,16 +6302,34 @@ canvas {
       category: $("#taskCategory").value.trim() || "کار",
       timeBlock: $("#taskTimeBlock").value,
       estimateMin: Number($("#taskEstimate").value || 0),
-      done: $("#taskDone").checked
+      done: $("#taskDone").checked,
+      reminderEnabled: $("#taskReminderEnabled").checked,
+      reminderTime: $("#taskReminderTime").value || "09:00",
+      reminderLeadMin: Number($("#taskReminderLead").value || 0),
+      snoozedUntil: "",
+      repeat: $("#taskRepeat").value || "none"
+      ,projectId: $("#taskProject").value || ""
+      ,goalId: $("#taskGoal").value || state.projects.find((project) => project.id === $("#taskProject").value)?.goalId || ""
+      ,inbox: $("#taskInbox").checked
+      ,isBig3: $("#taskBig3").checked && !$("#taskInbox").checked
+      ,completedAt: $("#taskDone").checked ? (state.tasks.find((task) => task.id === editingTaskId)?.completedAt || new Date().toISOString()) : ""
     };
+
+    if (patch.isBig3) {
+      const otherBig3 = state.tasks.filter((task) => task.id !== editingTaskId && !task.done && !task.inbox && task.date === date && task.isBig3);
+      if (otherBig3.length >= 3) { toast("برای این روز قبلاً سه اولویت اصلی انتخاب شده است."); return; }
+    }
 
     if(editingTaskId){
       const idx = state.tasks.findIndex(t => t.id === editingTaskId);
-      if(idx >= 0) state.tasks[idx] = { ...state.tasks[idx], ...patch };
-      toast("تسک آپدیت شد ✅");
+      if(idx >= 0) {
+        state.tasks[idx] = { ...state.tasks[idx], ...patch };
+        scheduleNextRepeat(state.tasks[idx]);
+      }
+      toast("تسک به‌روزرسانی شد.");
     } else {
       state.tasks.unshift({ id: uid(), ...patch });
-      toast("تسک ذخیره شد ✅");
+      toast("تسک ذخیره شد.");
     }
 
     plannerDate = date;
@@ -4726,21 +6341,64 @@ canvas {
 
   $("#btnTaskDelete").addEventListener("click", () => {
     if(!editingTaskId) return;
-    state.tasks = state.tasks.filter(t => t.id !== editingTaskId);
-    saveState();
     closeDlg("dlgTask");
-    renderAll({ forceInsight: true });
-    renderDashboardCharts();
-    toast("تسک حذف شد.");
+    deleteWithUndo("تسک", () => { state.tasks = state.tasks.filter(t => t.id !== editingTaskId); });
   });
 
   // =========================
   // Calendar (Jalali cursor)
   // =========================
   let monthCursor = currentJalaliYM(); // {jy,jm}
+  let selectedCalendarDate = todayISO();
+  let calendarMode = "month";
+
+  const renderCalendarDetails = () => {
+    const tasks = tasksByDate(selectedCalendarDate).slice().sort((a, b) => {
+      if (a.done !== b.done) return a.done ? 1 : -1;
+      return String(a.reminderTime || "99:99").localeCompare(String(b.reminderTime || "99:99"));
+    });
+    const done = tasks.filter((task) => task.done).length;
+    const projects = state.projects.filter((project) => project.date === selectedCalendarDate);
+    const summary = $("#calSelectedSummary");
+    summary.innerHTML = `
+      <div class="selected-day-head">
+        <div><div class="selected-day-title">${selectedCalendarDate === todayISO() ? "امروز" : "روز انتخاب‌شده"}</div><div class="selected-day-date">${isoToJalaliStr(selectedCalendarDate)} • ${escapeHtml(selectedCalendarDate)}</div></div>
+        <button class="btn btn-secondary" type="button" data-calendar-open-day>بازکردن روز</button>
+      </div>
+      <div class="selected-day-stats">
+        <span class="chip">${toEnglishDigits(tasks.length)} تسک</span>
+        <span class="chip ok">${toEnglishDigits(done)} انجام‌شده</span>
+        <span class="chip acc">${toEnglishDigits(tasks.filter((task) => task.reminderEnabled).length)} یادآور</span>
+        <span class="chip">${toEnglishDigits(projects.length)} پروژه</span>
+      </div>`;
+
+    const agenda = $("#calAgendaList");
+    agenda.innerHTML = tasks.length ? tasks.map((task) => `
+      <div class="agenda-item${task.done ? " done" : ""}">
+        <div class="agenda-time">${task.reminderEnabled ? escapeHtml(task.reminderTime || "09:00") : "—"}</div>
+        <div class="agenda-copy"><strong>${escapeHtml(task.title)}</strong><span>${escapeHtml(task.category || "بدون دسته")} ${task.repeat && task.repeat !== "none" ? `• ${repeatLabel(task.repeat)}` : ""}</span></div>
+        <button class="btn btn-icon" type="button" data-calendar-toggle="${task.id}" aria-label="تغییر وضعیت ${escapeHtml(task.title)}">${task.done ? "↶" : "✓"}</button>
+      </div>`).join("") : `<div class="agenda-empty">برای این روز کاری ثبت نشده است.<br>با دکمه افزودن، برنامه روز را کامل کن.</div>`;
+
+    const overdueTasks = state.tasks.filter((task) => !task.inbox && !task.done && task.date < todayISO());
+    const overdueProjects = state.projects.filter((project) => project.status !== "done" && project.date < todayISO());
+    const alert = $("#calOverdueAlert");
+    const overdueCount = overdueTasks.length + overdueProjects.length;
+    alert.hidden = !overdueCount;
+    if (overdueCount) alert.innerHTML = `
+      <div class="calendar-alert-title">${toEnglishDigits(overdueCount)} مورد عقب‌افتاده</div>
+      <p>${toEnglishDigits(overdueTasks.length)} تسک و ${toEnglishDigits(overdueProjects.length)} پروژه هنوز تعیین‌تکلیف نشده‌اند.</p>
+      <button class="btn btn-secondary" type="button" data-calendar-review-overdue>مرور موارد عقب‌افتاده</button>`;
+  };
 
   const renderCalendar = () => {
     $("#calMonthLabel").textContent = jalaliMonthLabel(monthCursor.jy, monthCursor.jm);
+    $("#calendarShell").dataset.mode = calendarMode;
+    $$('[data-cal-mode]').forEach((button) => {
+      const active = button.dataset.calMode === calendarMode;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-selected", active ? "true" : "false");
+    });
 
     // DOW header
     const dow = $("#calDow");
@@ -4772,13 +6430,16 @@ canvas {
       const dayProjects = state.projects.filter(p=>p.date === iso);
       const inc = calcIncome(dayProjects);
 
-      const cell = document.createElement("div");
-      cell.className = "cal-day";
+      const cell = document.createElement("button");
+      cell.type = "button";
+      const reminderCount = dayTasks.filter((task) => task.reminderEnabled && !task.done).length;
+      cell.className = `cal-day${iso === todayISO() ? " is-today" : ""}${iso === selectedCalendarDate ? " is-selected" : ""}`;
       cell.dataset.iso = iso;
+      cell.setAttribute("aria-label", `${isoToJalaliStr(iso)}، ${dayTasks.length} تسک، ${reminderCount} یادآور`);
       cell.innerHTML = `
         <div class="cal-top">
           <span class="cal-num">${toEnglishDigits(jd)}</span>
-          <span class="mini">${isoToJalaliStr(iso)}</span>
+          <span class="mini cal-date-label">${isoToJalaliStr(iso)}</span>
         </div>
         <div class="cal-badges">
           <span class="mini acc">تسک: ${toEnglishDigits(dayTasks.length)}</span>
@@ -4786,9 +6447,15 @@ canvas {
           <span class="mini">پروژه: ${toEnglishDigits(dayProjects.length)}</span>
           ${inc ? `<span class="mini acc">درآمد: ${moneyFA(inc)}</span>` : ""}
         </div>
+        <div class="cal-day-dots" aria-hidden="true">
+          ${dayTasks.length ? '<i class="cal-day-dot"></i>' : ""}
+          ${done ? '<i class="cal-day-dot done"></i>' : ""}
+          ${reminderCount ? '<i class="cal-day-dot reminder"></i>' : ""}
+        </div>
       `;
       grid.appendChild(cell);
     }
+    renderCalendarDetails();
     applyEnglishDigits();
   };
 
@@ -4806,10 +6473,28 @@ canvas {
     if(!cell || cell.classList.contains("blank")) return;
     const iso = cell.dataset.iso;
     if(!iso) return;
+    selectedCalendarDate = iso;
     plannerDate = iso;
-    showView("planner");
-    renderPlanner();
+    renderCalendar();
   });
+
+  $("#calendarShell").addEventListener("click", (event) => {
+    const mode = event.target.closest("[data-cal-mode]");
+    if (mode) { calendarMode = mode.dataset.calMode; renderCalendar(); return; }
+    if (event.target.closest("[data-calendar-open-day]")) { plannerDate = selectedCalendarDate; showView("planner"); renderPlanner(); return; }
+    if (event.target.closest("[data-calendar-review-overdue]")) { showView("dashboard"); $("#dashInsightActions")?.scrollIntoView({ behavior:"smooth", block:"center" }); return; }
+    const toggle = event.target.closest("[data-calendar-toggle]");
+    if (toggle) {
+      const task = state.tasks.find((item) => item.id === toggle.dataset.calendarToggle);
+      if (!task) return;
+      task.done = !task.done;
+      task.completedAt = task.done ? new Date().toISOString() : "";
+      if (task.done) scheduleNextRepeat(task);
+      saveState(); renderAll({ forceInsight:true }); renderDashboardCharts();
+    }
+  });
+
+  $("#btnCalendarAdd").addEventListener("click", () => { plannerDate = selectedCalendarDate; openTaskDialog(null); });
 
   // =========================
   // Projects
@@ -4822,13 +6507,16 @@ canvas {
     $("#dlgProjectTitle").textContent = proj ? "ویرایش پروژه" : "افزودن پروژه";
     $("#btnProjectDelete").style.visibility = proj ? "visible" : "hidden";
 
+    populateLinkedEntityOptions();
     $("#projName").value = proj ? proj.name : "";
     $("#projClient").value = proj ? proj.client : "";
     $("#projAmount").value = proj ? Number(proj.amount||0) : "";
     $("#projDate").value = proj ? proj.date : todayISO();
     $("#projDateJ").textContent = isoToJalaliStr($("#projDate").value || todayISO());
     $("#projStatus").value = proj ? proj.status : "todo";
+    $("#projGoal").value = proj?.goalId || "";
     $("#projTags").value = proj ? (proj.tags||[]).join(", ") : "";
+    $("#projNextAction").value = proj?.nextAction || "";
     $("#projNotes").value = proj ? (proj.notes||"") : "";
 
     openDlg("dlgProject");
@@ -4856,10 +6544,13 @@ canvas {
     list.forEach(p => {
       const tr = document.createElement("tr");
       const chipClass = p.status==="done" ? "chip ok" : (p.status==="doing" ? "chip acc" : "chip");
+      const linkedTasks = state.tasks.filter((task) => task.projectId === p.id);
+      const linkedDone = linkedTasks.filter((task) => task.done).length;
+      const goal = state.goals.find((item) => item.id === p.goalId);
       tr.innerHTML = `
-        <td><b>${escapeHtml(p.name)}</b><div class="muted2 small">${(p.tags||[]).map(t=>"#"+escapeHtml(t)).join(" ")}</div></td>
+        <td><b>${escapeHtml(p.name)}</b><div class="muted2 small">${(p.tags||[]).map(t=>"#"+escapeHtml(t)).join(" ")}</div>${goal ? `<div class="linked-entity small">هدف: ${escapeHtml(goal.title)}</div>` : ""}<div class="muted2 small">${linkedDone}/${linkedTasks.length} تسک انجام‌شده</div>${p.nextAction ? `<div class="small">اقدام بعدی: ${escapeHtml(p.nextAction)}</div>` : `<div class="small" style="color:var(--danger)">اقدام بعدی مشخص نیست</div>`}</td>
         <td>${escapeHtml(p.client||"—")}</td>
-        <td class="nowrap">${moneyFA(p.amount)} ${state.profile.currency}</td>
+        <td class="nowrap">${moneyFA(p.amount)} ${escapeHtml(state.profile.currency)}</td>
         <td class="nowrap"><b>${isoToJalaliStr(p.date)}</b><div class="muted2 small">${escapeHtml(p.date)}</div></td>
         <td><span class="${chipClass}">${statusLabel(p.status)}</span></td>
         <td class="nowrap">
@@ -4886,9 +6577,10 @@ canvas {
 
     if(act==="edit"){ openProjectDialog(proj); return; }
     if(act==="del"){
-      state.projects = state.projects.filter(p => p.id !== id);
-      saveState(); renderProjects(); renderDashboard(); renderDashboardCharts();
-      toast("پروژه حذف شد.");
+      deleteWithUndo("پروژه", () => {
+        state.projects = state.projects.filter(p => p.id !== id);
+        state.tasks.forEach((task) => { if (task.projectId === id) task.projectId = ""; });
+      });
     }
   });
 
@@ -4903,6 +6595,8 @@ canvas {
       amount: Number($("#projAmount").value || 0),
       date: $("#projDate").value || todayISO(),
       status: $("#projStatus").value,
+      goalId: $("#projGoal").value || "",
+      nextAction: $("#projNextAction").value.trim(),
       tags,
       notes: $("#projNotes").value
     };
@@ -4910,10 +6604,10 @@ canvas {
     if(editingProjectId){
       const idx = state.projects.findIndex(p => p.id === editingProjectId);
       if(idx >= 0) state.projects[idx] = { ...state.projects[idx], ...patch };
-      toast("پروژه آپدیت شد ✅");
+      toast("پروژه به‌روزرسانی شد.");
     } else {
       state.projects.unshift({ id: uid(), ...patch });
-      toast("پروژه ذخیره شد ✅");
+      toast("پروژه ذخیره شد.");
     }
 
     saveState();
@@ -4924,12 +6618,11 @@ canvas {
 
   $("#btnProjectDelete").addEventListener("click", () => {
     if(!editingProjectId) return;
-    state.projects = state.projects.filter(p => p.id !== editingProjectId);
-    saveState();
     closeDlg("dlgProject");
-    renderAll();
-    renderDashboardCharts();
-    toast("پروژه حذف شد.");
+    deleteWithUndo("پروژه", () => {
+      state.projects = state.projects.filter(p => p.id !== editingProjectId);
+      state.tasks.forEach((task) => { if (task.projectId === editingProjectId) task.projectId = ""; });
+    });
   });
 
   // =========================
@@ -4966,6 +6659,9 @@ canvas {
 
     state.goals.forEach(g => {
       const rate = goalRate(g);
+      const linkedProjects = state.projects.filter((project) => project.goalId === g.id);
+      const linkedTasks = state.tasks.filter((task) => task.goalId === g.id || linkedProjects.some((project) => project.id === task.projectId));
+      const linkedTasksDone = linkedTasks.filter((task) => task.done).length;
       const card = document.createElement("div");
       card.className = "card";
       card.innerHTML = `
@@ -4984,6 +6680,8 @@ canvas {
           <span class="chip acc">فعلی: <b>${moneyFA(g.current)}</b></span>
           <span class="chip">هدف: <b>${moneyFA(g.target)}</b></span>
           <span class="chip ok">پیشرفت: <b>${rate}%</b></span>
+          <span class="chip acc">پروژه‌های مرتبط: <b>${linkedProjects.length}</b></span>
+          <span class="chip">تسک‌های مرتبط: <b>${linkedTasksDone}/${linkedTasks.length}</b></span>
         </div>
 
         <div style="margin-top:10px" class="bar"><i style="width:${rate}%"></i></div>
@@ -4991,11 +6689,11 @@ canvas {
         <div class="sep"></div>
         <div class="row" style="gap:10px;align-items:stretch">
           <div style="flex:1">
-            <label>آپدیت مقدار فعلی</label>
-            <input class="input" type="number" value="${Number(g.current||0)}" data-act="curInput" data-id="${g.id}" />
+            <label for="goal-current-${escapeHtml(g.id)}">آپدیت مقدار فعلی</label>
+            <input class="input" id="goal-current-${escapeHtml(g.id)}" type="number" value="${Number(g.current||0)}" data-act="curInput" data-id="${g.id}" />
           </div>
           <div style="width: 180px">
-            <label>&nbsp;</label>
+            <div aria-hidden="true" style="height:1.85em"></div>
             <button class="btn btn-secondary" data-act="saveCur" data-id="${g.id}">ذخیره مقدار</button>
           </div>
         </div>
@@ -5041,8 +6739,11 @@ canvas {
     }
     if(act==="delGoal"){
       const id = btn.dataset.id;
-      state.goals = state.goals.filter(g => g.id !== id);
-      saveState(); renderGoals(); toast("هدف حذف شد.");
+      deleteWithUndo("هدف", () => {
+        state.goals = state.goals.filter(g => g.id !== id);
+        state.projects.forEach((project) => { if (project.goalId === id) project.goalId = ""; });
+        state.tasks.forEach((task) => { if (task.goalId === id) task.goalId = ""; });
+      });
       return;
     }
     if(act==="toggleMs"){
@@ -5062,7 +6763,7 @@ canvas {
       if(!goal) return;
       const input = $(`[data-act="curInput"][data-id="${id}"]`, $("#goalsList"));
       goal.current = Number(input.value || 0);
-      saveState(); renderGoals(); toast("مقدار ذخیره شد ✅");
+      saveState(); renderGoals(); toast("مقدار ذخیره شد.");
       return;
     }
   });
@@ -5093,10 +6794,10 @@ canvas {
         patch.milestones = patch.milestones.map(m => ({...m, done: !!prevMap.get(m.text)}));
         state.goals[idx] = { ...prev, ...patch };
       }
-      toast("هدف آپدیت شد ✅");
+      toast("هدف به‌روزرسانی شد.");
     } else {
       state.goals.unshift({ id: uid(), ...patch });
-      toast("هدف ذخیره شد ✅");
+      toast("هدف ذخیره شد.");
     }
 
     saveState();
@@ -5106,11 +6807,12 @@ canvas {
 
   $("#btnGoalDelete").addEventListener("click", () => {
     if(!editingGoalId) return;
-    state.goals = state.goals.filter(g => g.id !== editingGoalId);
-    saveState();
     closeDlg("dlgGoal");
-    renderAll();
-    toast("هدف حذف شد.");
+    deleteWithUndo("هدف", () => {
+      state.goals = state.goals.filter(g => g.id !== editingGoalId);
+      state.projects.forEach((project) => { if (project.goalId === editingGoalId) project.goalId = ""; });
+      state.tasks.forEach((task) => { if (task.goalId === editingGoalId) task.goalId = ""; });
+    });
   });
 
   // =========================
@@ -5247,7 +6949,8 @@ canvas {
           </div>
         </div>
         <div class="crypto-item-meta">
-          <span>مقدار: ${toEnglishDigits(item.amount)}</span>
+          <label class="sr-only" for="cryptoAmount-${escapeHtml(item.id)}">مقدار ${escapeHtml(item.name)}</label>
+          <input class="input" id="cryptoAmount-${escapeHtml(item.id)}" type="number" min="0" step="any" value="${cleanNumber(item.amount, 0, 0)}" data-crypto-amount="${escapeHtml(item.id)}" style="width:120px" />
           <span class="crypto-value">ارزش: ${valueLabel}</span>
         </div>
         <div class="crypto-item-right">
@@ -5260,6 +6963,92 @@ canvas {
     contentEl.appendChild(list);
     applyEnglishDigits(contentEl);
   };
+
+  $("#cryptoAssetsContent").addEventListener("change", (event) => {
+    const input = event.target.closest("[data-crypto-amount]");
+    if (!input) return;
+    const item = state.assets.crypto.items.find((entry) => entry.id === input.dataset.cryptoAmount);
+    if (!item) return;
+    item.amount = cleanNumber(input.value, 0, 0);
+    saveState();
+    applyCryptoPricing(getCryptoCache());
+    renderCryptoAssets();
+    renderDashboard();
+    renderDashboardCharts();
+    toast("مقدار دارایی دیجیتال ذخیره شد.");
+  });
+
+  $("#btnEnableNotifications").addEventListener("click", () => { void requestNotificationPermission(); });
+  $("#btnExportTaskCalendar").addEventListener("click", () => {
+    const title = $("#taskTitle").value.trim();
+    const date = $("#taskDate").value || plannerDate;
+    if (!title) { toast("اول عنوان تسک را وارد کن."); return; }
+    exportTaskToDeviceCalendar({
+      id: editingTaskId || uid(), title, date,
+      category: $("#taskCategory").value.trim(),
+      reminderTime: $("#taskReminderTime").value || "09:00",
+      reminderLeadMin: Number($("#taskReminderLead").value || 0),
+      repeat: $("#taskRepeat").value || "none",
+      estimateMin: Number($("#taskEstimate").value || 30)
+    });
+  });
+  const previewReminder = async (task) => {
+    openReminderCenter();
+    const list = $("#reminderCenterList");
+    const preview = document.createElement("article");
+    preview.className = "reminder-item is-due";
+    preview.innerHTML = `<div class="reminder-item-head"><div><div class="reminder-item-title">${escapeHtml(task.title || "نمونه یادآوری PlanOS")}</div><div class="reminder-item-meta">پیش‌نمایش موفق هشدار داخل اپ</div></div><time class="reminder-item-time">همین حالا</time></div>`;
+    if (list.querySelector(".reminder-empty")) list.replaceChildren(preview);
+    else list.prepend(preview);
+    if (notificationPermission() === "granted") {
+      try {
+        const registration = "serviceWorker" in navigator ? await navigator.serviceWorker.ready : null;
+        if (registration) await registration.showNotification("تست یادآور PlanOS", { body:task.title || "هشدار شما با موفقیت فعال است.", icon:"./icons/icon-192.png", tag:"planos-reminder-test" });
+        else new Notification("تست یادآور PlanOS", { body:task.title || "هشدار شما با موفقیت فعال است." });
+      } catch { /* پیش‌نمایش داخل اپ کافی است. */ }
+    }
+    toast("تست هشدار با موفقیت نمایش داده شد.");
+  };
+  $("#btnMobileNotifications").addEventListener("click", openReminderCenter);
+  $("#btnTopNotifications").addEventListener("click", openReminderCenter);
+  $("#btnCloseReminderCenter").addEventListener("click", closeReminderCenter);
+  $("#reminderScrim").addEventListener("click", closeReminderCenter);
+  $("#btnReminderAdd").addEventListener("click", () => { closeReminderCenter(); plannerDate = todayISO(); openTaskDialog(null); });
+  $("#btnTestReminder").addEventListener("click", () => { void previewReminder({ title:"نمونه یادآوری PlanOS" }); });
+  $("#btnPreviewTaskReminder").addEventListener("click", () => {
+    void previewReminder({ title:$("#taskTitle").value.trim() || "نمونه یادآوری PlanOS" });
+  });
+  $("#reminderCenterList").addEventListener("click", (event) => {
+    const button = event.target.closest("[data-reminder-act]");
+    if (!button) return;
+    const task = state.tasks.find((item) => item.id === button.dataset.id);
+    if (!task) return;
+    const action = button.dataset.reminderAct;
+    if (action === "done") {
+      task.done = true;
+      task.completedAt = new Date().toISOString();
+      activeReminderIds.delete(task.id);
+      scheduleNextRepeat(task);
+      saveState();
+      renderAll({ forceInsight:true });
+      renderDashboardCharts();
+      toast("تسک انجام‌شده ثبت شد.");
+    } else if (action === "snooze") {
+      task.snoozedUntil = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+      activeReminderIds.delete(task.id);
+      saveState();
+      renderReminderCenter();
+      toast("یادآور 10 دقیقه به تعویق افتاد.");
+    } else if (action === "open") {
+      closeReminderCenter();
+      plannerDate = task.date;
+      showView("planner");
+      openTaskDialog(task);
+    } else if (action === "dismiss") {
+      activeReminderIds.delete(task.id);
+      renderReminderCenter();
+    }
+  });
 
   const renderFinancePlan = () => {
     $("#monthlyMinIncome").value = Number(state.profile.monthlyMinIncome||0);
@@ -5288,7 +7077,7 @@ canvas {
     suggestions.forEach(s => {
       const el = document.createElement("span");
       el.className = "chip";
-      el.innerHTML = `${s.label}: <b>${moneyFA(Math.round(s.val))}</b> ${state.profile.currency} <span class="muted2">(${s.pct}%)</span>`;
+      el.innerHTML = `${s.label}: <b>${moneyFA(Math.round(s.val))}</b> ${escapeHtml(state.profile.currency)} <span class="muted2">(${s.pct}%)</span>`;
       box.appendChild(el);
     });
     applyEnglishDigits();
@@ -5309,9 +7098,7 @@ canvas {
 
     if(act==="editHold"){ openHoldingDialog(h); return; }
     if(act==="delHold"){
-      state.assets.holdings = state.assets.holdings.filter(x => x.id !== id);
-      saveState(); renderFinance(); renderDashboard(); renderDashboardCharts();
-      toast("دارایی حذف شد.");
+      deleteWithUndo("دارایی", () => { state.assets.holdings = state.assets.holdings.filter(x => x.id !== id); });
     }
   });
 
@@ -5326,10 +7113,10 @@ canvas {
     if(editingHoldingId){
       const idx = state.assets.holdings.findIndex(x => x.id === editingHoldingId);
       if(idx >= 0) state.assets.holdings[idx] = { ...state.assets.holdings[idx], ...patch };
-      toast("دارایی آپدیت شد ✅");
+      toast("دارایی به‌روزرسانی شد.");
     } else {
       state.assets.holdings.unshift({ id: uid(), ...patch });
-      toast("دارایی ذخیره شد ✅");
+      toast("دارایی ذخیره شد.");
     }
 
     saveState();
@@ -5341,13 +7128,8 @@ canvas {
 
   $("#btnHoldingDelete").addEventListener("click", () => {
     if(!editingHoldingId) return;
-    state.assets.holdings = state.assets.holdings.filter(x => x.id !== editingHoldingId);
-    saveState();
     closeDlg("dlgHolding");
-    renderFinance();
-    renderDashboard();
-    renderDashboardCharts();
-    toast("دارایی حذف شد.");
+    deleteWithUndo("دارایی", () => { state.assets.holdings = state.assets.holdings.filter(x => x.id !== editingHoldingId); });
   });
 
   $("#monthlyMinIncome").addEventListener("input", (e) => { state.profile.monthlyMinIncome = Number(e.target.value || 0); saveState(); renderFinancePlan(); renderDashboard(); });
@@ -5372,7 +7154,7 @@ canvas {
     s.crypto = Math.round((s.crypto/sum)*100);
     s.silver = Math.round((s.silver/sum)*100);
     s.cash = 100 - (s.gold + s.crypto + s.silver);
-    saveState(); renderFinancePlan(); toast("نرمال شد ✅");
+    saveState(); renderFinancePlan(); toast("نرمال‌سازی انجام شد.");
   });
 
   // =========================
@@ -5397,7 +7179,11 @@ canvas {
       state.notes[key] = e.target.value;
       saveState();
       updateNotesEmpty();
-      if(key === "motivation") $("#dashMotivation").textContent = state.notes.motivation || "—";
+      if(key === "motivation") {
+        const personalQuote = $("#dashMotivation");
+        personalQuote.textContent = state.notes.motivation ? `یادداشت انگیزشی شما: ${state.notes.motivation}` : "";
+        personalQuote.style.display = state.notes.motivation ? "block" : "none";
+      }
     });
   };
   bindNote("#noteDaily","daily");
@@ -5432,6 +7218,7 @@ canvas {
   };
 
   $("#profileButton").addEventListener("click", openProfileDialog);
+  $("#btnMobileProfile").addEventListener("click", openProfileDialog);
   $("#profileButton").addEventListener("keydown", (e) => {
     if(e.key === "Enter" || e.key === " "){
       e.preventDefault();
@@ -5477,6 +7264,7 @@ canvas {
         const salt = generateSalt();
         state.settings.pinSalt = salt;
         state.settings.pinHash = await hashPin(pinValue, salt);
+        state.settings.pinKdf = "pbkdf2-sha256";
       } catch {
         toast("خطا در ذخیره امن پین.");
         return;
@@ -5484,6 +7272,7 @@ canvas {
     } else {
       state.settings.pinSalt = "";
       state.settings.pinHash = "";
+      state.settings.pinKdf = "";
     }
     if ("pin" in state.settings) delete state.settings.pin;
     if (!pinValue) {
@@ -5494,20 +7283,23 @@ canvas {
     closeDlg("dlgProfile");
     renderHeader();
     updateLockAvailability();
-    toast("پروفایل ذخیره شد ✅");
+    toast("پروفایل ذخیره شد.");
   });
 
   // =========================
   // Theme / Export / Import / Reset
   // =========================
-  $("#btnTheme").addEventListener("click", () => {
+  const toggleTheme = () => {
     const next = (state.settings.theme === "dark") ? "light" : "dark";
     state.settings.theme = next;
     saveState();
     renderHeader();
     renderDashboardCharts();
-    toast("تم تغییر کرد");
-  });
+    toast(next === "dark" ? "حالت تاریک فعال شد." : "حالت روشن فعال شد.");
+  };
+  $("#btnTheme").addEventListener("click", toggleTheme);
+  $("#btnTopTheme").addEventListener("click", toggleTheme);
+  $("#btnMobileTheme").addEventListener("click", toggleTheme);
 
   $("#btnExport").addEventListener("click", () => {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
@@ -5517,12 +7309,19 @@ canvas {
     a.download = "PlanOS-backup.json";
     a.click();
     URL.revokeObjectURL(url);
-    toast("خروجی گرفته شد ✅");
+    toast("خروجی آماده شد.");
   });
 
   $("#btnImport").addEventListener("click", () => {
     $("#importFile").value = "";
     openDlg("dlgImport");
+  });
+
+  $("#btnWelcomeDone").addEventListener("click", () => {
+    state.settings.onboarded = true;
+    saveState();
+    closeDlg("dlgWelcome");
+    $("#btnAddTask").focus();
   });
 
   $("#btnRestoreDaily").addEventListener("click", async () => {
@@ -5551,13 +7350,12 @@ canvas {
         toast("بکاپ معتبر نیست.");
         return;
       }
-      state = latest.data;
-      state.settings = { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "", usdToToman: 0, ...state.settings };
-      state.settings.focusMode = !!state.settings.focusMode;
-      state.cache = {
-        cryptoPrices: { fetchedAt: 0, pricesById: {}, fxUsdToIrr: null },
-        ...(state.cache || {})
-      };
+      const restoredState = sanitizeImportedState(latest.data);
+      if (!restoredState) {
+        toast("ساختار بکاپ معتبر نیست.");
+        return;
+      }
+      state = restoredState;
       await migrateLegacyPin();
       saveState();
       renderAll();
@@ -5565,7 +7363,7 @@ canvas {
       if (hasPinSet() && sessionStorage.getItem(LOCK_SESSION_KEY) !== "1") {
         showLock();
       }
-      toast("بکاپ روزانه بازیابی شد ✅");
+      toast("بکاپ روزانه بازیابی شد.");
     } catch {
       toast("بازیابی بکاپ با خطا مواجه شد.");
     }
@@ -5574,16 +7372,18 @@ canvas {
   $("#btnImportDo").addEventListener("click", async () => {
     const file = $("#importFile").files && $("#importFile").files[0];
     if(!file){ toast("فایلی انتخاب نشده."); return; }
-    const text = await file.text();
-    const data = safeParse(text);
-    if(!data || !data.meta){ toast("فایل معتبر نیست."); return; }
-    state = data;
-    state.settings = { theme: "light", rtl: true, focusMode: false, pinHash: "", pinSalt: "", usdToToman: 0, ...state.settings };
-    state.settings.focusMode = !!state.settings.focusMode;
-    state.cache = {
-      cryptoPrices: { fetchedAt: 0, pricesById: {}, fxUsdToIrr: null },
-      ...(state.cache || {})
-    };
+    if (file.size > IMPORT_MAX_BYTES) { toast("حجم فایل بیشتر از 5 مگابایت است."); return; }
+    let importedState;
+    try {
+      importedState = sanitizeImportedState(safeParse(await file.text()));
+    } catch {
+      importedState = null;
+    }
+    if(!importedState){ toast("ساختار فایل بکاپ معتبر نیست."); return; }
+    const summary = `${importedState.tasks.length} تسک، ${importedState.projects.length} پروژه و ${importedState.goals.length} هدف`;
+    if (!confirm(`این بکاپ شامل ${summary} است و جایگزین داده فعلی می‌شود. ادامه می‌دهید؟`)) return;
+    try { await saveSafetyBackup(state, "before-import"); } catch { /* localStorage remains available */ }
+    state = importedState;
     await migrateLegacyPin();
     saveState();
     closeDlg("dlgImport");
@@ -5592,12 +7392,13 @@ canvas {
     if (hasPinSet() && sessionStorage.getItem(LOCK_SESSION_KEY) !== "1") {
       showLock();
     }
-    toast("داده‌ها وارد شد ✅");
+    toast("داده‌ها وارد شد.");
   });
 
-  $("#btnReset").addEventListener("click", () => {
+  $("#btnReset").addEventListener("click", async () => {
     const ok = confirm("ریست کامل؟ همه داده‌ها پاک می‌شوند. قبلش Export بگیر.");
     if(!ok) return;
+    try { await saveSafetyBackup(state, "before-reset"); } catch { /* continue with explicit confirmation */ }
     state = defaultState();
     saveState();
     sessionStorage.removeItem(LOCK_SESSION_KEY);
@@ -5622,7 +7423,7 @@ canvas {
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
     let node;
     while ((node = walker.nextNode())) {
-      if (!node.nodeValue || !/[۰-۹]/.test(node.nodeValue)) continue;
+      if (!node.nodeValue || !/[۰-۹٠-٩]/.test(node.nodeValue)) continue;
       const parent = node.parentElement;
       if (parent) {
         if (parent.closest("input, textarea, select, [contenteditable]:not([contenteditable=\"false\"])")) continue;
@@ -5631,6 +7432,14 @@ canvas {
       node.nodeValue = toEnglishDigits(node.nodeValue);
     }
   };
+  document.addEventListener("input", (event) => {
+    const field = event.target.closest?.("input,textarea");
+    if (!field || !/[۰-۹٠-٩]/.test(field.value)) return;
+    const start = field.selectionStart;
+    const end = field.selectionEnd;
+    field.value = toEnglishDigits(field.value);
+    if (typeof start === "number" && typeof field.setSelectionRange === "function") field.setSelectionRange(start, end);
+  });
 
   // =========================
   // Render All
@@ -5646,6 +7455,8 @@ canvas {
     renderGoals();
     renderFinance();
     renderNotes();
+    renderReminderCenter();
+    hydrateInterfaceIcons();
     applyEnglishDigits();
   };
   window.__debugInsight = () => {
@@ -5666,6 +7477,7 @@ canvas {
   };
 
   let clockTimer = null;
+  let reminderTimer = null;
   const startClock = () => {
     updateFlipClock();
     if (clockTimer) clearInterval(clockTimer);
@@ -5680,10 +7492,22 @@ canvas {
     bindCryptoRefresh();
     applyCryptoPricing(getCryptoCache());
     renderAll();
+    const interfaceObserver = new MutationObserver(() => {
+      hydrateInterfaceIcons();
+      applyEnglishDigits();
+    });
+    interfaceObserver.observe(document.body, { childList:true, subtree:true, characterData:true });
     startClock();
+    updateNotificationUI();
+    if (reminderTimer) clearInterval(reminderTimer);
+    reminderTimer = setInterval(() => { void checkDueReminders(); }, 30000);
+    void checkDueReminders();
     renderDashboardCharts();
     void fetchCryptoPrices();
+    if (isFirstRun && !state.settings.onboarded) openDlg("dlgWelcome");
   };
+  window.addEventListener("focus", () => { void checkDueReminders(); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) void checkDueReminders(); });
   void boot();
 })();
 </script>
