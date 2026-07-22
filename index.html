@@ -2610,6 +2610,122 @@ canvas {
       html[data-theme="dark"] .mobile-nav button.active{ background:rgba(101,134,255,.17); }
     }
 
+    /* Mobile app experience — final overrides intentionally live last. */
+    .mobile-more-sheet,
+    .mobile-more-scrim{ display:none; }
+    .chart-frame{ height:280px; min-width:0; }
+
+    @media (max-width:760px){
+      html, body{ width:100%; min-height:100%; overflow-x:clip; }
+      body{ padding:0; }
+      .app{ width:100%; max-width:none; min-height:100dvh; padding:0; margin:0; border:0; border-radius:0; }
+      .content{ min-width:0; overflow:visible; border-radius:0; }
+      .mobile-appbar{ height:60px; min-height:60px; padding:8px 12px; top:0; }
+      .mobile-brand img{ width:34px; height:34px; }
+      .mobile-brand strong{ font-size:17px; }
+      .topbar{ min-height:auto; padding:12px 14px; gap:10px; grid-template-columns:62px minmax(0,1fr); }
+      .topbar .date-card{ width:62px; min-width:62px; padding:8px 5px; border-radius:16px; }
+      .topbar .date-card .big{ font-size:24px; }
+      .topbar .date-card .small{ font-size:10px; }
+      .topbar .title{ gap:8px; }
+      .topbar .title h1{ font-size:20px; }
+      .topbar .title p{ font-size:11px; line-height:1.7; }
+      .topbar .focus{ display:none; }
+
+      .views{ padding:10px 12px calc(104px + env(safe-area-inset-bottom)); }
+      .view, .grid, .grid.cols-12{ width:100%; min-width:0; }
+      .grid.cols-12{ gap:12px; }
+      .card{ min-width:0; padding:16px; border-radius:20px; }
+      .card.primary{ min-height:0; }
+      .card-header{ gap:10px; flex-wrap:wrap; align-items:flex-start; }
+      .card-title{ font-size:16px; line-height:1.65; }
+      .card-subtitle{ font-size:11px; line-height:1.7; }
+      .card-body{ min-width:0; }
+      .card .row{ max-width:100%; }
+      .card input, .card select, .card textarea{ max-width:100%; }
+      .btn{ min-height:44px; }
+      .chips{ gap:7px; }
+      .chip{ max-width:100%; white-space:normal; }
+
+      .card.secondary.insight-card{ min-height:420px; padding:0; background-position:center top; }
+      .insight-card .insight-row{ min-height:420px; padding:174px 16px 16px; align-items:stretch; }
+      .insight-card .insight-content{ width:100%; padding:16px; border-radius:18px; }
+      .insight-title-row{ padding:9px 11px; }
+      .insight-main{ font-size:18px; line-height:1.9; }
+      .insight-actions{ display:grid; grid-template-columns:1fr; gap:8px; }
+      .insight-actions .btn{ width:100%; }
+
+      .chart-frame{ height:220px !important; }
+      canvas{ max-width:100% !important; }
+      #view-planner .card-header > .row,
+      #view-calendar .card-header > .row,
+      #view-projects .card-header > .row,
+      #view-goals .card-header > .row,
+      #view-finance .card-header > .row{ width:100%; flex-direction:column; align-items:stretch; }
+      #view-planner .card-header > .row > *,
+      #view-calendar .card-header > .row > *,
+      #view-projects .card-header > .row > *,
+      #view-goals .card-header > .row > *,
+      #view-finance .card-header > .row > *{ width:100%; }
+      .table-wrap{ width:100%; max-width:100%; overflow:auto; overscroll-behavior-inline:contain; border-radius:16px; -webkit-overflow-scrolling:touch; }
+      .table-wrap:focus-visible{ outline:3px solid color-mix(in srgb,var(--primary) 35%,transparent); outline-offset:2px; }
+      table{ margin:0; }
+      .calendar-toolbar{ gap:8px; }
+      .calendar-toolbar .btn{ min-width:0; padding-inline:10px; }
+      .calendar-grid{ gap:6px; }
+      .cal-cell{ min-height:92px; padding:8px 6px; border-radius:15px; }
+      .agenda-panel{ padding:14px; }
+
+      dialog{ width:100vw; max-width:100vw; height:100dvh; max-height:100dvh; padding:8px; margin:0; place-items:end center; overflow:hidden; }
+      dialog[open]{ display:grid; }
+      dialog .modal-card{ width:100%; max-width:100%; height:min(92dvh,760px); max-height:calc(100dvh - 16px); margin:0; border-radius:24px 24px 18px 18px; overflow:hidden; display:flex; flex-direction:column; }
+      .dlg-head, .dlg-foot{ flex:0 0 auto; padding:14px 16px; }
+      .dlg-body{ flex:1 1 auto; min-height:0; padding:14px 16px; overflow-y:auto; overscroll-behavior:contain; -webkit-overflow-scrolling:touch; }
+      .dlg-foot{ padding-bottom:max(14px,env(safe-area-inset-bottom)); }
+
+      .mobile-nav{ inset-inline:8px; bottom:max(8px,env(safe-area-inset-bottom)); width:auto; height:72px; padding:6px; grid-template-columns:repeat(5,minmax(0,1fr)); gap:2px; border-radius:23px; z-index:1400; }
+      .mobile-nav button{ min-width:0; min-height:58px; padding:5px 2px; gap:3px; display:flex; flex-direction:column; align-items:center; justify-content:center; border-radius:16px; font-size:10px; line-height:1.2; }
+      .mobile-nav button::before{ display:none; }
+      .mobile-nav button .ui-icon{ width:22px; height:22px; font-size:22px; line-height:1; margin:0; }
+      .mobile-nav button span{ display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:100%; }
+      .mobile-nav button.active{ color:var(--primary); background:color-mix(in srgb,var(--primary) 11%,transparent); }
+      .mobile-nav .mobile-add{ width:auto; min-height:62px; margin:-13px 3px 0; border-radius:19px; color:#fff; background:linear-gradient(145deg,#4f7cff,#3158e8); box-shadow:0 12px 28px rgba(49,88,232,.36); }
+      .mobile-nav .mobile-add::before{ display:none; }
+      .mobile-nav .mobile-add .ui-icon{ width:26px; height:26px; font-size:26px; }
+
+      .mobile-more-scrim{ display:block; position:fixed; inset:0; z-index:1450; background:rgba(5,12,24,.44); backdrop-filter:blur(4px); opacity:0; visibility:hidden; transition:opacity .22s ease,visibility .22s ease; }
+      .mobile-more-scrim.is-open{ opacity:1; visibility:visible; }
+      .mobile-more-sheet{ display:block; position:fixed; z-index:1460; inset-inline:8px; bottom:max(8px,env(safe-area-inset-bottom)); max-height:calc(100dvh - 24px); padding:8px 14px 18px; overflow-y:auto; border:1px solid var(--border); border-radius:28px; background:color-mix(in srgb,var(--surface) 96%,transparent); box-shadow:0 28px 80px rgba(15,23,42,.28); backdrop-filter:blur(22px); transform:translateY(calc(100% + 24px)); opacity:0; visibility:hidden; transition:transform .28s cubic-bezier(.2,.75,.2,1),opacity .2s ease,visibility .28s ease; }
+      .mobile-more-sheet.is-open{ transform:translateY(0); opacity:1; visibility:visible; }
+      .mobile-sheet-handle{ width:42px; height:5px; margin:2px auto 12px; border-radius:99px; background:var(--border); }
+      .mobile-sheet-head{ display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px; }
+      .mobile-sheet-head > div{ display:flex; flex-direction:column; gap:3px; }
+      .mobile-sheet-head strong{ font-size:18px; }
+      .mobile-sheet-head span{ color:var(--muted); font-size:11px; }
+      .mobile-more-grid{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+      .mobile-more-grid button{ min-width:0; min-height:92px; padding:13px; display:grid; grid-template-columns:34px 1fr; grid-template-rows:auto auto; gap:3px 9px; align-items:center; text-align:right; color:var(--text); background:var(--surface-2); border:1px solid var(--border); border-radius:18px; }
+      .mobile-more-grid .ui-icon{ grid-row:1 / 3; width:34px; height:34px; display:grid; place-items:center; color:var(--primary); background:color-mix(in srgb,var(--primary) 10%,transparent); border-radius:11px; font-size:20px; }
+      .mobile-more-grid span{ align-self:end; font-weight:800; }
+      .mobile-more-grid small{ align-self:start; color:var(--muted); font-size:10px; }
+      body.mobile-sheet-open{ overflow:hidden; }
+      html[data-theme="dark"] .mobile-more-sheet{ background:rgba(13,22,36,.97); border-color:#2a3a52; }
+      html[data-theme="dark"] .mobile-more-scrim{ background:rgba(1,4,10,.68); }
+    }
+
+    @media (max-width:390px){
+      .views{ padding-inline:9px; }
+      .card{ padding:14px; border-radius:18px; }
+      .card.secondary.insight-card, .insight-card .insight-row{ min-height:402px; }
+      .insight-card .insight-row{ padding:158px 12px 12px; }
+      .insight-card .insight-content{ padding:14px; }
+      .insight-main{ font-size:17px; }
+      .calendar-grid{ gap:4px; }
+      .cal-cell{ min-height:86px; padding:7px 4px; }
+      .mobile-nav{ inset-inline:6px; }
+      .mobile-nav button{ font-size:9px; }
+      .mobile-more-sheet{ inset-inline:6px; }
+    }
+
   </style>
 </head>
 
@@ -2994,7 +3110,7 @@ canvas {
                 <span class="badge">Tasks %</span>
               </div>
               <div class="card-body">
-                <div style="height: 280px">
+                <div class="chart-frame">
                   <canvas id="chartWeek"></canvas>
                   <div class="empty-state" id="chartWeekEmpty" style="display:none;margin-top:12px">
                     <span class="empty-icon">✅</span>
@@ -3036,7 +3152,7 @@ canvas {
                 <span class="badge">Income</span>
               </div>
               <div class="card-body">
-                <div style="height: 280px">
+                <div class="chart-frame">
                   <canvas id="chartIncome"></canvas>
                   <div class="empty-state" id="chartIncomeEmpty" style="display:none;margin-top:12px">
                     <span class="empty-icon">💼</span>
@@ -3061,7 +3177,7 @@ canvas {
                 <span class="badge">Holdings</span>
               </div>
               <div class="card-body">
-                <div style="height: 280px">
+                <div class="chart-frame">
                   <canvas id="chartPortfolio"></canvas>
                   <div class="empty-state" id="chartPortfolioEmpty" style="display:none;margin-top:12px">
                     <span class="empty-icon">🧺</span>
@@ -3339,6 +3455,7 @@ canvas {
                 </div>
               </div>
               <div class="card-body">
+                <div class="table-wrap" role="region" aria-label="فهرست پروژه‌ها" tabindex="0">
                 <table>
                   <caption class="sr-only">فهرست پروژه‌ها</caption>
                   <thead>
@@ -3353,6 +3470,7 @@ canvas {
                   </thead>
                   <tbody id="projectTbody"></tbody>
                 </table>
+                </div>
                 <div class="muted small" id="projectsEmpty" style="display:none">هنوز پروژه‌ای ثبت نشده.</div>
               </div>
             </div>
@@ -3592,12 +3710,30 @@ canvas {
   </div>
 
   <nav class="mobile-nav" id="mobileNav" aria-label="ناوبری اصلی موبایل">
-    <button type="button" data-mobile-view="dashboard" class="active">خانه</button>
-    <button type="button" data-mobile-view="calendar">تقویم</button>
-    <button type="button" class="mobile-add" id="btnMobileAddReminder">یادآور</button>
-    <button type="button" data-mobile-view="planner">امروز</button>
-    <button type="button" data-mobile-view="projects">پروژه‌ها</button>
+    <button type="button" data-mobile-view="dashboard" data-icon="home-2" class="active"><span>خانه</span></button>
+    <button type="button" data-mobile-view="planner" data-icon="list-check"><span>امروز</span></button>
+    <button type="button" class="mobile-add" id="btnMobileAddReminder" data-icon="plus" aria-label="افزودن تسک"><span>افزودن</span></button>
+    <button type="button" data-mobile-view="calendar" data-icon="calendar"><span>تقویم</span></button>
+    <button type="button" id="btnMobileMore" data-icon="grid-dots" aria-controls="mobileMoreSheet" aria-expanded="false"><span>بیشتر</span></button>
   </nav>
+
+  <div class="mobile-more-scrim" id="mobileMoreScrim" hidden></div>
+  <section class="mobile-more-sheet" id="mobileMoreSheet" aria-hidden="true" aria-labelledby="mobileMoreTitle">
+    <div class="mobile-sheet-handle" aria-hidden="true"></div>
+    <div class="mobile-sheet-head">
+      <div>
+        <strong id="mobileMoreTitle">همه بخش‌ها</strong>
+        <span>تمام امکانات PlanOS در دسترس شماست</span>
+      </div>
+      <button type="button" class="btn btn-icon" id="btnCloseMobileMore" data-icon="x" aria-label="بستن"></button>
+    </div>
+    <div class="mobile-more-grid">
+      <button type="button" data-mobile-more-view="projects" data-icon="briefcase"><span>پروژه‌ها</span><small>مدیریت و درآمد</small></button>
+      <button type="button" data-mobile-more-view="goals" data-icon="target"><span>اهداف بزرگ</span><small>هدف و مایلستون</small></button>
+      <button type="button" data-mobile-more-view="finance" data-icon="wallet"><span>سرمایه</span><small>دارایی و تقسیم</small></button>
+      <button type="button" data-mobile-more-view="notes" data-icon="notebook"><span>یادداشت‌ها</span><small>ژورنال و ایده‌ها</small></button>
+    </div>
+  </section>
 
   <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true">
     <span id="toastMessage"></span>
@@ -4865,11 +5001,30 @@ canvas {
     iconHolder.innerHTML = navIcon.innerHTML;
   };
 
+  const mobileMoreSheet = $("#mobileMoreSheet");
+  const mobileMoreScrim = $("#mobileMoreScrim");
+  const btnMobileMore = $("#btnMobileMore");
+  const mobileMoreViews = new Set(["projects", "goals", "finance", "notes"]);
+  const setMobileMoreOpen = (open) => {
+    if (!mobileMoreSheet || !mobileMoreScrim || !btnMobileMore) return;
+    if (open) mobileMoreScrim.hidden = false;
+    mobileMoreSheet.classList.toggle("is-open", open);
+    mobileMoreScrim.classList.toggle("is-open", open);
+    mobileMoreSheet.setAttribute("aria-hidden", String(!open));
+    btnMobileMore.setAttribute("aria-expanded", String(open));
+    document.body.classList.toggle("mobile-sheet-open", open);
+    if (!open) window.setTimeout(() => {
+      if (!mobileMoreScrim.classList.contains("is-open")) mobileMoreScrim.hidden = true;
+    }, 240);
+  };
+
   const showView = (name) => {
     $$(".view").forEach(v => v.classList.remove("active"));
     $("#view-" + name).classList.add("active");
     $$("#nav button").forEach(b => b.classList.toggle("active", b.dataset.view === name));
     $$("#mobileNav [data-mobile-view]").forEach(b => b.classList.toggle("active", b.dataset.mobileView === name));
+    btnMobileMore?.classList.toggle("active", mobileMoreViews.has(name));
+    setMobileMoreOpen(false);
     const titleText = $("#viewTitle .title-text");
     if (titleText) titleText.textContent = viewMeta[name].title;
     $("#viewSub").textContent = viewMeta[name].sub;
@@ -4888,6 +5043,18 @@ canvas {
   $("#mobileNav").addEventListener("click", (event) => {
     const button = event.target.closest("[data-mobile-view]");
     if (button) showView(button.dataset.mobileView);
+  });
+  btnMobileMore?.addEventListener("click", () => {
+    setMobileMoreOpen(btnMobileMore.getAttribute("aria-expanded") !== "true");
+  });
+  $("#btnCloseMobileMore")?.addEventListener("click", () => setMobileMoreOpen(false));
+  mobileMoreScrim?.addEventListener("click", () => setMobileMoreOpen(false));
+  mobileMoreSheet?.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-mobile-more-view]");
+    if (button) showView(button.dataset.mobileMoreView);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && mobileMoreSheet?.classList.contains("is-open")) setMobileMoreOpen(false);
   });
 
   const MORE_DRAWER_KEY = "planos_more_open";

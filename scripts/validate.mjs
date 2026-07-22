@@ -39,6 +39,15 @@ assert(html.includes("PBKDF2"), "PIN hashing must use a slow KDF");
 assert(html.includes("taskReminderEnabled"), "task reminders must be available");
 assert(html.includes("DISCIPLINE_QUOTES"), "daily discipline quotes must be available");
 assert(html.includes("mobile-nav"), "mobile navigation must be available");
+assert(html.includes('data-mobile-view="dashboard" data-icon="home-2"'), "mobile home navigation must have an icon");
+assert(html.includes('data-mobile-view="planner" data-icon="list-check"'), "mobile today navigation must have an icon");
+assert(html.includes('data-mobile-view="calendar" data-icon="calendar"'), "mobile calendar navigation must have an icon");
+assert(html.includes("mobileMoreSheet"), "mobile users must be able to reach secondary sections");
+for (const view of ["projects", "goals", "finance", "notes"]) {
+  assert(html.includes(`data-mobile-more-view="${view}"`), `mobile more sheet must expose ${view}`);
+}
+assert(html.includes("setMobileMoreOpen"), "mobile more sheet interactions must be wired");
+assert(html.includes("100dvh"), "mobile overlays must use dynamic viewport sizing");
 assert(html.includes("weeklyReviews"), "weekly review data must be available");
 assert(html.includes("taskProject"), "tasks must support project links");
 assert(html.includes("taskGoal"), "tasks must support goal links");
