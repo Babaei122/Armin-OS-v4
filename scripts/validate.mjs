@@ -54,5 +54,11 @@ assert(html.includes("taskGoal"), "tasks must support goal links");
 assert(html.includes("plannerInboxList"), "planner inbox must be available");
 assert(html.includes("todayCapacity"), "daily capacity planning must be available");
 assert(html.includes("btnStartWeeklyReview"), "weekly review flow must be available");
+assert(html.includes("INVESTMENT_TEMPLATES"), "investment plan templates must be available");
+assert(html.includes("calculateInvestmentProjection"), "investment growth projection must be available");
+assert(html.includes("btnActivateInvestmentPlan"), "investment plan activation must be available");
+assert(html.includes("investmentPlanStatus"), "investment plan status must be visible");
+assert(html.includes("upsertInvestmentTask"), "investment plans must create reminder tasks");
 
 console.log("PlanOS validation passed");
+
